@@ -2,6 +2,7 @@
 
 # Add imports here
 from .ufcc import *
+from .contacts import *
 
 # Handle versioneer
 from ._version import get_versions
