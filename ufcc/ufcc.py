@@ -1,29 +1,18 @@
-"""Provide the primary functions."""
+# Daniel P. Ramirez & Besian I. Sejdiu
+# Prolint: A tool to analyze and visualize lipid-protein interactions.
+#
 
+import MDAnalysis as mda
 
-def canvas(with_attribution=True):
-    """
-    Placeholder function to show example docstring (NumPy format).
+class UFCC(object):
+    """Base class for getting topology information. It reads an MDAnalysis Universe
+    and extracts useful information. 
 
-    Replace this function and doc string for your own project.
-
-    Parameters
+    Attributes
     ----------
-    with_attribution : bool, Optional, default: True
-        Set whether or not to display who the quote is from.
-
-    Returns
-    -------
-    quote : str
-        Compiled string including quote and optional attribution.
+    top : MDAnalysis universe with all different kind of topologies
     """
-
-    quote = "The code is but a canvas to our imagination."
-    if with_attribution:
-        quote += "\n\t- Adapted from Henry David Thoreau"
-    return quote
+    def __init__(self, structure, trajectory):
+        self.top = mda.Universe(structure, trajectory)
 
 
-if __name__ == "__main__":
-    # Do something if this file is invoked on its own
-    print(canvas())
