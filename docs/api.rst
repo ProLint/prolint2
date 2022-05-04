@@ -5,3 +5,4 @@ API Documentation
    :toctree: autosummary
 
    ufcc.UFCC
+   ufcc.Contacts
