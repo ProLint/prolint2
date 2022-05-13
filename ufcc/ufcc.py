@@ -26,6 +26,7 @@ class UFCC(object):
     ----------
     universe : MDAnalysis universe with all different kind of topologies
     """
+
     def __init__(self, structure, trajectory):
         self.atoms = mda.Universe(structure, trajectory).atoms
         self.residues = self.atoms.residues
@@ -50,16 +51,13 @@ class UFCC(object):
         """
         assert isinstance(
             selection,
-            (
-                str,
-                np.ndarray,
-                mda.core.groups.Residue,
-                mda.core.groups.ResidueGroup,
-                mda.core.groups.Atom,
-                mda.core.groups.AtomGroup
-            ),
+            (str, np.ndarray, mda.core.groups.Residue, mda.core.groups.ResidueGroup, mda.core.groups.Atom,
+             mda.core.groups.AtomGroup),
         ), "the selection must be one of the preceding types"
-        assert isinstance(add_filter,(str),), "the filter must be always a string"
+        assert isinstance(
+            add_filter,
+            (str),
+        ), "the filter must be always a string"
         if isinstance(selection, (mda.core.groups.Residue, mda.core.groups.ResidueGroup)):
             selection = selection.atoms
         elif isinstance(selection, mda.core.groups.Atom):
@@ -68,7 +66,7 @@ class UFCC(object):
             selection = self.atoms[selection]
         elif isinstance(selection, str):
             selection = self.atoms.select_atoms(selection)
-        return selection.select_atoms(add_filter) 
+        return selection.select_atoms(add_filter)
 
     def sel_query(self, selection='all', add_filter='all'):
         self.query = self.get_AG(selection, add_filter)
@@ -77,15 +75,12 @@ class UFCC(object):
         self.haystack = self.get_AG(selection, add_filter)
 
     def get_contacts(self, n_jobs=os.cpu_count()):
-        assert isinstance(self.query,(mda.core.groups.AtomGroup),), "the query has to be an AtomGroup"
-        assert isinstance(self.haystack,(mda.core.groups.AtomGroup),), "the haystack has to be an AtomGroup"
+        assert isinstance(
+            self.query,
+            (mda.core.groups.AtomGroup),
+        ), "the query has to be an AtomGroup"
+        assert isinstance(
+            self.haystack,
+            (mda.core.groups.AtomGroup),
+        ), "the haystack has to be an AtomGroup"
         self.contacts = Contacts(self.atoms.universe, self.query, self.haystack).get_contacts(n_jobs)
-
-
-
-
-
-
-
-
-

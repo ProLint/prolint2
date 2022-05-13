@@ -6,6 +6,7 @@ import MDAnalysis as mda
 from MDAnalysis.lib.nsgrid import FastNS
 from multiprocessing import Pool
 
+
 class Contacts(object):
     """
     Base class for getting the contacts. 
@@ -26,6 +27,7 @@ class Contacts(object):
     get_contacts(n_jobs)
         Return the index pairs for the contacts on each frame.
     """
+
     def __init__(self, UFCC_universe, query, haystacks):
         """
         Parameters
@@ -50,9 +52,9 @@ class Contacts(object):
         return results
 
     def make_blocks(self, n_blocks):
-        n_frames = self.u.trajectory.n_frames #len(prot)
+        n_frames = self.u.trajectory.n_frames  #len(prot)
         n_frames_per_block = n_frames // n_blocks
-        blocks = [range(i * n_frames_per_block, (i + 1) * n_frames_per_block) for i in range(n_blocks-1)]
+        blocks = [range(i * n_frames_per_block, (i + 1) * n_frames_per_block) for i in range(n_blocks - 1)]
         blocks.append(range((n_blocks - 1) * n_frames_per_block, n_frames))
         return blocks
 
