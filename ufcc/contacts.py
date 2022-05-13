@@ -73,3 +73,4 @@ class Contacts(object):
         """
         contacts = self.run(n_jobs)
         return contacts
+        # TODO: create tool to process results
