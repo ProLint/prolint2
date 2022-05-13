@@ -2,7 +2,6 @@
 # Prolint: A tool to analyze and visualize lipid-protein interactions.
 #
 
-import os
 import MDAnalysis as mda
 from MDAnalysis.lib.nsgrid import FastNS
 from multiprocessing import Pool
@@ -27,7 +26,7 @@ class Contacts(object):
     get_contacts(n_jobs)
         Return the index pairs for the contacts on each frame.
     """
-    def __init__(self, universe, query, haystacks):
+    def __init__(self, UFCC_universe, query, haystacks):
         """
         Parameters
         ---------
@@ -38,7 +37,7 @@ class Contacts(object):
         haystack : MDA.AtomGroup 
             Haystack atoms.
         """
-        self.u = universe.top
+        self.u = UFCC_universe
         self.query = query
         self.haystacks = haystacks
 
@@ -65,7 +64,7 @@ class Contacts(object):
             worker_pool.close()
         return all_result
 
-    def get_contacts(self, n_jobs=os.cpu_count()):
+    def get_contacts(self, n_jobs):
         """
         Parameters
         ---------

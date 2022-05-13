@@ -2,41 +2,14 @@
 # Prolint: A tool to analyze and visualize lipid-protein interactions.
 #
 
+import os
 import numpy as np
 import MDAnalysis as mda
-from MDAnalysis.core.topologyattrs import _ResidueStringAttr
+from MDAnalysis.core.topologyattrs import ResidueStringAttr
+from .contacts import Contacts
 
 
-
-def get_atom_group(selection):
-    """
-    Cast an MDAnalysis.Atom, MDAnalysis.Residue, or MDAnalysis.ResidueGroup to AtomGroup.
-    Parameters
-    ----------
-    selection: MDAnalysis.Atom, MDAnalysis.Residue or MDAnalysis.ResidueGroup
-        atoms to cast
-    Returns
-    -------
-    MDAnalysis.AtomGroup
-    """
-    assert isinstance(
-        selection,
-        (
-            mda.core.groups.Residue,
-            mda.core.groups.ResidueGroup,
-            mda.core.groups.Atom,
-            mda.core.groups.AtomGroup,
-        ),
-    ), "central_species must be one of the preceding types"
-    u = selection.universe
-    if isinstance(selection, (mda.core.groups.Residue, mda.core.groups.ResidueGroup)):
-        selection = selection.atoms
-    if isinstance(selection, mda.core.groups.Atom):
-        selection = u.select_atoms(f"index {selection.index}")
-    return selection
-
-
-class MacrosClass(_ResidueStringAttr):
+class MacrosClass(ResidueStringAttr):
     attrname = 'macros'
     singular = 'macro'
 
@@ -54,20 +27,19 @@ class UFCC(object):
     universe : MDAnalysis universe with all different kind of topologies
     """
     def __init__(self, structure, trajectory):
-        self.universe = mda.Universe(structure, trajectory)
-        self.atoms = self.universe.atoms
-        self.list_atoms = np.unique(self.universe.atoms)
-        self.residues = self.universe.residues
-        self.list_residues = np.unique(self.universe.residues)
-        # self.molecules = self.universe.atoms.moltypes ## this information is only on the tpr, not on the gro
-        self.universe.add_TopologyAttr('macros')
-        self.universe.select_atoms('protein').residues.macros = 'protein'
-        self.universe.select_atoms('not protein').residues.macros = 'membrane'
-        self.macros = np.unique(self.universe.residues.macros)
+        self.atoms = mda.Universe(structure, trajectory).atoms
+        self.residues = self.atoms.residues
+        self.atoms.universe.add_TopologyAttr('macros')
+        self.atoms.select_atoms('protein').residues.macros = 'protein'
+        self.atoms.select_atoms('not protein').residues.macros = 'membrane'
+        self.list_macros = list(np.unique(self.atoms.residues.macros))
+        self.query = None
+        self.haystack = None
+        self.contacts = None
 
-    def get_atom_group(selection):
+    def get_AG(self, selection, add_filter):
         """
-        Cast an MDAnalysis.Atom, MDAnalysis.Residue, or MDAnalysis.ResidueGroup to AtomGroup.
+        Cast an MDAnalysis.Atom, MDAnalysis.Residue, or MDAnalysis.ResidueGroup, or str syntax to AtomGroup.
         Parameters
         ----------
         selection: MDAnalysis.Atom, MDAnalysis.Residue or MDAnalysis.ResidueGroup
@@ -79,18 +51,41 @@ class UFCC(object):
         assert isinstance(
             selection,
             (
+                str,
+                np.ndarray,
                 mda.core.groups.Residue,
                 mda.core.groups.ResidueGroup,
                 mda.core.groups.Atom,
-                mda.core.groups.AtomGroup,
+                mda.core.groups.AtomGroup
             ),
-        ), "central_species must be one of the preceding types"
-        u = selection.universe
+        ), "the selection must be one of the preceding types"
+        assert isinstance(add_filter,(str),), "the filter must be always a string"
         if isinstance(selection, (mda.core.groups.Residue, mda.core.groups.ResidueGroup)):
             selection = selection.atoms
-        if isinstance(selection, mda.core.groups.Atom):
-            selection = u.select_atoms(f"index {selection.index}")
-        return selection  
+        elif isinstance(selection, mda.core.groups.Atom):
+            selection = self.atoms.select_atoms(f"index {selection.index}")
+        elif isinstance(selection, np.ndarray):
+            selection = self.atoms[selection]
+        elif isinstance(selection, str):
+            selection = self.atoms.select_atoms(selection)
+        return selection.select_atoms(add_filter) 
+
+    def sel_query(self, selection='all', add_filter='all'):
+        self.query = self.get_AG(selection, add_filter)
+
+    def sel_haystack(self, selection='all', add_filter='all'):
+        self.haystack = self.get_AG(selection, add_filter)
+
+    def get_contacts(self, n_jobs=os.cpu_count()):
+        assert isinstance(self.query,(mda.core.groups.AtomGroup),), "the query has to be an AtomGroup"
+        assert isinstance(self.haystack,(mda.core.groups.AtomGroup),), "the haystack has to be an AtomGroup"
+        self.contacts = Contacts(self.atoms.universe, self.query, self.haystack).get_contacts(n_jobs)
+
+
+
+
+
+
 
 
 
