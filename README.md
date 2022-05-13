@@ -1,8 +1,8 @@
 UFCC
 ==============================
 [//]: # (Badges)
-[![GitHub Actions Build Status](https://github.com/REPLACE_WITH_OWNER_ACCOUNT/ufcc/workflows/CI/badge.svg)](https://github.com/REPLACE_WITH_OWNER_ACCOUNT/ufcc/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/UFCC/branch/master/graph/badge.svg)](https://codecov.io/gh/REPLACE_WITH_OWNER_ACCOUNT/UFCC/branch/master)
+[![GitHub Actions Build Status](https://github.com/ProLint/ufcc/workflows/CI/badge.svg)](https://github.com/ProLint/ufcc/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/ProLint/UFCC/branch/master/graph/badge.svg)](https://codecov.io/gh/ProLint/UFCC/branch/master)
 
 
 Ultrafast contacts calculation.
