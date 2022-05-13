@@ -16,6 +16,7 @@ dependencies:
 
     # Package dependencies
   - MDAnalysis  
+  - numpy
 
     # Pip-only installs
   #- pip:
