@@ -34,8 +34,8 @@ class UFCC(object):
         self.atoms.select_atoms('protein').residues.macros = 'protein'
         self.atoms.select_atoms('not protein').residues.macros = 'membrane'
         self.list_macros = list(np.unique(self.atoms.residues.macros))
-        self.query = None
-        self.haystack = None
+        self.query = self.atoms.select_atoms('')  # returns empty atomgroup
+        self.database = self.atoms.select_atoms('')  # returns empty atomgroup
         self.contacts = None
 
     def get_AG(self, selection, add_filter):
@@ -67,12 +67,12 @@ class UFCC(object):
         elif isinstance(selection, str):
             selection = self.atoms.select_atoms(selection)
         return selection.select_atoms(add_filter)
-
-    def sel_query(self, selection='all', add_filter='all'):
+    
+    def select_query(self, selection='all', add_filter='all'):
         self.query = self.get_AG(selection, add_filter)
 
-    def sel_haystack(self, selection='all', add_filter='all'):
-        self.haystack = self.get_AG(selection, add_filter)
+    def select_database(self, selection='all', add_filter='all'):
+        self.database = self.get_AG(selection, add_filter)
 
     def get_contacts(self, n_jobs=os.cpu_count()):
         assert isinstance(
@@ -80,7 +80,7 @@ class UFCC(object):
             (mda.core.groups.AtomGroup),
         ), "the query has to be an AtomGroup"
         assert isinstance(
-            self.haystack,
+            self.database,
             (mda.core.groups.AtomGroup),
-        ), "the haystack has to be an AtomGroup"
-        self.contacts = Contacts(self.atoms.universe, self.query, self.haystack).get_contacts(n_jobs)
+        ), "the database has to be an AtomGroup"
+        self.contacts = Contacts(self.atoms.universe, self.query, self.database).get_contacts(n_jobs)
