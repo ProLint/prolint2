@@ -1,6 +1,13 @@
-# Daniel P. Ramirez & Besian I. Sejdiu
-# Prolint: A tool to analyze and visualize lipid-protein interactions.
-#
+"""
+Ultr-Fast Contacts Calculation (UFCC)
+=======================================
+
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+
+UFCC calculates de distance-based contacts between two references.
+"""
 
 import os
 import numpy as np
@@ -74,7 +81,7 @@ class UFCC(object):
     def select_database(self, selection='all', add_filter='all'):
         self.database = self.get_AG(selection, add_filter)
 
-    def get_contacts(self, n_jobs=os.cpu_count()):
+    def get_contacts(self):
         assert isinstance(
             self.query,
             (mda.core.groups.AtomGroup),
@@ -83,4 +90,7 @@ class UFCC(object):
             self.database,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
-        self.contacts = Contacts(self.atoms.universe, self.query, self.database).get_contacts(n_jobs)
+
+        temp_instance = Contacts(self.atoms.universe, self.query, self.database, 7)
+        temp_instance.run()
+        self.contacts = temp_instance.results.contacts
