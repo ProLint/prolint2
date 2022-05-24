@@ -13,7 +13,7 @@ import os
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
-from .contacts import Contacts
+from .contacts import Contacts, ContactsPar
 
 
 class MacrosClass(ResidueStringAttr):
@@ -91,6 +91,6 @@ class UFCC(object):
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
 
-        temp_instance = Contacts(self.atoms.universe, self.query, self.database, 7)
-        temp_instance.run()
-        self.contacts = temp_instance.results.contacts
+        temp_instance = ContactsPar(self.atoms.universe, self.query, self.database, 7)
+        temp_instance.run(n_jobs=-1)
+        self.contacts = temp_instance.contacts

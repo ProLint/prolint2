@@ -11,7 +11,6 @@ UFCC calculates de distance-based contacts between two references.
 
 import sys
 from setuptools import setup, find_packages
-from Cython.Build import cythonize
 import versioneer
 
 short_description = "Ultra-Fast Contacts Calculation.".split("\n")[0]
@@ -63,5 +62,4 @@ setup(
 
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,
-    ext_modules = cythonize('ufcc/nsgrid.pyx', language='c++')
 )
