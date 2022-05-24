@@ -25,6 +25,14 @@ class MacrosClass(ResidueStringAttr):
         return np.array(['other'] * n_residues, dtype=object)
 
 
+class ContactRunner(object):
+    def __init__(self):
+        self.backend = None
+        self.in_memory = False
+        self.n_jobs = -1
+
+
+
 class UFCC(object):
     """Base class for getting topology information. It reads an MDAnalysis Universe
     and extracts useful information. 
@@ -43,6 +51,8 @@ class UFCC(object):
         self.list_macros = list(np.unique(self.atoms.residues.macros))
         self.query = self.atoms.select_atoms('')  # returns empty atomgroup
         self.database = self.atoms.select_atoms('')  # returns empty atomgroup
+        self.runner = ContactRunner()
+        self.cutoff = 7
         self.contacts = None
 
     def get_AG(self, selection, add_filter):
@@ -90,7 +100,16 @@ class UFCC(object):
             self.database,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
-
-        temp_instance = ContactsPar(self.atoms.universe, self.query, self.database, 7)
-        temp_instance.run(n_jobs=-1)
+        if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
+            raise ValueError("You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'")
+        if self.runner.backend == 'serial' and self.runner.in_memory == False:
+            temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance.run(verbose=True)
+        elif self.runner.backend == 'parallel' and self.runner.in_memory == False:
+            temp_instance = ContactsPar(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance.run(n_jobs=self.runner.n_jobs)
+        elif self.runner.backend == 'serial' and self.runner.in_memory == True:
+            self.atoms.universe.transfer_to_memory()
+            temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance.run(verbose=True)
         self.contacts = temp_instance.contacts
