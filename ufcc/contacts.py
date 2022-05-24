@@ -92,4 +92,5 @@ class Contacts(object):
         for block in dirty_contacts:
             clean_contacts = {**clean_contacts, **block}
         return clean_contacts
+        
         # TODO: create tool to process results
