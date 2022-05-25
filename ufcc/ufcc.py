@@ -29,6 +29,8 @@ class ContactRunner(object):
     def __init__(self):
         self.backend = None
         self.n_jobs = -1
+        # TODO
+        # add funcionalities to run analysis on HPC machines
 
 class UFCC(object):
     """Base class for getting topology information. It reads an MDAnalysis Universe
