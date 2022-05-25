@@ -16,7 +16,8 @@ The class and its methods
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
-from .contacts import Contacts, ContactsPar
+from .serial_contacts import SerialContacts
+from .parallel_contacts import ParallelContacts
 
 
 class MacrosClass(ResidueStringAttr):
@@ -109,9 +110,9 @@ class UFCC(object):
                 "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
             )
         if self.runner.backend == 'serial':
-            temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance = SerialContacts(self.atoms.universe, self.query, self.database, self.cutoff)
             temp_instance.run(verbose=True)
         elif self.runner.backend == 'parallel':
-            temp_instance = ContactsPar(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance = ParallelContacts(self.atoms.universe, self.query, self.database, self.cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
         self.contacts = temp_instance.contacts
