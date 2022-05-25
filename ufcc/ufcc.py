@@ -9,11 +9,10 @@ Ultr-Fast Contacts Calculation (UFCC)
 UFCC calculates de distance-based contacts between two references.
 """
 
-import os
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
-from .contacts import Contacts, ContactsPar
+from .contacts import Contacts, ContactsPar, ContactsMP
 
 
 class MacrosClass(ResidueStringAttr):
@@ -112,4 +111,8 @@ class UFCC(object):
             self.atoms.universe.transfer_to_memory()
             temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
             temp_instance.run(verbose=True)
+        elif self.runner.backend == 'parallel' and self.runner.in_memory == True:
+            self.atoms.universe.transfer_to_memory()
+            temp_instance = ContactsMP(self.atoms.universe, self.query, self.database, self.cutoff, self.runner.n_jobs)
+            temp_instance.get_contacts()
         self.contacts = temp_instance.contacts
