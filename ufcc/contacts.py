@@ -10,14 +10,11 @@ UFCC calculates de distance-based contacts between two references.
 """
 
 import numpy as np
-import warnings
-import os
 import scipy.stats
 import scipy.sparse
 from MDAnalysis.lib.distances import capped_distance
 from MDAnalysis.analysis.base import AnalysisBase
 from pmda.parallel import ParallelAnalysisBase
-from multiprocessing import Pool
 
 # import logging
 # MDAnalysis.start_logging()
@@ -209,107 +206,109 @@ class ContactsPar(ParallelAnalysisBase):
         # self.results.contacts[self._frame_index] = contacts_per_idx
 
 
-class ContactsMP(object):
-    """
-    Base class for getting the contacts. 
+# TODO
+# class ContactsMP(object):
+#     """
+#     Base class for getting the contacts. 
 
-    ...
+#     ...
 
-    Atributes
-    ---------
-    u : MDA.Universe
-        The whole system.
-    query : MDA.AtomGroup 
-        Query atoms.
-    database : MDA.AtomGroup 
-        database atoms.
+#     Atributes
+#     ---------
+#     u : MDA.Universe
+#         The whole system.
+#     query : MDA.AtomGroup 
+#         Query atoms.
+#     database : MDA.AtomGroup 
+#         database atoms.
 
-    Methods
-    -------
-    get_contacts(n_jobs)
-        Return the index pairs for the contacts on each frame.
-    """
+#     Methods
+#     -------
+#     get_contacts(n_jobs)
+#         Return the index pairs for the contacts on each frame.
+#     """
 
-    def __init__(self, UFCC_universe, query, database, cutoff, n_jobs):
-        """
-        Parameters
-        ---------
-        u : MDA.Universe
-            The whole system.
-        query : MDA.AtomGroup 
-            Query atoms.
-        database : MDA.AtomGroup 
-            Database atoms.
-        """
-        self.u = UFCC_universe
-        self.query = query
-        self.database = database
-        self.n_jobs = n_jobs
-        if self.n_jobs == -1:
-            self.n_jobs = os.cpu_count()
-        self.cutoff = cutoff
+#     def __init__(self, UFCC_universe, query, database, cutoff, n_jobs):
+#         """
+#         Parameters
+#         ---------
+#         u : MDA.Universe
+#             The whole system.
+#         query : MDA.AtomGroup 
+#             Query atoms.
+#         database : MDA.AtomGroup 
+#             Database atoms.
+#         """
+#         self.u = UFCC_universe
+#         self.query = query
+#         self.database = database
+#         self.n_jobs = n_jobs
+#         if self.n_jobs == -1:
+#             self.n_jobs = os.cpu_count()
+#         self.cutoff = cutoff
         
-        # to allow for non-sequential resindices
-        self._sorted_protein_resindices = scipy.stats.rankdata(
-            self.query.resindices,
-            method="dense"
-        ) - 1
-        self._sorted_membrane_resindices = scipy.stats.rankdata(
-            self.database.resindices,
-            method="dense"
-        ) - 1
+#         # to allow for non-sequential resindices
+#         self._sorted_protein_resindices = scipy.stats.rankdata(
+#             self.query.resindices,
+#             method="dense"
+#         ) - 1
+#         self._sorted_membrane_resindices = scipy.stats.rankdata(
+#             self.database.resindices,
+#             method="dense"
+#         ) - 1
 
-        self.contacts = None
+#         self.contacts = None
 
 
-    def per_block(self, blocksize):
-        results = {}
-        for ts in self.u.trajectory[blocksize.start:blocksize.stop]:
-            # Get the results and populate the results dictionary
-            pairs = capped_distance(
-                self.query.positions,
-                self.database.positions,
-                max_cutoff=self.cutoff,
-                box=self.database.dimensions,
-                return_distances=False
-            )
-            
-            # Find unique pairs of residues interacting
-            # Currently we have pairs of atoms
-            query_residx, database_residx = np.unique(np.array([[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]), axis=0).T
+#     def per_block(self, blocksize):
+#         results = {}
+#         for ts in self.u.trajectory[blocksize.start:blocksize.stop]:
+#             # Get the results and populate the results dictionary
+#             pairs = capped_distance(
+#                 self.query.positions,
+#                 self.database.positions,
+#                 max_cutoff=self.cutoff,
+#                 box=self.database.dimensions,
+#                 return_distances=False
+#             )
+#             results[ts.frame] = pairs
+#             # Find unique pairs of residues interacting
+#             # Currently we have pairs of atoms
+#             # query_residx, database_residx = np.unique(np.array([[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]), axis=0).T
 
-            # store neighbours for this frame
-            data = np.ones_like(query_residx)
-            results[ts.frame] = scipy.sparse.csr_matrix((data, (query_residx, database_residx)), dtype=np.int8, shape=(self.query.n_residues, self.database.n_residues))
-        return results
+#             # store neighbours for this frame
+#             # data = np.ones_like(query_residx)
+#             # results[ts.frame] = scipy.sparse.csr_matrix((data, (query_residx, database_residx)), dtype=np.int8, shape=(self.query.n_residues, self.database.n_residues))
+#         return results
 
-    def make_blocks(self, n_blocks):
-        n_frames = self.u.trajectory.n_frames  #len(prot)
-        n_frames_per_block = n_frames // n_blocks
-        blocks = [range(i * n_frames_per_block, (i + 1) * n_frames_per_block) for i in range(n_blocks - 1)]
-        blocks.append(range((n_blocks - 1) * n_frames_per_block, n_frames))
-        return blocks
+#     def make_blocks(self, n_blocks):
+#         n_frames = self.u.trajectory.n_frames  #len(prot)
+#         n_frames_per_block = n_frames // n_blocks
+#         blocks = [range(i * n_frames_per_block, (i + 1) * n_frames_per_block) for i in range(n_blocks - 1)]
+#         blocks.append(range((n_blocks - 1) * n_frames_per_block, n_frames))
+#         return blocks
 
-    def run(self):
-        #self.u.transfer_to_memory(verbose=True)
-        blocks = self.make_blocks(self.n_jobs)
-        with Pool(processes=self.n_jobs) as worker_pool:
-            all_result = worker_pool.map(self.per_block, blocks)
-            worker_pool.close()
-        return all_result
+#     def run(self):
+#         #self.u.transfer_to_memory(verbose=True)
+#         blocks = self.make_blocks(self.n_jobs)
+#         with Pool(processes=self.n_jobs) as worker_pool:
+#             all_result = worker_pool.map(self.per_block, blocks)
+#             worker_pool.close()
+#         return all_result
 
-    def get_contacts(self):
-        """
-        Parameters
-        ---------
-        get_contacts(n_jobs)
-            Return the index pairs for the contacts on each frame.
-        """
-        dirty_contacts = self.run()
-        clean_contacts = {}
-        for block in dirty_contacts:
-            clean_contacts = {**clean_contacts, **block}
-        self.contacts = []
-        for frame in sorted(clean_contacts.keys()):
-            self.contacts.append(clean_contacts[frame])
-        self.contacts = np.array(self.contacts)
+#     def get_contacts(self):
+#         """
+#         Parameters
+#         ---------
+#         get_contacts(n_jobs)
+#             Return the index pairs for the contacts on each frame.
+#         """
+#         dirty_contacts = self.run()
+#         # clean_contacts = {}
+#         # for block in dirty_contacts:
+#         #     clean_contacts = {**clean_contacts, **block}
+#         # self.contacts = []
+#         # for frame in sorted(clean_contacts.keys()):
+#         #     self.contacts.append(clean_contacts[frame])
+#         # self.contacts = np.array(self.contacts)
+#         self.contacts = dirty_contacts

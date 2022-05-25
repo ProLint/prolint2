@@ -12,7 +12,8 @@ UFCC calculates de distance-based contacts between two references.
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
-from .contacts import Contacts, ContactsPar, ContactsMP
+from .contacts import Contacts, ContactsPar
+
 
 
 class MacrosClass(ResidueStringAttr):
@@ -27,10 +28,7 @@ class MacrosClass(ResidueStringAttr):
 class ContactRunner(object):
     def __init__(self):
         self.backend = None
-        self.in_memory = False
         self.n_jobs = -1
-
-
 
 class UFCC(object):
     """Base class for getting topology information. It reads an MDAnalysis Universe
@@ -101,18 +99,10 @@ class UFCC(object):
         ), "the database has to be an AtomGroup"
         if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
             raise ValueError("You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'")
-        if self.runner.backend == 'serial' and self.runner.in_memory == False:
+        if self.runner.backend == 'serial':
             temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
             temp_instance.run(verbose=True)
-        elif self.runner.backend == 'parallel' and self.runner.in_memory == False:
+        elif self.runner.backend == 'parallel':
             temp_instance = ContactsPar(self.atoms.universe, self.query, self.database, self.cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
-        elif self.runner.backend == 'serial' and self.runner.in_memory == True:
-            self.atoms.universe.transfer_to_memory()
-            temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
-            temp_instance.run(verbose=True)
-        elif self.runner.backend == 'parallel' and self.runner.in_memory == True:
-            self.atoms.universe.transfer_to_memory()
-            temp_instance = ContactsMP(self.atoms.universe, self.query, self.database, self.cutoff, self.runner.n_jobs)
-            temp_instance.get_contacts()
         self.contacts = temp_instance.contacts
