@@ -27,8 +27,7 @@ class Contacts(AnalysisBase):
     Class to get the distance-based contacts starting from two AtomGroups.
     """
 
-    def __init__(self, universe, query, database, 
-                cutoff, **kwargs):
+    def __init__(self, universe, query, database, cutoff, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.query = query
@@ -36,14 +35,8 @@ class Contacts(AnalysisBase):
         self.cutoff = cutoff
 
         # to allow for non-sequential resindices
-        self._sorted_protein_resindices = scipy.stats.rankdata(
-            self.query.resindices,
-            method="dense"
-        ) - 1
-        self._sorted_membrane_resindices = scipy.stats.rankdata(
-            self.database.resindices,
-            method="dense"
-        ) - 1
+        self._sorted_protein_resindices = scipy.stats.rankdata(self.query.resindices, method="dense") - 1
+        self._sorted_membrane_resindices = scipy.stats.rankdata(self.database.resindices, method="dense") - 1
 
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
@@ -69,36 +62,38 @@ class Contacts(AnalysisBase):
 
     def _single_frame(self):
         # Get the results and populate the results dictionary
-        pairs = capped_distance(
-            self.query.positions,
-            self.database.positions,
-            max_cutoff=self.cutoff,
-            box=self.database.dimensions,
-            return_distances=False
-        )
-        
+        pairs = capped_distance(self.query.positions,
+                                self.database.positions,
+                                max_cutoff=self.cutoff,
+                                box=self.database.dimensions,
+                                return_distances=False)
+
         # Find unique pairs of residues interacting
         # Currently we have pairs of atoms
-        query_residx, database_residx = np.unique(np.array([[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]), axis=0).T
+        query_residx, database_residx = np.unique(np.array(
+            [[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]),
+                                                  axis=0).T
 
         # store neighbours for this frame
         data = np.ones_like(query_residx)
-        self.contacts[self._frame_index] = scipy.sparse.csr_matrix((data, (query_residx, database_residx)), dtype=np.int8, shape=(self.query.n_residues, self.database.n_residues))
-    
+        self.contacts[self._frame_index] = scipy.sparse.csr_matrix(
+            (data, (query_residx, database_residx)),
+            dtype=np.int8,
+            shape=(self.query.n_residues, self.database.n_residues))
+
     # def _conclude(self):
     #     # OPTIONAL
     #     # Called once iteration on the trajectory is finished.
     #     # Apply normalisation and averaging to results here.
     #     self.result = np.asarray(self.result) / np.sum(self.result)
-        
-        
+
+
 class ContactsPar(ParallelAnalysisBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups.
     """
 
-    def __init__(self, universe, query, database, 
-                cutoff, **kwargs):
+    def __init__(self, universe, query, database, cutoff, **kwargs):
 
         super().__init__(universe.universe.trajectory, (query, database))
         self.query = query
@@ -108,14 +103,8 @@ class ContactsPar(ParallelAnalysisBase):
         self.cutoff = cutoff
 
         # to allow for non-sequential resindices
-        self._sorted_protein_resindices = scipy.stats.rankdata(
-            self.query.resindices,
-            method="dense"
-        ) - 1
-        self._sorted_membrane_resindices = scipy.stats.rankdata(
-            self.database.resindices,
-            method="dense"
-        ) - 1
+        self._sorted_protein_resindices = scipy.stats.rankdata(self.query.resindices, method="dense") - 1
+        self._sorted_membrane_resindices = scipy.stats.rankdata(self.database.resindices, method="dense") - 1
 
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
@@ -130,21 +119,24 @@ class ContactsPar(ParallelAnalysisBase):
 
     def _single_frame(self, ts, atomgroups):
         # Get the results and populate the results dictionary
-        pairs = capped_distance(
-            atomgroups[0].positions,
-            atomgroups[1].positions,
-            max_cutoff=self.cutoff,
-            box=atomgroups[1].dimensions,
-            return_distances=False
-        )
-        
+        pairs = capped_distance(atomgroups[0].positions,
+                                atomgroups[1].positions,
+                                max_cutoff=self.cutoff,
+                                box=atomgroups[1].dimensions,
+                                return_distances=False)
+
         # Find unique pairs of residues interacting
         # Currently we have pairs of atoms
-        query_residx, database_residx = np.unique(np.array([[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]), axis=0).T
+        query_residx, database_residx = np.unique(np.array(
+            [[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]),
+                                                  axis=0).T
 
         # store neighbours for this frame
         data = np.ones_like(query_residx)
-        return (ts.frame, scipy.sparse.csr_matrix((data, (query_residx, database_residx)), dtype=np.int8, shape=(self.query_n_residues, self.database_n_residues)))
-    
+        return (ts.frame,
+                scipy.sparse.csr_matrix((data, (query_residx, database_residx)),
+                                        dtype=np.int8,
+                                        shape=(self.query_n_residues, self.database_n_residues)))
+
     def _conclude(self):
         self.contacts = np.array([l[1] for l in sorted(np.vstack(self._results), key=lambda tup: tup[0])])

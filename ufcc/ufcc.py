@@ -15,7 +15,6 @@ from MDAnalysis.core.topologyattrs import ResidueStringAttr
 from .contacts import Contacts, ContactsPar
 
 
-
 class MacrosClass(ResidueStringAttr):
     attrname = 'macros'
     singular = 'macro'
@@ -26,11 +25,13 @@ class MacrosClass(ResidueStringAttr):
 
 
 class ContactRunner(object):
+
     def __init__(self):
         self.backend = None
         self.n_jobs = -1
         # TODO
         # add funcionalities to run analysis on HPC machines
+
 
 class UFCC(object):
     """Base class for getting topology information. It reads an MDAnalysis Universe
@@ -83,7 +84,7 @@ class UFCC(object):
         elif isinstance(selection, str):
             selection = self.atoms.select_atoms(selection)
         return selection.select_atoms(add_filter)
-    
+
     def select_query(self, selection='all', add_filter='all'):
         self.query = self.get_AG(selection, add_filter)
 
@@ -100,7 +101,9 @@ class UFCC(object):
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
         if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
-            raise ValueError("You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'")
+            raise ValueError(
+                "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
+            )
         if self.runner.backend == 'serial':
             temp_instance = Contacts(self.atoms.universe, self.query, self.database, self.cutoff)
             temp_instance.run(verbose=True)
