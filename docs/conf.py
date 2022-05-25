@@ -23,8 +23,7 @@ import ufcc
 # -- Project information -----------------------------------------------------
 
 project = 'UFCC'
-copyright = ("2022, Daniel P. Ramirez & Besian I. Sejdiu. Project structure based on the "
-             "Computational Molecular Science Python Cookiecutter version 1.6")
+copyright = ("2022, Daniel P. Ramirez & Besian I. Sejdiu")
 author = 'Daniel P. Ramirez & Besian I. Sejdiu'
 
 # The short X.Y version
@@ -113,6 +112,7 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+html_logo = '_static/logo.png'
 
 # -- Options for HTMLHelp output ---------------------------------------------
 

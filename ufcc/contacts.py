@@ -1,12 +1,15 @@
-"""
-Ultr-Fast Contacts Calculation (UFCC)
-=======================================
-
+r"""Contacts serial class --- :mod:`ufcc.Contacts`
+======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
 :Copyright: MIT License
 
 UFCC calculates de distance-based contacts between two references.
+
+The class and its methods
+-------------------------
+.. autoclass:: Contacts
+    :members:
 """
 
 import numpy as np

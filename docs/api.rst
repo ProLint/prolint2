@@ -1,8 +1,12 @@
-API Documentation
-=================
+=====================================
+UFCC's API Documentation
+=====================================
 
-.. autosummary::
-   :toctree: autosummary
+See the following pages for the full API of each tool:
 
-   ufcc.UFCC
-   ufcc.Contacts
+.. toctree::
+   :maxdepth: 1
+
+   api/ufcc
+   api/contacts
+   
