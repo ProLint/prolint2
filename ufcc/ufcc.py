@@ -1,12 +1,23 @@
-# Daniel P. Ramirez & Besian I. Sejdiu
-# Prolint: A tool to analyze and visualize lipid-protein interactions.
-#
+r"""UFCC base class --- :mod:`ufcc.UFCC`
+======================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
 
-import os
+UFCC calculates de distance-based contacts between two references.
+
+The class and its methods
+-------------------------
+.. autoclass:: UFCC
+    :members:
+"""
+
+
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
-from .contacts import Contacts
+from .serial_contacts import SerialContacts
+from .parallel_contacts import ParallelContacts
 
 
 class MacrosClass(ResidueStringAttr):
@@ -16,6 +27,15 @@ class MacrosClass(ResidueStringAttr):
     @staticmethod
     def _gen_initial_values(n_atoms, n_residues, n_segments):
         return np.array(['other'] * n_residues, dtype=object)
+
+
+class ContactRunner(object):
+
+    def __init__(self):
+        self.backend = None
+        self.n_jobs = -1
+        # TODO
+        # add funcionalities to run analysis on HPC machines
 
 
 class UFCC(object):
@@ -36,6 +56,8 @@ class UFCC(object):
         self.list_macros = list(np.unique(self.atoms.residues.macros))
         self.query = self.atoms.select_atoms('')  # returns empty atomgroup
         self.database = self.atoms.select_atoms('')  # returns empty atomgroup
+        self.runner = ContactRunner()
+        self.cutoff = 7
         self.contacts = None
 
     def get_AG(self, selection, add_filter):
@@ -67,14 +89,14 @@ class UFCC(object):
         elif isinstance(selection, str):
             selection = self.atoms.select_atoms(selection)
         return selection.select_atoms(add_filter)
-    
+
     def select_query(self, selection='all', add_filter='all'):
         self.query = self.get_AG(selection, add_filter)
 
     def select_database(self, selection='all', add_filter='all'):
         self.database = self.get_AG(selection, add_filter)
 
-    def get_contacts(self, n_jobs=os.cpu_count()):
+    def get_contacts(self):
         assert isinstance(
             self.query,
             (mda.core.groups.AtomGroup),
@@ -83,4 +105,14 @@ class UFCC(object):
             self.database,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
-        self.contacts = Contacts(self.atoms.universe, self.query, self.database).get_contacts(n_jobs)
+        if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
+            raise ValueError(
+                "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
+            )
+        if self.runner.backend == 'serial':
+            temp_instance = SerialContacts(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance.run(verbose=True)
+        elif self.runner.backend == 'parallel':
+            temp_instance = ParallelContacts(self.atoms.universe, self.query, self.database, self.cutoff)
+            temp_instance.run(n_jobs=self.runner.n_jobs)
+        self.contacts = temp_instance.contacts

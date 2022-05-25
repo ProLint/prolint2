@@ -1,12 +1,19 @@
 """
-UFCC
-Ultrafast contacts calculation.
+Ultr-Fast Contacts Calculation (UFCC)
+=======================================
+
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+
+UFCC calculates de distance-based contacts between two references.
 """
+
 import sys
 from setuptools import setup, find_packages
 import versioneer
 
-short_description = "Ultrafast contacts calculation.".split("\n")[0]
+short_description = "Ultra-Fast Contacts Calculation.".split("\n")[0]
 
 # from https://github.com/pytest-dev/pytest-runner#conditional-requirement
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
@@ -55,5 +62,4 @@ setup(
 
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,
-
 )
