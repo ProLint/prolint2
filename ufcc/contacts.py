@@ -188,7 +188,6 @@ class Contacts(object):
             temp_instance = ParallelContacts(self.query.AG.universe, self.query.AG, self.database.AG, cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
         self.contacts = temp_instance.contacts
-        self.counts = self.count_contacts()
 
     def save(self, path='contacts.pkl'):
         # store the object for later usage
@@ -244,15 +243,14 @@ class Contacts(object):
                          fill_value=range(self.query.AG.universe.trajectory.n_frames))
         frames = frames.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
 
-        all_counts = all_counts.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames,
-                                        len(count_by_labels))
+        all_counts = all_counts.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames, len(count_by_labels))
         total_counts = np.sum(all_counts, axis=1)
 
         # Create the dataframe
-        counts = pd.DataFrame(data=labels, columns=["Label"])
+        counts = pd.DataFrame(data=labels, columns=["Residue"])
 
-        counts["Resindex"] = resindices
-        counts["Frame"] = frames
+        counts["ResID"] = resindices
+        counts["FrameID"] = frames
 
         for count_by_label in count_by_labels:
             counts[f"n{count_by_label}"] = all_counts.T[type_index[count_by_label]]
@@ -263,7 +261,7 @@ class Contacts(object):
         for column in counts.columns[1:]:
             counts[column] = pd.to_numeric(counts[column])
 
-        return counts
+        self.counts = counts
 
     def __str__(self):
         if not isinstance(self.contacts, np.ndarray):
