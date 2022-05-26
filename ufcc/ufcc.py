@@ -12,7 +12,6 @@ The class and its methods
     :members:
 """
 
-
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
@@ -47,7 +46,7 @@ class UFCC(object):
         self.query = QueryProteins(self.atoms.universe)
         self.database = MembraneDatabase(self.atoms.universe)
         self.contacts = Contacts(self.query, self.database)
-   
+
     def __str__(self):
         return "Base class for the contacts routines."
 
@@ -56,11 +55,12 @@ class UFCC(object):
 
 
 class BasicGroup(object):
+
     def __init__(self, universe):
         self.AG = None
         self.universe = universe
 
-    def select(self, selection='all', add_filter = 'all'):
+    def select(self, selection='all', add_filter='all'):
         """
         Cast an MDAnalysis.Atom, MDAnalysis.Residue, or MDAnalysis.ResidueGroup, or str syntax to AtomGroup.
         Parameters
@@ -93,9 +93,10 @@ class BasicGroup(object):
 
 class MembraneDatabase(BasicGroup):
     """Class for the membrane group."""
+
     def __init__(self, universe):
         super().__init__(universe)
-    
+
     def lipid_types(self):
         """Get the names of all lipids that will be analyzed.
         Returns
