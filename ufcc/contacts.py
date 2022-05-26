@@ -11,6 +11,7 @@ The class and its methods
 """
 
 import numpy as np
+import pickle
 import scipy.stats
 import scipy.sparse
 import MDAnalysis as mda
@@ -185,6 +186,14 @@ class Contacts(object):
             temp_instance.run(n_jobs=self.runner.n_jobs)
         self.contacts = temp_instance.contacts
 
+    def save(self, path='contacts.pkl'):
+        # store the object for later usage
+        with open(path, 'wb') as f:
+            pickle.dump(self.contacts, f)
+
+    def load(self, path='contacts.pkl'):
+        with open(path, 'rb') as f:
+            self.contacts = pickle.load(f)
 
     def __str__(self):
         if not isinstance(self.contacts, np.ndarray):
