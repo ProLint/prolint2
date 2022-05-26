@@ -231,9 +231,12 @@ class Contacts(object):
             r, t = unique  # reference index (r) and type index (t)
             all_counts[r, frame_index, t] = counts
 
-        # Assemble data for the DataFrame
-        labels = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.resnames[:, np.newaxis])
+        labels = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.macros[:, np.newaxis])
         labels = labels.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
+
+        # Assemble data for the DataFrame
+        residue_labels = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.resnames[:, np.newaxis])
+        residue_labels = residue_labels.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
         # labels = np.array([list(count_by_labels)[type_index[frame_index]] for lipid in count_by for frame_index in lipid])
 
         resindices = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.resindices[:, np.newaxis])
@@ -247,8 +250,10 @@ class Contacts(object):
         total_counts = np.sum(all_counts, axis=1)
 
         # Create the dataframe
-        counts = pd.DataFrame(data=labels, columns=["Residue"])
+        # counts = pd.DataFrame(data=residue_labels, columns=["Residue"])
+        counts = pd.DataFrame(data=labels, columns=["Protein"])
 
+        counts["Residue"] = residue_labels
         counts["ResID"] = resindices
         counts["FrameID"] = frames
 
@@ -258,7 +263,7 @@ class Contacts(object):
         counts["Total"] = total_counts
 
         # make every column except the label take on integer values
-        for column in counts.columns[1:]:
+        for column in counts.columns[2:]:
             counts[column] = pd.to_numeric(counts[column])
 
         self.counts = counts
