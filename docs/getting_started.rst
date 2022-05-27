@@ -92,7 +92,7 @@ as you can use any of the labels in target_system.query.list_proteins().
 Getting the contacts:
 ---------------------
 All the information of the contacts between the **query** and the **database** will be managed using the 
-**target_system.contacts** of the **Contacts** class that is automatically initializated at the beguinning.
+**target_system.contacts** object of the **Contacts** class that is automatically initializated at the beguinning.
 
 .. code-block:: python
 
@@ -102,7 +102,7 @@ All the information of the contacts between the **query** and the **database** w
                                     # Otherwise it is a numpy array of scipy.sparse matrices.
 
 Previous to the computation of the contacts you can define the backend that you prefer using the 
-the **runner** attribute of the **Contacts** class, that is an instance of the **Runner** class.
+the **runner** attribute of the **Contacts** class, which is an instance of the **Runner** class.
 For now the **Runner** class has only two attributes *backend* and *n_jobs*, but the idea is to make 
 it more complex to be able to configure the *distributed* scheduler of **Dask** to run parallel jobs 
 on remote machines.
