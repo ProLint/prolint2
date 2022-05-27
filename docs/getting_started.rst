@@ -127,16 +127,18 @@ You can save/load contacts information using the **save()** and **load()** metho
 .. code-block:: python
 
     target_system.contacts.save('contacts.pkl') # this will save a pkl file with the contacts information 
-                                                # stored in target_system.contacts.contacts
+                                                # stored in target_system.contacts.contacts (useful when 
+                                                # you want to use the contacts information for later).
 
-    target_system.contacts.save('contacts.pkl') # this will load the contacts information in a pkl file  
-                                                # to target_system.contacts.contacts
+    target_system.contacts.load('old_contacts.pkl') # this will load the contacts information in a pkl file  
+                                                # to target_system.contacts.contacts (useful when you have
+                                                # precomputed contacts information).
 
 
 Counting contacts:
 -------------------
-To count the contacts from the **numpy array of scipy.sparse matrices** stored in *target_system.contacts.contacts*
-you can use **count_contacts()** method that populates the **counts** attribute.
+To count the contacts from the **numpy array of scipy.sparse matrices** stored in the *contacts* attribute
+you can use the **count_contacts()** method, which populates the *counts* attribute.
 
 .. code-block:: python
 
