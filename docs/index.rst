@@ -40,18 +40,25 @@ Basic example:
 ==============
 .. code-block:: python
 
-      import ufcc
+      # for serial contacts calculation
+      from ufcc import UFCC
 
-      target_system = ufcc.UFCC(structure.gro, trajectory.xtc)
-      
-      target_system.select_query('protein')
-      target_system.select_database('not protein')
-      target_system.cutoff = 7  
-      
-      target_system.runner.backend = 'serial'  # or 'parallel'
-      target_system.get_contacts()
+      target_system = UFCC('structure.gro', 'trajectory.xtc') 
 
-You can find more details on how to use UFCC in the #TODO# (link to the Usage page).
+      target_system.contacts.compute()
+      target_system.contacts.count_contacts()
+
+      
+      # for parallel contacts calculation
+      from ufcc import UFCC
+
+      target_system = UFCC('structure.gro', 'trajectory.xtc') 
+      target.contacts.runner.backend = 'parallel'
+      
+      target_system.contacts.compute()
+      target_system.contacts.count_contacts()
+
+You can find more details on how to use UFCC in the **TODO** (link to the Usage page).
 
 .. Contents
 .. ========

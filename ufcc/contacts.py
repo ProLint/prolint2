@@ -150,7 +150,7 @@ class ParallelContacts(ParallelAnalysisBase):
 class Runner(object):
 
     def __init__(self):
-        self.backend = None
+        self.backend = 'serial'
         self.n_jobs = -1
         # TODO
         # add funcionalities to run analysis on HPC machines
@@ -270,12 +270,12 @@ class Contacts(object):
 
     def __str__(self):
         if not isinstance(self.contacts, np.ndarray):
-            return "<prolintpy.Contacts containing 0 contacts>"
+            return "<ufcc.Contacts containing 0 contacts>"
         else:
-            return "<prolintpy.Contacts containing {} contacts>".format(len(self.contacts))
+            return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
         if not isinstance(self.contacts, np.ndarray):
-            return "<prolintpy.Contacts containing 0 contacts>"
+            return "<ufcc.Contacts containing 0 contacts>"
         else:
-            return "<prolintpy.Contacts containing {} contacts>".format(len(self.contacts))
+            return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))

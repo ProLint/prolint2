@@ -163,15 +163,15 @@ class MembraneDatabase(BasicGroup):
 
     def __str__(self):
         if not isinstance(self.AG, mda.core.groups.AtomGroup):
-            return "<prolintpy.MembraneDatabase containing 0 atoms>"
+            return "<ufcc.MembraneDatabase containing 0 atoms>"
         else:
-            return "<prolintpy.MembraneDatabase containing {} atoms>".format(self.AG.n_atoms)
+            return "<ufcc.MembraneDatabase containing {} atoms>".format(self.AG.n_atoms)
 
     def __repr__(self):
         if not isinstance(self.AG, mda.core.groups.AtomGroup):
-            return "<prolintpy.MembraneDatabase containing 0 atoms>"
+            return "<ufcc.MembraneDatabase containing 0 atoms>"
         else:
-            return "<prolintpy.MembraneDatabase containing {} atoms>".format(self.AG.n_atoms)
+            return "<ufcc.MembraneDatabase containing {} atoms>".format(self.AG.n_atoms)
 
 
 class QueryProteins(BasicGroup):
@@ -192,12 +192,12 @@ class QueryProteins(BasicGroup):
 
     def __str__(self):
         if not isinstance(self.AG, mda.core.groups.AtomGroup):
-            return "<prolintpy.QueryProteins containing 0 atoms>"
+            return "<ufcc.QueryProteins containing 0 atoms>"
         else:
-            return "<prolintpy.QueryProteins containing {} atoms>".format(self.AG.n_atoms)
+            return "<ufcc.QueryProteins containing {} atoms>".format(self.AG.n_atoms)
 
     def __repr__(self):
         if not isinstance(self.AG, mda.core.groups.AtomGroup):
-            return "<prolintpy.QueryProteins containing 0 atoms>"
+            return "<ufcc.QueryProteins containing 0 atoms>"
         else:
-            return "<prolintpy.QueryProteins containing {} atoms>".format(self.AG.n_atoms)
+            return "<ufcc.QueryProteins containing {} atoms>".format(self.AG.n_atoms)
