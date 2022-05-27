@@ -8,5 +8,4 @@ See the following pages for the full API of each tool:
    :maxdepth: 1
 
    api/ufcc
-   api/serial_contacts
-   api/parallel_contacts
+   api/contacts

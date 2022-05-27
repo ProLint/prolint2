@@ -1,4 +1,4 @@
-r"""Contacts serial class --- :mod:`ufcc.SerialContacts`
+r"""Contacts serial class --- :mod:`ufcc.Contacts`
 ======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
@@ -258,7 +258,7 @@ class Contacts(object):
         counts["FrameID"] = frames
 
         for count_by_label in count_by_labels:
-            counts[f"n{count_by_label}"] = all_counts.T[type_index[count_by_label]]
+            counts[f"# {count_by_label}"] = all_counts.T[type_index[count_by_label]]
 
         counts["Total"] = total_counts
 

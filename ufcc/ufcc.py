@@ -8,8 +8,6 @@ UFCC calculates de distance-based contacts between two references.
 
 The class and its methods
 -------------------------
-.. autoclass:: UFCC
-    :members:
 """
 
 import numpy as np
@@ -36,12 +34,28 @@ class UFCC(object):
     universe : MDAnalysis universe with all different kind of topologies
     """
 
-    def __init__(self, structure, trajectory):
+    def __init__(self, structure, trajectory, add_lipid_types = []):
         self.atoms = mda.Universe(structure, trajectory).atoms
         self.residues = self.atoms.residues
         self.atoms.universe.add_TopologyAttr('macros')
+
+        lipid_types = ['POPC', 'DPPC', 'DOPC', 'CHOL', 'CHL1', 'POPS', 'POPE']
+        lipid_types = lipid_types + add_lipid_types
+        not_protein_restypes = np.unique(self.atoms.select_atoms('not protein').residues.resnames)
+        membrane_restypes = []
+        for type in lipid_types:
+            if type in not_protein_restypes:
+                membrane_restypes.append('resname ' + type)
+        if len(membrane_restypes) == 1:
+            membrane_sel = membrane_restypes[0]
+        elif len(membrane_restypes) > 1:
+            membrane_sel = membrane_restypes[0]
+            for type in membrane_restypes[1:]:
+                membrane_sel = membrane_sel + ' or ' + type
+        else:
+            print('There are not lipid residues in your system')
+
         protein_sel = 'protein'
-        membrane_sel = 'not protein'
         if len(self.atoms.select_atoms(protein_sel).segments) > 1 and self.atoms.select_atoms(protein_sel).segments.n_atoms == self.atoms.select_atoms(protein_sel).n_atoms:
             for segment_idx in range(len(self.atoms.select_atoms(protein_sel).segments)):
                 self.atoms.select_atoms(protein_sel).segments[segment_idx].residues.macros = 'protein' + str(segment_idx)
