@@ -19,6 +19,7 @@ dependencies:
   - numpy
 
     # Pip-only installs
-  #- pip:
+  - pip:
+     - pmda
   #  - codecov
 
