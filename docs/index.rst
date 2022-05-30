@@ -29,13 +29,6 @@ The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based
 ..  figure:: _static/logo.png
     :align: center
 
-Overview:
-=========
-**UFCC** derives several interactive plots for analysing lipid-protein interactions.
-To suit the needs of your system, we offer flexible atom selection that will
-enable you to use the most convenient `AtomGroups` to extract the contacts from your
-MD simulations!
-
 Basic example:
 ==============
 .. code-block:: python
