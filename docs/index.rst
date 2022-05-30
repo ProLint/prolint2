@@ -1,5 +1,5 @@
 =========================================================
-Welcome to UFCC's documentation!
+Welcome to the UFCC's documentation!
 =========================================================
 
 **Last updated:** |today|
@@ -68,7 +68,8 @@ You can find more details on how to use UFCC in the **TODO** (link to the Usage 
    :caption: Contents:
    
    source/intro.rst
-   getting_started
+   source/installation.rst
+   source/getting_started.rst
    api
    source/contributing.rst
 

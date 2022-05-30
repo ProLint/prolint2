@@ -1,13 +1,8 @@
-r"""Contacts serial class --- :mod:`ufcc.Contacts`
+r"""Contacts serial class --- :mod:`ufcc.contacts`
 ======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
 :Copyright: MIT License
-
-UFCC calculates de distance-based contacts between two references.
-
-The class and its methods
--------------------------
 """
 
 import pickle
@@ -20,11 +15,6 @@ import MDAnalysis as mda
 from MDAnalysis.lib.distances import capped_distance
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
-
-# import logging
-# MDAnalysis.start_logging()
-
-# logger = logging.getLogger("MDAnalysis.MDAKit.membrane_curvature")
 
 
 class SerialContacts(AnalysisBase):
@@ -49,17 +39,6 @@ class SerialContacts(AnalysisBase):
 
         if self.cutoff <= 0:
             raise ValueError("The cutoff must be greater than 0.")
-
-        # # Apply wrapping coordinates
-        # if not self.wrap:
-        #     # Warning
-        #     msg = (" `wrap == False` may result in inaccurate calculation "
-        #            "of membrane curvature. Surfaces will be derived from "
-        #            "a reduced number of atoms. \n "
-        #            " Ignore this warning if your trajectory has "
-        #            " rotational/translational fit rotations! ")
-        #     warnings.warn(msg)
-        #     logger.warn(msg)
 
     def _prepare(self):
         # Initialize empty np.array with results
@@ -170,11 +149,11 @@ class Contacts(object):
 
     def compute(self, cutoff=7):
         assert isinstance(
-            self.query.AG,
+            self.query.selected,
             (mda.core.groups.AtomGroup),
         ), "the query has to be an AtomGroup"
         assert isinstance(
-            self.database.AG,
+            self.database.selected,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
         if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
@@ -182,10 +161,10 @@ class Contacts(object):
                 "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
             )
         if self.runner.backend == 'serial':
-            temp_instance = SerialContacts(self.query.AG.universe, self.query.AG, self.database.AG, cutoff)
+            temp_instance = SerialContacts(self.query.selected.universe, self.query.selected, self.database.selected, cutoff)
             temp_instance.run(verbose=True)
         elif self.runner.backend == 'parallel':
-            temp_instance = ParallelContacts(self.query.AG.universe, self.query.AG, self.database.AG, cutoff)
+            temp_instance = ParallelContacts(self.query.selected.universe, self.query.selected, self.database.selected, cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
         self.contacts = temp_instance.contacts
 
@@ -207,14 +186,14 @@ class Contacts(object):
 
         # Use lipid resnames to distinguish lipids
         count_by = np.full(
-            (self.database.AG.n_residues, self.database.AG.universe.trajectory.n_frames),
-            fill_value=self.database.AG.residues.resnames[:, np.newaxis],
+            (self.database.selected.n_residues, self.database.selected.universe.trajectory.n_frames),
+            fill_value=self.database.selected.residues.resnames[:, np.newaxis],
         )
-        count_by_labels = {label: index for index, label in enumerate(np.unique(self.database.AG.residues.resnames))}
+        count_by_labels = {label: index for index, label in enumerate(np.unique(self.database.selected.residues.resnames))}
 
         # create output array
         all_counts = np.full(
-            (self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames, len(count_by_labels)),
+            (self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames, len(count_by_labels)),
             fill_value=0,
             dtype=np.uint8  # count can't be negative, and no lipid will have more than 255 neighbours
         )
@@ -223,7 +202,7 @@ class Contacts(object):
         type_index = {value: index for index, value in enumerate(count_by_labels)}
 
         # Get counts at each frame
-        for frame_index, contacts in tqdm(enumerate(self.contacts), total=self.query.AG.universe.trajectory.n_frames):
+        for frame_index, contacts in tqdm(enumerate(self.contacts), total=self.query.selected.universe.trajectory.n_frames):
 
             ref, neigh = contacts.nonzero()
             unique, counts = np.unique([ref, [type_index[t] for t in count_by[neigh, frame_index]]], axis=1, return_counts=True)
@@ -231,22 +210,22 @@ class Contacts(object):
             r, t = unique  # reference index (r) and type index (t)
             all_counts[r, frame_index, t] = counts
 
-        labels = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.macros[:, np.newaxis])
-        labels = labels.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
+        labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames), fill_value=self.query.selected.residues.macros[:, np.newaxis])
+        labels = labels.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
         # Assemble data for the DataFrame
-        residue_labels = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.resnames[:, np.newaxis])
-        residue_labels = residue_labels.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
+        residue_labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames), fill_value=self.query.selected.residues.resnames[:, np.newaxis])
+        residue_labels = residue_labels.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
         # labels = np.array([list(count_by_labels)[type_index[frame_index]] for lipid in count_by for frame_index in lipid])
 
-        resindices = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames), fill_value=self.query.AG.residues.resindices[:, np.newaxis])
-        resindices = resindices.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
+        resindices = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames), fill_value=self.query.selected.residues.resindices[:, np.newaxis])
+        resindices = resindices.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
-        frames = np.full((self.query.AG.n_residues, self.query.AG.universe.trajectory.n_frames),
-                         fill_value=range(self.query.AG.universe.trajectory.n_frames))
-        frames = frames.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames)
+        frames = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+                         fill_value=range(self.query.selected.universe.trajectory.n_frames))
+        frames = frames.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
-        all_counts = all_counts.reshape(self.query.AG.n_residues * self.query.AG.universe.trajectory.n_frames, len(count_by_labels))
+        all_counts = all_counts.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames, len(count_by_labels))
         total_counts = np.sum(all_counts, axis=1)
 
         # Create the dataframe
