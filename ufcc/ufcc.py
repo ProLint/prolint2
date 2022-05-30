@@ -87,7 +87,7 @@ class UFCC(object):
         Cantacts object to run and analyze the distance-based contacts results.
     """
 
-    def __init__(self, structure, trajectory, add_lipid_types = []):
+    def __init__(self, structure, trajectory, add_lipid_types=[]):
         # wrapping some basic MDAnalysis groups
         self.atoms = mda.Universe(structure, trajectory).atoms
         self.residues = self.atoms.residues
@@ -112,10 +112,12 @@ class UFCC(object):
 
         # adding the macros to the protein residues
         protein_sel = 'protein'
-        # First possibility: we can access segment(chain) information from the Universe. 
-        if len(self.atoms.select_atoms(protein_sel).segments) > 1 and self.atoms.select_atoms(protein_sel).segments.n_atoms == self.atoms.select_atoms(protein_sel).n_atoms:
+        # First possibility: we can access segment(chain) information from the Universe.
+        if len(self.atoms.select_atoms(protein_sel).segments) > 1 and self.atoms.select_atoms(
+                protein_sel).segments.n_atoms == self.atoms.select_atoms(protein_sel).n_atoms:
             for segment_idx in range(len(self.atoms.select_atoms(protein_sel).segments)):
-                self.atoms.select_atoms(protein_sel).segments[segment_idx].residues.macros = 'protein' + str(segment_idx)
+                self.atoms.select_atoms(
+                    protein_sel).segments[segment_idx].residues.macros = 'protein' + str(segment_idx)
         # Second possibility: the assumption here is that proteins are ordered and the start residue of the next
         # protein is always smaller than the last residue of the previous protein.
         else:
@@ -127,15 +129,16 @@ class UFCC(object):
             fi = 0
             for li, p in enumerate(resseq):
                 if p < p0:
-                    fi_li.append((fi, li-1))
+                    fi_li.append((fi, li - 1))
                     fi = li
                 p0 = p
             fi_li.append((fi, li))
-            
+
             for idx, values in enumerate(fi_li):
                 fi = values[0]
                 li = values[1]
-                self.atoms.select_atoms(protein_sel).residues[list(range(fi, li+1))].residues.macros = 'protein' + str(idx)
+                self.atoms.select_atoms(protein_sel).residues[list(range(fi, li +
+                                                                         1))].residues.macros = 'protein' + str(idx)
 
         # TODO
         # Add merge chains and options to change the name of the proteins.
@@ -172,7 +175,6 @@ class BasicGroup(object):
     def __init__(self, whole):
         self.selected = whole
         self.whole = whole
-
 
     def select(self, selection='all'):
         """

@@ -15,10 +15,10 @@
 # Incase the project was not installed
 import os
 import sys
-sys.path.insert(0, os.path.abspath('..'))           
+
+sys.path.insert(0, os.path.abspath('..'))
 
 import ufcc
-
 
 # -- Project information -----------------------------------------------------
 
@@ -30,7 +30,6 @@ author = 'Daniel P. Ramirez & Besian I. Sejdiu'
 version = ''
 # The full version, including alpha/beta/rc tags
 release = ''
-
 
 # -- General configuration ---------------------------------------------------
 
@@ -83,7 +82,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'default'
 
-
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -119,7 +117,6 @@ html_logo = '_static/logo.png'
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'ufccdoc'
 
-
 # -- Options for LaTeX output ------------------------------------------------
 
 latex_elements = {
@@ -144,20 +141,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ufcc.tex', 'UFCC Documentation',
-     'ufcc', 'manual'),
+    (master_doc, 'ufcc.tex', 'UFCC Documentation', 'ufcc', 'manual'),
 ]
-
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'ufcc', 'UFCC Documentation',
-     [author], 1)
-]
-
+man_pages = [(master_doc, 'ufcc', 'UFCC Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -165,10 +156,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ufcc', 'UFCC Documentation',
-     author, 'ufcc', 'Ultrafast contacts calculation.',
-     'Miscellaneous'),
+    (master_doc, 'ufcc', 'UFCC Documentation', author, 'ufcc', 'Ultrafast contacts calculation.', 'Miscellaneous'),
 ]
-
 
 # -- Extension configuration -------------------------------------------------

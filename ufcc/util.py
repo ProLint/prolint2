@@ -2,7 +2,7 @@
 # Copyright (c) 2017 The MDAnalysis Development Team and contributors
 #
 # Released under the GNU Public Licence, v2 or any higher version
-# 
+#
 # Modified by Daniel P. Ramirez to include Progress Bar and fix Numpy deprecation warning.
 """Utility functions --- :mod:`pmda.util`
 =========================================
@@ -48,6 +48,7 @@ class timeit(object):
     :func:`time.time`
 
     """
+
     def __enter__(self):
         self._start_time = time.time()
         return self
@@ -172,8 +173,7 @@ def make_balanced_slices(n_frames, n_blocks, start=None, stop=None, step=None):
     #          last frame 21 instead of 20
     bsizes *= step
     idx = np.cumsum(np.concatenate(([start], bsizes)))
-    slices = [slice(bstart, bstop, step)
-              for bstart, bstop in zip(idx[:-1], idx[1:])]
+    slices = [slice(bstart, bstop, step) for bstart, bstop in zip(idx[:-1], idx[1:])]
 
     # fix very last stop index: make sure it's within trajectory range or None
     # (no really critical because the slices will work regardless, but neater)
@@ -275,8 +275,8 @@ def second_order_moments(S1, S2):
     """
 
     T = S1[0] + S2[0]
-    mu = (S1[0]*S1[1] + S2[0]*S2[1])/T
-    M = S1[2] + S2[2] + (S1[0] * S2[0]/T) * (S2[1] - S1[1])**2
+    mu = (S1[0] * S1[1] + S2[0] * S2[1]) / T
+    M = S1[2] + S2[2] + (S1[0] * S2[0] / T) * (S2[1] - S1[1])**2
     S = T, mu, M
 
     return S

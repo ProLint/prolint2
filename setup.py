@@ -25,7 +25,6 @@ try:
 except:
     long_description = None
 
-
 setup(
     # Self-descriptive entries which should always be present
     name='ufcc',
@@ -54,11 +53,13 @@ setup(
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     url='https://github.com/ProLint',  # Website
     # install_requires=[],              # Required packages, pulls from pip if needed; do not use for Conda deployment
-    platforms=['Linux',
-               'Mac OS-X',
-            #    'Unix',
-               'Windows'],            # Valid platforms your code works on, adjust to your flavor
-    python_requires=">=3.7",          # Python version restrictions
+    platforms=[
+        'Linux',
+        'Mac OS-X',
+        #    'Unix',
+        'Windows'
+    ],  # Valid platforms your code works on, adjust to your flavor
+    python_requires=">=3.7",  # Python version restrictions
 
     # Manual control if final package is compressible or not, set False to prevent the .egg from being made
     # zip_safe=False,

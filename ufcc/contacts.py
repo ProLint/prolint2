@@ -161,10 +161,12 @@ class Contacts(object):
                 "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
             )
         if self.runner.backend == 'serial':
-            temp_instance = SerialContacts(self.query.selected.universe, self.query.selected, self.database.selected, cutoff)
+            temp_instance = SerialContacts(self.query.selected.universe, self.query.selected, self.database.selected,
+                                           cutoff)
             temp_instance.run(verbose=True)
         elif self.runner.backend == 'parallel':
-            temp_instance = ParallelContacts(self.query.selected.universe, self.query.selected, self.database.selected, cutoff)
+            temp_instance = ParallelContacts(self.query.selected.universe, self.query.selected, self.database.selected,
+                                             cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
         self.contacts = temp_instance.contacts
 
@@ -189,7 +191,10 @@ class Contacts(object):
             (self.database.selected.n_residues, self.database.selected.universe.trajectory.n_frames),
             fill_value=self.database.selected.residues.resnames[:, np.newaxis],
         )
-        count_by_labels = {label: index for index, label in enumerate(np.unique(self.database.selected.residues.resnames))}
+        count_by_labels = {
+            label: index
+            for index, label in enumerate(np.unique(self.database.selected.residues.resnames))
+        }
 
         # create output array
         all_counts = np.full(
@@ -202,30 +207,39 @@ class Contacts(object):
         type_index = {value: index for index, value in enumerate(count_by_labels)}
 
         # Get counts at each frame
-        for frame_index, contacts in tqdm(enumerate(self.contacts), total=self.query.selected.universe.trajectory.n_frames):
+        for frame_index, contacts in tqdm(enumerate(self.contacts),
+                                          total=self.query.selected.universe.trajectory.n_frames):
 
             ref, neigh = contacts.nonzero()
-            unique, counts = np.unique([ref, [type_index[t] for t in count_by[neigh, frame_index]]], axis=1, return_counts=True)
+            unique, counts = np.unique([ref, [type_index[t] for t in count_by[neigh, frame_index]]],
+                                       axis=1,
+                                       return_counts=True)
 
             r, t = unique  # reference index (r) and type index (t)
             all_counts[r, frame_index, t] = counts
 
-        labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames), fill_value=self.query.selected.residues.macros[:, np.newaxis])
+        labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+                         fill_value=self.query.selected.residues.macros[:, np.newaxis])
         labels = labels.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
         # Assemble data for the DataFrame
-        residue_labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames), fill_value=self.query.selected.residues.resnames[:, np.newaxis])
-        residue_labels = residue_labels.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
+        residue_labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+                                 fill_value=self.query.selected.residues.resnames[:, np.newaxis])
+        residue_labels = residue_labels.reshape(self.query.selected.n_residues *
+                                                self.query.selected.universe.trajectory.n_frames)
         # labels = np.array([list(count_by_labels)[type_index[frame_index]] for lipid in count_by for frame_index in lipid])
 
-        resindices = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames), fill_value=self.query.selected.residues.resindices[:, np.newaxis])
-        resindices = resindices.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
+        resindices = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+                             fill_value=self.query.selected.residues.resindices[:, np.newaxis])
+        resindices = resindices.reshape(self.query.selected.n_residues *
+                                        self.query.selected.universe.trajectory.n_frames)
 
         frames = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
                          fill_value=range(self.query.selected.universe.trajectory.n_frames))
         frames = frames.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
-        all_counts = all_counts.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames, len(count_by_labels))
+        all_counts = all_counts.reshape(
+            self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames, len(count_by_labels))
         total_counts = np.sum(all_counts, axis=1)
 
         # Create the dataframe

@@ -2,7 +2,7 @@
 # Copyright (c) 2017 The MDAnalysis Development Team and contributors
 #
 # Released under the GNU Public Licence, v2 or any higher version
-# 
+#
 # Modified by Daniel P. Ramirez to include Progress Bar and fix Numpy deprecation warning.
 """
 Parallel Analysis building blocks --- :mod:`pmda.parallel`
@@ -29,15 +29,12 @@ import numpy as np
 from .util import timeit, make_balanced_slices
 
 
-
 class Timing(object):
     """
     store various timeing results of obtained during a parallel analysis run
     """
 
-    def __init__(self, io, compute, total, universe, prepare,
-                 conclude, wait=None, io_block=None,
-                 compute_block=None):
+    def __init__(self, io, compute, total, universe, prepare, conclude, wait=None, io_block=None, compute_block=None):
         self._io = io
         self._io_block = io_block
         self._compute = compute
@@ -284,12 +281,7 @@ class ParallelAnalysisBase(object):
         """
         raise NotImplementedError
 
-    def run(self,
-            start=None,
-            stop=None,
-            step=None,
-            n_jobs=1,
-            n_blocks=None):
+    def run(self, start=None, stop=None, step=None, n_jobs=1, n_blocks=None):
         """Perform the calculation
 
         Parameters
@@ -339,17 +331,15 @@ class ParallelAnalysisBase(object):
                 n_blocks = len(scheduler.ncores())
             else:
                 n_blocks = 1
-                warnings.warn(
-                    "Couldn't guess ideal number of blocks from scheduler. "
-                    "Setting n_blocks=1. "
-                    "Please provide `n_blocks` in call to method.")
+                warnings.warn("Couldn't guess ideal number of blocks from scheduler. "
+                              "Setting n_blocks=1. "
+                              "Please provide `n_blocks` in call to method.")
 
         scheduler_kwargs = {'scheduler': scheduler}
         if scheduler == 'processes':
             scheduler_kwargs['num_workers'] = n_jobs
 
-        start, stop, step = self._trajectory.check_slice_indices(start,
-                                                                 stop, step)
+        start, stop, step = self._trajectory.check_slice_indices(start, stop, step)
         n_frames = len(range(start, stop, step))
 
         self.start, self.stop, self.step = start, stop, step
@@ -362,8 +352,7 @@ class ParallelAnalysisBase(object):
             warnings.warn("run() uses more blocks than frames: "
                           "decrease n_blocks")
 
-        slices = make_balanced_slices(n_frames, n_blocks,
-                                      start=start, stop=stop, step=step)
+        slices = make_balanced_slices(n_frames, n_blocks, start=start, stop=stop, step=step)
 
         # record total time
         with timeit() as total:
@@ -375,16 +364,15 @@ class ParallelAnalysisBase(object):
             _blocks = []
             with self.readonly_attributes():
                 for bslice in slices:
-                    task = delayed(
-                         self._dask_helper, pure=False)(
-                             bslice,
-                             self._indices,
-                             self._top,
-                             self._traj, )
+                    task = delayed(self._dask_helper, pure=False)(
+                        bslice,
+                        self._indices,
+                        self._top,
+                        self._traj,
+                    )
                     blocks.append(task)
                     # save the frame numbers for each block
-                    _blocks.append(range(bslice.start,
-                                   bslice.stop, bslice.step))
+                    _blocks.append(range(bslice.start, bslice.stop, bslice.step))
                 blocks = delayed(blocks)
 
                 # record the time when scheduler starts working
@@ -404,11 +392,13 @@ class ParallelAnalysisBase(object):
         # put all time information into the timing object
         self.timing = Timing(
             np.hstack([el[1] for el in res]),
-            np.hstack([el[2] for el in res]), total.elapsed,
-            np.array([el[3] for el in res]), time_prepare,
+            np.hstack([el[2] for el in res]),
+            total.elapsed,
+            np.array([el[3] for el in res]),
+            time_prepare,
             conclude.elapsed,
             # waiting time = wait_end - wait_start
-            np.array([el[4]-wait_start for el in res]),
+            np.array([el[4] - wait_start for el in res]),
             np.array([el[5] for el in res]),
             np.array([el[6] for el in res]))
         return self
@@ -440,8 +430,7 @@ class ParallelAnalysisBase(object):
             times_compute.append(b_compute.elapsed)
 
         # calculate io and compute time per block
-        return np.asarray(res), np.asarray(times_io), np.asarray(
-            times_compute), b_universe.elapsed, wait_end, np.sum(
+        return np.asarray(res), np.asarray(times_io), np.asarray(times_compute), b_universe.elapsed, wait_end, np.sum(
             times_io), np.sum(times_compute)
 
     @staticmethod
