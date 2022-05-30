@@ -19,7 +19,7 @@ from tqdm import tqdm
 import MDAnalysis as mda
 from MDAnalysis.lib.distances import capped_distance
 from MDAnalysis.analysis.base import AnalysisBase
-from pmda.parallel import ParallelAnalysisBase
+from .parallel import ParallelAnalysisBase
 
 # import logging
 # MDAnalysis.start_logging()
