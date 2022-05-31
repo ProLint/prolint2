@@ -12,7 +12,7 @@ import scipy.stats
 import scipy.sparse
 from tqdm import tqdm
 import MDAnalysis as mda
-from MDAnalysis.lib.distances import capped_distance
+from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
 
@@ -49,11 +49,9 @@ class SerialContacts(AnalysisBase):
 
     def _single_frame(self):
         # Get the results and populate the results dictionary
-        pairs = capped_distance(self.query.positions,
-                                self.database.positions,
-                                max_cutoff=self.cutoff,
-                                box=self.database.dimensions,
-                                return_distances=False)
+        gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
+        result = gridsearch.search(self.query.positions)
+        pairs = result.get_pairs()
 
         # Find unique pairs of residues interacting
         # Currently we have pairs of atoms
@@ -107,11 +105,9 @@ class ParallelContacts(ParallelAnalysisBase):
 
     def _single_frame(self, ts, atomgroups):
         # Get the results and populate the results dictionary
-        pairs = capped_distance(atomgroups[0].positions,
-                                atomgroups[1].positions,
-                                max_cutoff=self.cutoff,
-                                box=atomgroups[1].dimensions,
-                                return_distances=False)
+        gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
+        result = gridsearch.search(self.query.positions)
+        pairs = result.get_pairs()
 
         # Find unique pairs of residues interacting
         # Currently we have pairs of atoms
@@ -143,7 +139,6 @@ class Runner(object):
         Backend to run the contacts calculation (can be either `serial` or `parallel`).
     n_jobs : int (-1)
         Number of cores to use with the `parallel` backend. By default UFCC will use all the cores. 
-    list_of_macros : list
     """
     def __init__(self):
         self.backend = 'serial'
@@ -186,6 +181,14 @@ class Contacts(object):
         self.counts = None
 
     def compute(self, cutoff=7):
+        """
+        Compute the cutoff distance-based contacts calculation using a cythonized version of a cell-list algorithm.
+
+        Parameters
+        ----------
+        cutoff : int (7)
+            Value in Angstrom to be used as cutoff for the contacts determination.
+        """
         assert isinstance(
             self.query.selected,
             (mda.core.groups.AtomGroup),
@@ -209,16 +212,32 @@ class Contacts(object):
         self.contacts = temp_instance.contacts
 
     def save(self, path='contacts.pkl'):
-        # store the object for later usage
+        """
+        Store the contacts information in a pickle file for later usage.
+
+        Parameters
+        ----------
+        path : file
+            Path to file to save the contacts information.
+        """
         with open(path, 'wb') as f:
             pickle.dump(self.contacts, f)
 
     def load(self, path='contacts.pkl'):
+        """
+        Load the contacts information from a pickle file.
+
+        Parameters
+        ----------
+        path : file
+            Path to file to load the contacts information from.
+        """
         with open(path, 'rb') as f:
             self.contacts = pickle.load(f)
 
     def count_contacts(self):
-        """Count the number of each contact type at each frame.     
+        """
+        Count the number of each contact type at each frame.     
         """
 
         if self.contacts is None:
