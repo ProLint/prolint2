@@ -1,7 +1,7 @@
 Usage Documentation
 ===================
 
-This page details how to get started with **ufcc** to work with lipid-protein systems. 
+This page details how to get started with **ufcc** to work with lipid-protein systems. On the `Prolint's resources page`_ you can get some simple lipid-protein systems to test the tools before moving on with your own systems.
 
 Creating the UFCC object:
 -------------------------
@@ -12,7 +12,7 @@ All the supported formats are listed `here`_.
 
       from ufcc import UFCC
 
-      target_system = UFCC('structure.gro', 'trajectory.xtc') 
+      target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
 
 By default *UFCC* will automatically identify the proteins and the membrane in the systems. For the proteins *UFCC* will identify all atoms that belong 
 to a standard set of residues based in a hard-coded set of residue names (it may not work for esoteric residues). For the membrane it will identify all the lipids 
@@ -26,7 +26,7 @@ But if you have other lipid types in your membrane, you can also add them at the
 
       from ufcc import UFCC
 
-      target_system = UFCC('structure.gro', 'trajectory.xtc', add_lipid_types = ['POPI', 'PSM']) 
+      target_system = UFCC('coordinates.gro', 'trajectory.xtc', add_lipid_types = ['POPI', 'PSM']) 
 
 Once you have created the *UFCC* object you will be able to access information in your query proteins and your membrane database, 
 including and an aditional label that is automatically added to each residue and that we called *macros*.
@@ -99,7 +99,7 @@ as you can use any of the labels in target_system.query.list_proteins().
 
 .. code-block:: python
 
-    selection_mask = target_system.query.whole.macros == 'protein0'
+    selection_mask = target_system.query.whole.macros == 'Protein0'
     target_system.query.select(selection_mask)
 
 Getting the contacts:
@@ -169,3 +169,4 @@ you can use the **count_contacts()** method, which populates the *counts* attrib
     # Otherwise it is a pandas DataFrame with the counted contacts.
 
 .. _`here`: https://userguide.mdanalysis.org/stable/formats/index.html
+.. _`Prolint's resources page`: https://www.prolint.ca/resources/data
