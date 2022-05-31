@@ -35,8 +35,8 @@ class MacrosClass(ResidueStringAttr):
         will assume that proteins are ordered and the start residue of the next protein is always smaller than 
         the last residue of the previous protein. 
    
-    Example:
-    --------
+    Example
+    -------
     All these assignnation are done automatically by the :class:`UFCC`, so you do not need to use this 
     class for anything. But you can access the information of the *macros metadata* as follows::
 
@@ -84,7 +84,7 @@ class UFCC(object):
     database : :class:`MembraneDatabase`
         **Database** group to use during the contacts calculation.
     contacts : :class:`.contacts.Contacts`
-        Cantacts object to run and analyze the distance-based contacts results.
+        Contacts object to run and analyze the distance-based contacts results.
     """
 
     def __init__(self, structure, trajectory, add_lipid_types=[]):

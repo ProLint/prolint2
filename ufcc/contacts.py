@@ -19,7 +19,10 @@ from .parallel import ParallelAnalysisBase
 
 class SerialContacts(AnalysisBase):
     r"""
-    Class to get the distance-based contacts starting from two AtomGroups.
+    Class to get the distance-based contacts starting from two AtomGroups
+    using a `serial` approach.
+
+    It heritages from the MDAnalysis AnalysisBase class.
     """
 
     def __init__(self, universe, query, database, cutoff, **kwargs):
@@ -74,7 +77,8 @@ class SerialContacts(AnalysisBase):
 
 class ParallelContacts(ParallelAnalysisBase):
     r"""
-    Class to get the distance-based contacts starting from two AtomGroups.
+    Class to get the distance-based contacts starting from two AtomGroups
+    using a `parallel` approach.
     """
 
     def __init__(self, universe, query, database, cutoff, **kwargs):
@@ -127,7 +131,20 @@ class ParallelContacts(ParallelAnalysisBase):
 
 
 class Runner(object):
+    """
+    Class to configure the runner for the calculations of distances. As the `parallel` routine uses 
+    the parallel computing library Dask, that can be setted up to run on remotes machines. The aim of 
+    this runner class is to define the variables needed for the Dask scheduler, but so far this a very
+    simple class that has the attributes below to run on a single local machine:
 
+    Attributes
+    ----------
+    backend : str (`serial`)
+        Backend to run the contacts calculation (can be either `serial` or `parallel`).
+    n_jobs : int (-1)
+        Number of cores to use with the `parallel` backend. By default UFCC will use all the cores. 
+    list_of_macros : list
+    """
     def __init__(self):
         self.backend = 'serial'
         self.n_jobs = -1
@@ -136,8 +153,29 @@ class Runner(object):
 
 
 class Contacts(object):
-    """Stores information on the contact analysis between system proteins and lipids.
-    Instantiating the class only creates the object and populates a few attributes.
+    """Stores information to run and analyze the distance-based contacts results
+    between the :class:`.ufcc.QueryProteins` and :class:`.ufcc.MembraneDatabase` groups.
+
+    Parameters
+    ----------
+    query : :class:`QueryProteins`
+    database : :class:`MembraneDatabase`
+
+    Attributes
+    ----------
+    query : :class:`QueryProteins`
+        **Query** group to use during the contacts calculation.
+    database : :class:`MembraneDatabase`
+        **Database** group to use during the contacts calculation.
+    runner : :class:`Runner`
+        Runner object to define the backend (`serial` or `parallel`) and n_jobs to use during the contacts calculations.
+    contacts : Array (None)
+        Numpy uni-dimensional array of shape equal to the number of frames used during the contacts caculation.
+        Each element of the array has a Scipy matrix with the pairs (i, j) defining the contacts, where i is the 
+        of the residue in the `query` group, and j is the index of the residue in the `database` group. It can be populated
+        using either the compute() or the load() methods.
+    counts : Pandas DataFrame (None)
+        Pandas DataFrame with the counted contacts. It is populated using the count_ocontacts() method.
     """
 
     def __init__(self, query, database):

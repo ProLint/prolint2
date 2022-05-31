@@ -26,14 +26,16 @@ Welcome to the UFCC's documentation!
 
 The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts from Molecular Dynamics (MD) simulations. 
 
-..  figure:: _static/logo.png
-    :align: center
+.. ..  figure:: _static/logo.png
+..     :align: center
 
 Basic example:
 ==============
+
+For serial contacts calculation:
+
 .. code-block:: python
 
-      # for serial contacts calculation
       from ufcc import UFCC
 
       target_system = UFCC('structure.gro', 'trajectory.xtc') 
@@ -42,7 +44,10 @@ Basic example:
       target_system.contacts.count_contacts()
 
       
-      # for parallel contacts calculation
+For parallel contacts calculation:
+
+.. code-block:: python
+
       from ufcc import UFCC
 
       target_system = UFCC('structure.gro', 'trajectory.xtc') 
@@ -51,7 +56,7 @@ Basic example:
       target_system.contacts.compute()
       target_system.contacts.count_contacts()
 
-You can find more details on how to use UFCC in the **TODO** (link to the Usage page).
+You can find more details on how to use **UFCC** in the `usage`_.
 
 .. Contents
 .. ========
@@ -62,9 +67,9 @@ You can find more details on how to use UFCC in the **TODO** (link to the Usage 
    
    source/intro.rst
    source/installation.rst
-   source/getting_started.rst
+   source/usage.rst
    api
-   source/contributing.rst
+..    source/contributing.rst
 
 
 Indices and tables
@@ -87,8 +92,9 @@ Copyright (c) 2022, Daniel P. Ramirez & Besian I. Sejdiu
 
 Acknowledgements
 ================ 
-The respository structure of **UFCC** is based on the `Computational Molecular Science Python Cookiecutter <https://github.com/molssi/cookiecutter-cms>`__. version 1.6.
+The respository structure of **UFCC** is based on the `Computational Molecular Science Python Cookiecutter <https://github.com/molssi/cookiecutter-cms>`__ version 1.6.
 
 
 .. _`MIT License`: https://opensource.org/licenses/MIT
 .. _`github.com/Prolint/ufcc`: https://github.com/ProLint/ufcc
+.. _`usage`: source/usage.html

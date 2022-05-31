@@ -1,5 +1,5 @@
-Getting Started
-===============
+Usage Documentation
+===================
 
 This page details how to get started with UFCC. 
 
