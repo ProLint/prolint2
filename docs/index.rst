@@ -22,6 +22,10 @@ Welcome to the UFCC's documentation!
     :alt: codecov
     :target: https://codecov.io/gh/ProLint/UFCC/branch/master
 
+.. |docs| image:: https://readthedocs.org/projects/ufcc/badge/?version=latest
+          :alt: docs
+          :target: https://ufcc.readthedocs.io/en/latest/
+
 .. end-badges
 
 The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references using as input the trajectories of molecular dynamics simulations. This release of **ufcc** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
