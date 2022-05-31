@@ -344,7 +344,7 @@ class Contacts(object):
             residues = self.query.selected.residues[self.query.selected.residues.macros == protein]            
             per_residue_results = {}
             for idx in tqdm(residues.resindices):
-                per_residue_results[idx] = LPContacts(self.contacts, self.counts, n_residues_db, frames, PLASMA_LIPIDS, self.database, timestep, residue=idx)
+                per_residue_results[idx+1] = LPContacts(self.contacts, self.counts, n_residues_db, frames, PLASMA_LIPIDS, self.database, timestep, residue=idx)
 
             prolint_contacts[protein][0] = per_residue_results
 

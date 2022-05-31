@@ -29,7 +29,7 @@ class LPContacts(object):
                 lipid_idx = lipid_idx[prot_idx == self.residue]
                 self.lipids[lipid] = [idx%n_residues_db for idx in lipid_idx]
                 self.contacts[lipid] = [timestep for x in range(len(lipid_idx))]
-                self.lipids[lipid] = list(database.selected.residues[self.lipids[lipid]].resindices)
+                self.lipids[lipid] = list(database.selected.residues[self.lipids[lipid]].resindices + 1)
 
     def __str__(self):
         return "<prolintpy.LPContacts for residue {}>".format(self.residue)

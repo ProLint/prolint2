@@ -117,7 +117,7 @@ class UFCC(object):
                 protein_sel).segments.n_atoms == self.atoms.select_atoms(protein_sel).n_atoms:
             for segment_idx in range(len(self.atoms.select_atoms(protein_sel).segments)):
                 self.atoms.select_atoms(
-                    protein_sel).segments[segment_idx].residues.macros = 'protein' + str(segment_idx)
+                    protein_sel).segments[segment_idx].residues.macros = 'Protein' + str(segment_idx)
         # Second possibility: the assumption here is that proteins are ordered and the start residue of the next
         # protein is always smaller than the last residue of the previous protein.
         else:
@@ -138,7 +138,7 @@ class UFCC(object):
                 fi = values[0]
                 li = values[1]
                 self.atoms.select_atoms(protein_sel).residues[list(range(fi, li +
-                                                                         1))].residues.macros = 'protein' + str(idx)
+                                                                         1))].residues.macros = 'Protein' + str(idx)
 
         # TODO
         # Add merge chains and options to change the name of the proteins.

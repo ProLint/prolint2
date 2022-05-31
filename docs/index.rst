@@ -24,21 +24,22 @@ Welcome to the UFCC's documentation!
 
 .. end-badges
 
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts from Molecular Dynamics (MD) simulations. 
+The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references using as input the trajectories of molecular dynamics simulations. This release of **ufcc** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
+of the Canadian Chemistry Conference and Exhibition 2022, but it is thinked to also include other types of interactions in the future (i.e. protein-protein, ligand-protein and ligand-membrane interactions).
 
 .. ..  figure:: _static/logo.png
 ..     :align: center
 
 Installation
 ============
-To install UFCC we highly recommend to create a new conda environment as follows:
+To install **ufcc** we highly recommend to create a new conda environment as follows:
 
 .. code-block:: bash
 
    conda create -n ufcc 
    conda activate ufcc
 
-Then you can install UFCC using the conda-forge channel:
+Then you can install **ufcc** using the conda-forge channel:
 
 .. code-block:: bash
 
@@ -77,7 +78,7 @@ For parallel contacts calculation:
       target_system.contacts.compute()
       target_system.contacts.count_contacts()
 
-You can find more details on how to use **UFCC** in the `usage`_.
+You can find more details on how to use **ufcc** in the `usage page`_.
 
 .. Contents
 .. ========
@@ -104,7 +105,7 @@ Indices and tables
 License 
 =======
 
-Source code included in this project is available under the `MIT License`_ from `github.com/Prolint/ufcc`_.
+Source code included in this project is available under the `MIT License`_.
 
 Copyright
 =========
@@ -118,4 +119,4 @@ The respository structure of **UFCC** is based on the `Computational Molecular S
 
 .. _`MIT License`: https://opensource.org/licenses/MIT
 .. _`github.com/Prolint/ufcc`: https://github.com/ProLint/ufcc
-.. _`usage`: source/usage.html
+.. _`usage page`: source/usage.html
