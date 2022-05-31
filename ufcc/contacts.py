@@ -1,4 +1,4 @@
-r"""Contacts serial class --- :mod:`ufcc.contacts`
+r"""Contacts base classes --- :mod:`ufcc.contacts`
 ======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022

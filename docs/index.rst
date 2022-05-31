@@ -29,6 +29,27 @@ The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based
 .. ..  figure:: _static/logo.png
 ..     :align: center
 
+Installation
+============
+To install UFCC we highly recommend to create a new conda environment as follows:
+
+.. code-block:: bash
+
+   conda create -n ufcc 
+   conda activate ufcc
+
+Then you can install UFCC using the conda-forge channel:
+
+.. code-block:: bash
+
+   conda install -c conda-forge ufcc
+
+or via pip:
+
+.. code-block:: bash
+
+   pip install ufcc
+
 Basic example:
 ==============
 
@@ -66,10 +87,10 @@ You can find more details on how to use **UFCC** in the `usage`_.
    :caption: Contents:
    
    source/intro.rst
-   source/installation.rst
    source/usage.rst
+   source/connecting_with_prolint.rst
    api
-..    source/contributing.rst
+   source/contributing.rst
 
 
 Indices and tables
