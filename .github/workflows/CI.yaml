@@ -69,8 +69,9 @@ jobs:
         pytest -v --cov=ufcc --cov-report=xml --color=yes ufcc/tests/
 
     - name: CodeCov
-      uses: codecov/codecov-action@v1
+      uses: codecov/codecov-action@v2
       with:
         file: ./coverage.xml
         flags: unittests
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
+        token: '20912a4f-55b8-4cf7-829f-bc2d3df338a7'
