@@ -12,9 +12,11 @@ import scipy.stats
 import scipy.sparse
 from tqdm import tqdm
 import MDAnalysis as mda
+from collections import defaultdict
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
+from. w2plp import LPContacts
 
 
 class SerialContacts(AnalysisBase):
@@ -317,6 +319,41 @@ class Contacts(object):
             counts[column] = pd.to_numeric(counts[column])
 
         self.counts = counts
+
+    def export_to_prolint(self, timestep, path='results_prolint.pkl'):
+        """
+        Temporal method to be able to use the analysis tools from `prolintpy`.
+
+        Returns
+        -------
+        prolint_contacts : dictionary
+            Dictionary of ProLint contacts. Contacts for each residue of each protein
+            are stored using the ProLint.LPContacts class.
+        """
+        PLASMA_LIPIDS = {}
+        for lip in np.unique(self.database.selected.residues.resnames):
+            PLASMA_LIPIDS[lip] = [lip]
+        
+        prolint_contacts = defaultdict(dict)
+
+        for protein in np.unique(self.query.selected.residues.macros):
+            residues = self.query.selected.residues[self.query.selected.residues.macros == protein]            
+            per_residue_results = {}
+            for idx in residues.resindices:
+
+                # atoms_count = int(idxs.size)
+                # idx = idxs[atoms_count*(chain-1):atoms_count*chain]
+
+                # chain_residue = residues[r] + (protein.n_residues * (chain-1))
+
+                # md_out = md.compute_neighbors(t[1::], cutoff, idx, haystack_indices=haystack_indices)
+                per_residue_results[idx] = LPContacts(self.contacts, self.counts, PLASMA_LIPIDS, self.database, timestep, residue=idx)
+
+            prolint_contacts[protein][0] = per_residue_results
+
+        with open(path, 'wb') as f:
+            pickle.dump(prolint_contacts, f)
+        
 
     def __str__(self):
         if not isinstance(self.contacts, np.ndarray):
