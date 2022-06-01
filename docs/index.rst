@@ -6,11 +6,16 @@ Welcome to the UFCC's documentation!
 
 .. start-badges
 
+|pypi|
 |license|
 |mdanalysis|
 |actions|
 |codecov|
 |docs|
+
+.. |pypi| image:: https://img.shields.io/pypi/v/ufcc?color=blue
+     :alt: PyPI
+     :target: https://pypi.org/project/ufcc/
 
 .. |license| image:: https://img.shields.io/badge/license-MIT-blue.svg
     :alt: license
@@ -49,13 +54,7 @@ To install **ufcc** we highly recommend to create a new conda environment as fol
    conda create -n ufcc python=3.7 (or hig)
    conda activate ufcc
 
-Then you can install **ufcc** using the conda-forge channel:
-
-.. code-block:: bash
-
-   conda install -c conda-forge ufcc
-
-or via pip:
+Then you can install **ufcc** via pip:
 
 .. code-block:: bash
 
