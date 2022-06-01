@@ -46,7 +46,7 @@ To install **ufcc** we highly recommend to create a new conda environment as fol
 
 .. code-block:: bash
 
-   conda create -n ufcc 
+   conda create -n ufcc python=3.7 (or hig)
    conda activate ufcc
 
 Then you can install **ufcc** using the conda-forge channel:
