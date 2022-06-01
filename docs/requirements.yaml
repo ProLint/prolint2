@@ -4,6 +4,8 @@ dependencies:
     # Base depends
   - python
   - pip
+  - mdanalysis
+  - dask
 
 
 
