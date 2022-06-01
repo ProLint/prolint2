@@ -15,11 +15,11 @@ dependencies:
   - codecov
 
     # Package dependencies
-  - MDAnalysis  
-  - numpy
+  - mdanalysis  
+  - dask
 
     # Pip-only installs
   - pip:
-     - pmda
+    #  - pmda
   #  - codecov
 
