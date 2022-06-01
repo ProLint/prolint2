@@ -15,7 +15,7 @@ dependencies:
   - codecov
 
     # Package dependencies
-  - MDAnalysis  
+  - mdanalysis  
   - dask
 
     # Pip-only installs

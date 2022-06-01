@@ -74,4 +74,4 @@ jobs:
         file: ./coverage.xml
         flags: unittests
         name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
-        token: '20912a4f-55b8-4cf7-829f-bc2d3df338a7'  ## not needed when made public
+        # token: '20912a4f-55b8-4cf7-829f-bc2d3df338a7'  ## not needed when made public

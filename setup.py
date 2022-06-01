@@ -51,8 +51,8 @@ setup(
     setup_requires=[] + pytest_runner,
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
-    url='https://github.com/ProLint',  # Website
-    # install_requires=[],              # Required packages, pulls from pip if needed; do not use for Conda deployment
+    url='https://github.com/ProLint/ufcc',  # Website
+    install_requires=['mdanalysis', 'dask'],              # Required packages, pulls from pip if needed; do not use for Conda deployment
     platforms=[
         'Linux',
         'Mac OS-X',
