@@ -37,7 +37,7 @@ Installing **ufcc** and **prolintpy** on the same environment
 
       from ufcc import UFCC
 
-      target_system = UFCC('structure.gro', 'trajectory.xtc') 
+      target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
 
       target_system.contacts.compute(cutoff=7)
       target_system.contacts.count_contacts()

@@ -7,6 +7,8 @@ r"""Temporal module to wrap prolintpy
 
 import numpy as np
 from scipy.sparse import hstack
+from collections import defaultdict, Counter
+
 
 class LPContacts(object):
     def __init__(self, mtr_contacts, counts, n_residues_db, frames, PLASMA_LIPIDS, database, timestep, residue='residue'):
@@ -28,8 +30,9 @@ class LPContacts(object):
                 prot_idx, lipid_idx = global_cont.nonzero()
                 lipid_idx = lipid_idx[prot_idx == self.residue]
                 self.lipids[lipid] = [idx%n_residues_db for idx in lipid_idx]
-                self.contacts[lipid] = [timestep for x in range(len(lipid_idx))]
-                self.lipids[lipid] = list(database.selected.residues[self.lipids[lipid]].resindices + 1)
+                self.contacts[lipid] = [x*timestep for x in list((Counter(self.lipids[lipid]).values()))]
+                self.lipids[lipid] = np.unique(list(database.selected.residues[self.lipids[lipid]].resindices + 1))
+        self.residue += 1 
 
     def __str__(self):
         return "<ufcc.w2pl2.LPContacts for residue {}>".format(self.residue)

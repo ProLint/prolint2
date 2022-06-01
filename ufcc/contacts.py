@@ -320,7 +320,7 @@ class Contacts(object):
 
         self.counts = counts
 
-    def export_to_prolint(self, path='results_prolint.pkl'):
+    def export_to_prolint(self, path='prolint_results.pkl'):
         """
         Temporal method to be able to use the analysis tools from `prolintpy`.
 
@@ -363,3 +363,5 @@ class Contacts(object):
             return "<ufcc.Contacts containing 0 contacts>"
         else:
             return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
+
+
