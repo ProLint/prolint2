@@ -6,11 +6,7 @@ on:
   # Both are tracked here to keep legacy and new codes working
   push:
     branches:
-      - "main"
       - "demo"
-  pull_request:
-    branches:
-      - "main"
   schedule:
     # Nightly tests run on master by default:
     #   Scheduled workflows run on the latest commit on the default or base branch.
@@ -25,10 +21,10 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.7
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.7
+          python-version: 3.8
 
       - name: Install build dependencies
         run: python -m pip install build wheel
