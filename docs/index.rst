@@ -24,9 +24,9 @@ Welcome to the UFCC's documentation!
     :alt: GitHub Actions Build Status
     :target: https://github.com/ProLint/ufcc/actions?query=workflow%3ACI
 
-.. |codecov| image:: https://codecov.io/gh/ProLint/UFCC/branch/master/graph/badge.svg
+.. |codecov| image:: https://codecov.io/gh/ProLint/ufcc/graph/badge.svg
     :alt: codecov
-    :target: https://codecov.io/gh/ProLint/UFCC/branch/master
+    :target: https://app.codecov.io/gh/ProLint/ufcc
 
 .. |docs| image:: https://readthedocs.org/projects/ufcc/badge/?version=latest
           :alt: docs
