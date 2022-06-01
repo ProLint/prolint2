@@ -32,8 +32,8 @@ class LPContacts(object):
                 self.lipids[lipid] = list(database.selected.residues[self.lipids[lipid]].resindices + 1)
 
     def __str__(self):
-        return "<prolintpy.LPContacts for residue {}>".format(self.residue)
+        return "<ufcc.w2pl2.LPContacts for residue {}>".format(self.residue)
 
 
     def __repr__(self):
-        return "<prolintpy.LPContacts for residue {}>".format(self.residue)
+        return "<ufcc.w2plp.LPContacts for residue {}>".format(self.residue)
