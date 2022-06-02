@@ -52,7 +52,7 @@ For parallel contacts calculation:
    from ufcc import UFCC
 
    target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
-   target.contacts.runner.backend = 'parallel'
+   target_system.contacts.runner.backend = 'parallel'
    
    target_system.contacts.compute()
    target_system.contacts.count_contacts()
