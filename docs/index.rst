@@ -39,7 +39,7 @@ Welcome to the UFCC's documentation!
           
 .. end-badges
 
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of ufcc is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
+The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
 of the Canadian Chemistry Conference and Exhibition 2022, but is aimed also to include other types of interactions in the future (i.e. protein-protein, protein-ligand, and membrane-ligand interactions).
 
 .. ..  figure:: _static/logo.png
