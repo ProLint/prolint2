@@ -20,7 +20,7 @@ Installation
 To install **ufcc** we recommend creating a new conda environment as follows:
 
 ``` bash
-   conda create -n ufcc python=3.7 (or higher)
+   conda create -n ufcc python=3.7 #(or higher)
    conda activate ufcc
 ```
 
