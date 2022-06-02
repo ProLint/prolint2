@@ -22,7 +22,7 @@ from. w2plp import LPContacts
 class SerialContacts(AnalysisBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups
-    using a `serial` approach.
+    using a *serial* approach.
 
     It heritages from the MDAnalysis AnalysisBase class.
     """
@@ -78,7 +78,7 @@ class SerialContacts(AnalysisBase):
 class ParallelContacts(ParallelAnalysisBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups
-    using a `parallel` approach.
+    using a *parallel* approach.
     """
 
     def __init__(self, universe, query, database, cutoff, **kwargs):
@@ -130,17 +130,17 @@ class ParallelContacts(ParallelAnalysisBase):
 
 class Runner(object):
     """
-    Class to configure the runner for the calculations of distances. As the `parallel` routine uses 
-    the parallel computing library Dask, that can be setted up to run on remotes machines. The aim of 
+    Class to configure the runner for the calculations of distances. As the *parallel* routine uses 
+    the parallel computing library **Dask**, that can be setted up to run on remotes machines. The aim of 
     this runner class is to define the variables needed for the Dask scheduler, but so far this a very
     simple class that has the attributes below to run on a single local machine:
 
     Attributes
     ----------
-    backend : str (`serial`)
-        Backend to run the contacts calculation (can be either `serial` or `parallel`).
+    backend : str (*serial*)
+        Backend to run the contacts calculation (can be either *serial* or *parallel*).
     n_jobs : int (-1)
-        Number of cores to use with the `parallel` backend. By default UFCC will use all the cores. 
+        Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores. 
     """
     def __init__(self):
         self.backend = 'serial'
@@ -161,18 +161,18 @@ class Contacts(object):
     Attributes
     ----------
     query : :class:`QueryProteins`
-        **Query** group to use during the contacts calculation.
+        **Query** group to use during the calculation of the contacts.
     database : :class:`MembraneDatabase`
-        **Database** group to use during the contacts calculation.
+        **Database** group to use during the calculation of the contacts.
     runner : :class:`Runner`
-        Runner object to define the backend (`serial` or `parallel`) and n_jobs to use during the contacts calculations.
+        Runner object to define the backend (*serial* or *parallel*) and n_jobs to use during the calculation of the contacts.
     contacts : Array (None)
-        Numpy uni-dimensional array of shape equal to the number of frames used during the contacts caculation.
-        Each element of the array has a Scipy matrix with the pairs (i, j) defining the contacts, where i is the 
-        of the residue in the `query` group, and j is the index of the residue in the `database` group. It can be populated
-        using either the compute() or the load() methods.
+        Numpy uni-dimensional array of shape equal to the number of frames used during the calculation of the contacts.
+        Each element of the array has a Scipy matrix with the pairs (i, j) defining the contacts, where *i* is the index
+        of the residue in the **query** group, and *j* is the index of the residue in the **database** group. It can be populated
+        using either the **compute()** or the **load()** methods.
     counts : Pandas DataFrame (None)
-        Pandas DataFrame with the counted contacts. It is populated using the count_ocontacts() method.
+        Pandas DataFrame with the counted contacts. It is populated using the **count_contacts()** method.
     """
 
     def __init__(self, query, database):
@@ -184,12 +184,12 @@ class Contacts(object):
 
     def compute(self, cutoff=7):
         """
-        Compute the cutoff distance-based contacts calculation using a cythonized version of a cell-list algorithm.
+        Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
 
         Parameters
         ----------
         cutoff : int (7)
-            Value in Angstrom to be used as cutoff for the contacts determination.
+            Value in Angstrom to be used as cutoff for the calculation of the contacts.
         """
         assert isinstance(
             self.query.selected,
@@ -322,7 +322,7 @@ class Contacts(object):
 
     def export_to_prolint(self, path='prolint_results.pkl'):
         """
-        Temporal method to be able to use the analysis tools from `prolintpy`.
+        Temporal method to be able to use the analysis tools from **prolintpy**.
 
         Parameters
         ----------

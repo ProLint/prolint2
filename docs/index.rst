@@ -39,19 +39,19 @@ Welcome to the UFCC's documentation!
           
 .. end-badges
 
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references using as input the trajectories of molecular dynamics simulations. This release of **ufcc** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
-of the Canadian Chemistry Conference and Exhibition 2022, but it is thinked to also include other types of interactions in the future (i.e. protein-protein, ligand-protein and ligand-membrane interactions).
+The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of ufcc is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
+of the Canadian Chemistry Conference and Exhibition 2022, but is aimed also to include other types of interactions in the future (i.e. protein-protein, ligand-protein, and ligand-membrane interactions).
 
 .. ..  figure:: _static/logo.png
 ..     :align: center
 
 Installation
 ============
-To install **ufcc** we highly recommend to create a new conda environment as follows:
+To install **ufcc** we recommend creating a new conda environment as follows:
 
 .. code-block:: bash
 
-   conda create -n ufcc python=3.7 (or hig)
+   conda create -n ufcc python=3.7 #(or higher)
    conda activate ufcc
 
 Then you can install **ufcc** via pip:
@@ -60,8 +60,8 @@ Then you can install **ufcc** via pip:
 
    pip install ufcc
 
-Basic example:
-==============
+Basic examples:
+===============
 
 For serial contacts calculation:
 
@@ -73,6 +73,7 @@ For serial contacts calculation:
 
       target_system.contacts.compute()
       target_system.contacts.count_contacts()
+      target_system.contacts.counts
 
       
 For parallel contacts calculation:
@@ -86,6 +87,7 @@ For parallel contacts calculation:
       
       target_system.contacts.compute()
       target_system.contacts.count_contacts()
+      target_system.contacts.counts
 
 You can find more details on how to use **ufcc** in the `usage page`_.
 

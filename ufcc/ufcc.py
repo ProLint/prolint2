@@ -15,30 +15,31 @@ class MacrosClass(ResidueStringAttr):
     """
     Class to add the *macros* metadata. 
     
-    The *macros* metadata is an aditional label to each reidue in the system,
+    The *macros* metadata is an additional label to each residue in the system,
     that is going to be useful for the selection of the query and the database groups.
   
     If the residue is included in the :class:`MembraneDatabase` group, then the *macro*
-    metadata will be setted as `membrane`; if the residue is included in the
-    :class:`QueryProteins` group then the *macro* metadata will be settep with 
-    **protein** or **protein#** depending on the number of segments (or chains) in the system; 
-    otherwise the *macro* metadata will be setted as **other**.
+    metadata will be set as **membrane**; if the residue is included in the
+    :class:`QueryProteins` group then the *macro* metadata will be set as 
+    **Protein#** depending on the number of segments (or chains) in the system; 
+    otherwise the *macro* metadata will be set as **other**.
 
     .. warning::
 
         The identification of the different proteins in the system will be done using one of two
         approaches:
 
-        i. If the format files used include segment (or chain) information, then the `macro` metadata will
-        be setted with the name specified in each segment (or chain).
+        i. If the format file used includes segment (or chain) information, then the *macro* metadata will
+        be set with the name specified in each segment (or chain). #TODO
+        
         ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`UFCC`
         will assume that proteins are ordered and the start residue of the next protein is always smaller than 
         the last residue of the previous protein. 
    
     Example
     -------
-    All these assignnation are done automatically by the :class:`UFCC`, so you do not need to use this 
-    class for anything. But you can access the information of the *macros metadata* as follows::
+    All these assignation are done automatically by **ufcc**, so you do not need to use this 
+    class for anything. But you can access the information of the *macros* metadata as follows::
 
         from ufcc import UFCC
         target_system = UFCC('coordinates.gro', 'trajectory.xtc')
@@ -46,7 +47,7 @@ class MacrosClass(ResidueStringAttr):
         target_system.query.selected.residues.macros
 
     And you will get an uni-dimensional numpy array with same amount of values as residues selected in the **query**
-    group and the **macro** of each residue. You can do the same for your **database** group.
+    group and the *macro* of each residue. You can do the same for your **database** group.
 
     """
     attrname = 'macros'
@@ -66,10 +67,10 @@ class UFCC(object):
     ----------
     structure: any MDAnalysis-supported structure/topology file.
 
-    trajectory : any MDAnalysis-supported structure/topology file.
+    trajectory : any MDAnalysis-supported trajectory file.
 
     add_lipid_types : list
-        list of strings with the residue name of lipids not included in the **UFCC** list of supported residues.
+        list of strings with the residue name of lipids not included in the **ufcc** list of supported residues.
 
     Attributes
     ----------
@@ -80,9 +81,9 @@ class UFCC(object):
     list_of_macros : list
         All the availables macros to use during the selection of the query/database groups.
     query : :class:`QueryProteins`
-        **Query** group to use during the contacts calculation.
+        **Query** group to use during the calculation of the contacts.
     database : :class:`MembraneDatabase`
-        **Database** group to use during the contacts calculation.
+        **Database** group to use during the calculation of the contacts.
     contacts : :class:`.contacts.Contacts`
         Contacts object to run and analyze the distance-based contacts results.
     """
@@ -150,26 +151,26 @@ class UFCC(object):
         self.contacts = Contacts(self.query, self.database)
 
     def __str__(self):
-        return "Base class to handle the contacts calculation in UFCC."
+        return "Base class to handle the calculation of the contacts in UFCC."
 
     def __repr__(self):
-        return "Base class to handle the contacts calculation in UFCC."
+        return "Base class to handle the calculation of the contacts in UFCC."
 
 
 class BasicGroup(object):
     """ 
     Basic class to be heritaged for the :class:`MembraneDatabase` and :class:`QueryProteins`
-    classes in order to handle the **database** and **query** groups respectivaly.
+    classes in order to handle the **database** and **query** groups respectively.
 
     Attributes
     ----------
     selected : AtomGroup
         An MDAnalysis AtomGroup object that includes the atoms 
-        that will be used as database/query for the contacts calculation.
+        that will be used as database/query for the calculation of the contacts.
     whole : AtomGroup
         An MDAnalysis AtomGroup object including all the atoms from where the selections
-        can be done to define the database/query atoms for the contacts calculation. 
-        The **selected** attribute will be always a subset of the **whole**. 
+        can be done to define the database/query atoms for the calculation of the contacts. 
+        The *selected* attribute will be always a subset of the *whole*. 
     """
 
     def __init__(self, whole):
