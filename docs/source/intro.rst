@@ -5,6 +5,8 @@ The fixed-radius near neighbors is an old computer science problem that can be d
 ..  figure:: ../_static/frnns.png
     :align: center
 
+|
+
 There have been proposed different approaches to tackle this problem, mainly grouped into three categories: i-brute-force; ii-tree-based; and iii-grid-based methods, which are all useful in a certain 
 range of conditions, especially determined by the way they scale with respect to the number of points in the system.
 
@@ -37,6 +39,8 @@ where you can usually deal with a very large number of points.
 
 ..  figure:: ../_static/neighbours_list.png
     :align: center
+    
+|
 
 The current neighbors search implementation in **prolintpy** involves the brute-force computation of distances between 
 all pairs of points in the dataset, which is very inefficient for lipid-protein systems with very high number of atoms. 
