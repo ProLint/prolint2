@@ -10,7 +10,7 @@ advantage of the fast calculation of the contacts in **ufcc**, and visualize the
 the Prolint server or using the **prolintpy** library.
 
 .. warning::
-    The link to the Prolint's tools is nothing more than natural, as **ufcc** is born inside the Prolint ecosystem, but it is important to mention
+    The link to the Prolint's tools is nothing but natural, as **ufcc** is born inside the Prolint ecosystem, but it is important to mention
     that **ufcc** is aimed to be a much more optimized tool than what the prolint's tools currently are, that is the reason why the **export_to_prolint()**
     method can take a considerable time compared with the speed of the rest of the methods in **ufcc**. Even though, the use of this temporary
     solution (exporting the **ufcc** contacts information to the analysis tools in Prolint) is several times faster than using ProLint alone. 
@@ -31,11 +31,11 @@ Installing **ufcc** and **prolintpy** on the same environment:
 
       pip install ufcc
 
-.. warning::
-    This installation to use both packages at the same time has two issues from the **prolintpy** side:
+.. .. warning::
+..     This installation to use both packages at the same time has two issues from the **prolintpy** side:
 
-    * `Import error #6`_. 
-    * Change **isinstance** to **hasattr** in the **retrieve_contacts()** function of the **compute_contacts.py** file in **prolintpy**.
+..     * `Import error #6`_. 
+..     * Change **isinstance** to **hasattr** in the **retrieve_contacts()** function of the **compute_contacts.py** file in **prolintpy**.
 
 1. Getting the contacts information with **ufcc**:
 --------------------------------------------------
