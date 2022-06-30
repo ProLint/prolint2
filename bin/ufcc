@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+r"""Argument parser to use ufcc from the command-line
+======================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+"""
+
+import argparse
+import MDAnalysis as mda
+import ufcc._version as vers
+from ufcc import UFCC
+import warnings
+
+# Creating the parser
+ufcc_parser = argparse.ArgumentParser(prog='ufcc', 
+                                    #   usage='%(prog)s [optional-arguments] structure_file trajectory_file', 
+                                      description='Argument parser to use the ufcc library directly from the command-line.',
+                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                      epilog='Have fun getting lipid-protein contacts! :)\n')
+
+ufcc_parser.version = vers.get_versions()['version']
+
+# positional arguments
+ufcc_parser.add_argument('structure', action='store', type=str, help='path to the structure/topology file') 
+ufcc_parser.add_argument('trajectory', action='store', type=str, help='path to the trajectory file')
+ufcc_parser.add_argument('output_file', action='store', type=str, help='output pkl file with the contacts information')
+
+
+# optional arguments
+ufcc_parser.add_argument('-v', '--version', action='version')
+ufcc_parser.add_argument('-c', '--cutoff', metavar='', type=int, help='distance cutoff to get the contacts (angstroms)', default=7, dest='cutoff')
+ufcc_parser.add_argument('-al', '--add_lipid_types', metavar='', type=list, help='additional lipid types to be included in the membrane group, supported lipid types are [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE]', default=[], dest='other_lipids')
+ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel'], default='serial', dest='backend')
+ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of CPU cores to use with the parallel backend', default=-1, dest='n_jobs')
+
+
+# Executing the parse_args() method
+args = ufcc_parser.parse_args()
+
+
+# Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
+mass_flag = 0
+mass_list = []
+with warnings.catch_warnings(record=True) as w:
+    target_system = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids) 
+    for warn in w:
+        syl = str(warn.message).split()
+        if syl[:5] == ['Failed', 'to', 'guess', 'the', 'mass']:
+            mass_flag=+1
+            mass_list.append(syl[-1])
+        else:
+            print(warn.message)
+    if mass_flag > 0:
+        print('Warning: Please be aware that UFCC could NOT guess the mass for the following atomtypes: ' + ', '.join(mass_list) + 
+        '. However, if you are sure that this is not due to an error in your system you can keep going with the analysis, as this does not affect the calculation of the contacts.')   
+
+
+if args.backend == 'serial':
+    target_system.contacts.compute(cutoff=args.cutoff)
+    target_system.contacts.save(args.output_file)
+elif args.backend == 'parallel':
+    target_system.contacts.runner.backend = 'parallel'
+    target_system.contacts.runner.n_jobs = args.n_jobs
+    target_system.contacts.compute(cutoff=args.cutoff)
+    target_system.contacts.save(args.output_file)
+
+
