@@ -52,8 +52,7 @@ with warnings.catch_warnings(record=True) as w:
         else:
             print(warn.message)
     if mass_flag > 0:
-        print('Warning: Please be aware that UFCC could NOT guess the mass for the following atomtypes: ' + ', '.join(mass_list) + 
-        '. However, if you are sure that this is not due to an error in your system you can keep going with the analysis, as this does not affect the calculation of the contacts.')   
+        print('Warning: Please be aware that UFCC could NOT guess the mass for the following atomtypes: {}. If you are using Martini or you are sure that this is not due to an error in your system you can ignore this message.'.format(', '.join(mass_list)))   
 
 
 if args.backend == 'serial':
