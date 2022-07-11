@@ -5,12 +5,14 @@ r"""UFCC sample data
 :Copyright: MIT License
 """
 
-import pathlib
+import os
+
+from ufcc import get_data
 
 class GIRKDataSample:
     def __init__(self):
-        self.path = pathlib.Path('data').absolute()
-        self.coordinates = self.path.joinpath('coordinates.gro').absolute()
-        self.trajectory = self.path.joinpath('trajectory.xtc').absolute()
+        self.path = os.path.abspath(get_data())
+        self.coordinates = os.path.join(self.path, 'coordinates.gro')
+        self.trajectory = os.path.join(self.path, 'trajectory.xtc')
 
 GIRK = GIRKDataSample()
