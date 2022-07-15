@@ -64,17 +64,19 @@ with warnings.catch_warnings(record=True) as w:
 t1 = perf_counter()
 if args.backend == 'serial':
     target_system.contacts.compute(cutoff=args.cutoff)
-    target_system.contacts.save(args.output_file)
+    target_system.contacts.count_contacts()
+    target_system.contacts.get_metrics(args.output_file)
 elif args.backend == 'parallel':
     target_system.contacts.runner.backend = 'parallel'
     target_system.contacts.runner.n_jobs = args.n_jobs
     target_system.contacts.compute(cutoff=args.cutoff)
-    target_system.contacts.save(args.output_file)
+    target_system.contacts.count_contacts()
+    target_system.contacts.get_metrics(args.output_file)
 cal_total_time = perf_counter() - t1
 n_frames = target_system.query.whole.universe.trajectory.n_frames
 
 comp_stats = []
-comp_stats.append('Cutoff radio : {}'.format(args.cutoff))
+comp_stats.append('Cutoff radio : {} Angstroms'.format(args.cutoff))
 comp_stats.append('Resource : CPU ({})'.format(args.backend))
 comp_stats.append('Total time : {: .2f} ns'.format(cal_total_time))
 comp_stats.append('Number of frames : {}'.format(n_frames))
