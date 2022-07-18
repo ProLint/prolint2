@@ -37,8 +37,9 @@ For serial contacts calculation:
 
 ``` python
    from ufcc import UFCC
+   from ufcc.sampledata import GIRK
 
-   target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
+   target_system = UFCC(GIRK.coordinates, GIRK.trajectory) 
 
    target_system.contacts.compute()
    target_system.contacts.count_contacts()
@@ -49,8 +50,9 @@ For parallel contacts calculation:
 
 ``` python
    from ufcc import UFCC
+   from ufcc.sampledata import GIRK
 
-   target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
+   target_system = UFCC(GIRK.coordinates, GIRK.trajectory) 
    target_system.contacts.runner.backend = 'parallel'
    
    target_system.contacts.compute()
