@@ -34,7 +34,8 @@ ufcc_parser.add_argument('-v', '--version', action='version')
 ufcc_parser.add_argument('-c', '--cutoff', metavar='', type=int, help='distance cutoff to get the contacts (angstroms)', default=7, dest='cutoff')
 ufcc_parser.add_argument('-al', '--add_lipid_types', metavar='', type=list, help='additional lipid types to be included in the membrane group, supported lipid types are [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE]', default=[], dest='other_lipids')
 ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel'], default='serial', dest='backend')
-ufcc_parser.add_argument('-r', '--report', metavar='', type=str, help='pdf file with a summary of warnings and compute statics of your calculation', default='summary_report.pdf', dest='report')
+ufcc_parser.add_argument('-r', '--report', metavar='', type=bool, help='report file with a summary of warnings and compute statics of your calculation', default=False, nargs='?', const=True, dest='r_bool')
+ufcc_parser.add_argument('-rn', '--report_name', metavar='', type=str, help='name for report file', default='summary_report.pdf', dest='report')
 ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of CPU cores to use with the parallel backend', default=-1, dest='n_jobs')
 
 
@@ -83,31 +84,6 @@ comp_stats.append('Number of frames : {}'.format(n_frames))
 comp_stats.append('Average time per frame : {: .2f} ns'.format(cal_total_time/n_frames))
 comp_stats.append('Output file : {}'.format(args.output_file))
 
-
-#### Creating report ####
-# def output_df_to_pdf(pdf, df):
-#     # A cell is a rectangular area, possibly framed, which contains some text
-#     # Set the width and height of cell
-#     table_cell_width = 25
-#     table_cell_height = 6
-#     # Select a font as Arial, bold, 8
-#     pdf.set_font('Arial', 'B', 8)
-    
-#     # Loop over to print column names
-#     cols = df.columns
-#     for col in cols:
-#         pdf.cell(table_cell_width, table_cell_height, col, align='C', border=1)
-#     # Line break
-#     pdf.ln(table_cell_height)
-#     # Select a font as Arial, regular, 10
-#     pdf.set_font('Arial', '', 10)
-#     # Loop over to print each data in the table
-#     for row in df.itertuples():
-#         for col in cols:
-#             value = str(getattr(row, col))
-#             pdf.cell(table_cell_width, table_cell_height, value, align='C', border=1)
-#         pdf.ln(table_cell_height)
-
 class PDF(FPDF):
     def header(self):
         # Arial bold 15
@@ -149,10 +125,11 @@ class PDF(FPDF):
         self.chapter_title(title)
         self.chapter_body(name)
 
-pdf = PDF()
-title = 'Calculation report.'
-pdf.set_title(title)
-pdf.add_page()
-pdf.print_chapter('Warnings', warn2report)
-pdf.print_chapter('Compute summary', comp_stats)
-pdf.output(args.report, 'F')
+if args.r_bool:
+    pdf = PDF()
+    title = 'Calculation report.'
+    pdf.set_title(title)
+    pdf.add_page()
+    pdf.print_chapter('Warnings', warn2report)
+    pdf.print_chapter('Compute summary', comp_stats)
+    pdf.output(args.report, 'F')
