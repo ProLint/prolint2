@@ -108,3 +108,5 @@ ENV/
 
 # data for tests
 ufcc/data/.*
+ufcc/.DS_Store
+.DS_Store

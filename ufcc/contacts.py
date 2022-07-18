@@ -355,7 +355,7 @@ class Contacts(object):
         contact_metrics['Sum_of_all_Contacts'] = sum_of_all_contacts
 
         if save_file != '':
-            contact_metrics.to_csv(save_file)
+            contact_metrics.to_csv(save_file, index=False)
 
         self.contact_metrics = contact_metrics
              
