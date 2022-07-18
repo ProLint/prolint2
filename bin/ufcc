@@ -42,6 +42,7 @@ ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of
 # Executing the parse_args() method
 args = ufcc_parser.parse_args()
 
+print('\n########### Starting calculation ##########')
 
 # Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
 mass_flag = 0
@@ -64,18 +65,24 @@ with warnings.catch_warnings(record=True) as w:
 
 t1 = perf_counter()
 if args.backend == 'serial':
-    target_system.contacts.compute(cutoff=args.cutoff)
+    print('\n1- Getting the contacts between the groups over the frames in the trajectory:')
+    target_system.contacts.compute(cutoff=args.cutoff)    
+    print('\n2- Getting the contacts metrics:')
     target_system.contacts.count_contacts()
     target_system.contacts.get_metrics(args.output_file)
 elif args.backend == 'parallel':
     target_system.contacts.runner.backend = 'parallel'
     target_system.contacts.runner.n_jobs = args.n_jobs
+    print('\n1- Getting the contacts between the groups over blocks of frames in the trajectory:')
     target_system.contacts.compute(cutoff=args.cutoff)
+    print('\n2- Getting the contacts metrics:')
     target_system.contacts.count_contacts()
     target_system.contacts.get_metrics(args.output_file)
 cal_total_time = perf_counter() - t1
-n_frames = target_system.query.whole.universe.trajectory.n_frames
 
+print('\n################### Done! ##################')
+
+n_frames = target_system.query.whole.universe.trajectory.n_frames
 comp_stats = []
 comp_stats.append('Cutoff radio : {} Angstroms'.format(args.cutoff))
 comp_stats.append('Resource : CPU ({})'.format(args.backend))
@@ -83,6 +90,11 @@ comp_stats.append('Total time : {: .2f} ns'.format(cal_total_time))
 comp_stats.append('Number of frames : {}'.format(n_frames))
 comp_stats.append('Average time per frame : {: .2f} ns'.format(cal_total_time/n_frames))
 comp_stats.append('Output file : {}'.format(args.output_file))
+
+print('\n############## Compute summary #############\n')
+for stat in comp_stats:
+    print(stat)
+print('\n########## Thanks for using ufcc! #########\n')
 
 class PDF(FPDF):
     def header(self):

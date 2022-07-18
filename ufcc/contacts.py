@@ -271,7 +271,6 @@ class Contacts(object):
         # Get counts at each frame
         for frame_index, contacts in tqdm(enumerate(self.contacts),
                                           total=self.query.selected.universe.trajectory.n_frames):
-
             ref, neigh = contacts.nonzero()
             unique, counts = np.unique([ref, [type_index[t] for t in count_by[neigh, frame_index]]],
                                        axis=1,
@@ -343,7 +342,7 @@ class Contacts(object):
             pivot_t = self.counts.pivot_table(index='ResID', columns='FrameID', values=f"# {lip}")
             occupancy += list(pivot_t.astype(bool).sum(axis=1) * 100 / n_frames)
             lipid_number += list(pivot_t.sum(axis=1) / np.count_nonzero(self.database.selected.residues.resnames == lip))
-            sum_of_all_contacts += list(pivot_t.sum(axis=1) / n_frames)
+            # sum_of_all_contacts += list(pivot_t.sum(axis=1) / n_frames)
 
         contact_metrics = pd.DataFrame({'Protein' : protein})
         contact_metrics['ResID'] = res_ids
@@ -352,7 +351,7 @@ class Contacts(object):
         contact_metrics['Radius'] = radius
         contact_metrics['Occupancy'] = occupancy
         contact_metrics['Lipid_Number'] = lipid_number
-        contact_metrics['Sum_of_all_Contacts'] = sum_of_all_contacts
+        # contact_metrics['Sum_of_all_Contacts'] = sum_of_all_contacts
 
         if save_file != '':
             contact_metrics.to_csv(save_file, index=False)
@@ -382,7 +381,8 @@ class Contacts(object):
         for protein in np.unique(self.query.selected.residues.macros):
             residues = self.query.selected.residues[self.query.selected.residues.macros == protein]            
             per_residue_results = {}
-            for idx in tqdm(residues.resindices):
+            for idx in (pbar := tqdm(residues.resindices)):
+                pbar.set_description('Exporting to Prolint in a per residue basis over protein residues')
                 per_residue_results[idx+1] = LPContacts(self.contacts, self.counts, n_residues_db, frames, PLASMA_LIPIDS, self.database, timestep, residue=idx)
 
             prolint_contacts[protein][0] = per_residue_results
