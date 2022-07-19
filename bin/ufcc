@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+r"""Argument parser to use ufcc from the command-line
+======================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+"""
+
+import argparse
+import MDAnalysis as mda
+import ufcc._version as vers
+from ufcc import UFCC
+from time import perf_counter
+import warnings
+from fpdf import FPDF
+
+# Creating the parser
+ufcc_parser = argparse.ArgumentParser(prog='ufcc', 
+                                    #   usage='%(prog)s [optional-arguments] structure_file trajectory_file', 
+                                      description='Argument parser to use the ufcc library directly from the command-line.',
+                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+                                      epilog='Have fun getting lipid-protein contacts! :)\n')
+
+ufcc_parser.version = vers.get_versions()['version']
+
+# positional arguments
+ufcc_parser.add_argument('structure', action='store', type=str, help='path to the structure/topology file') 
+ufcc_parser.add_argument('trajectory', action='store', type=str, help='path to the trajectory file')
+ufcc_parser.add_argument('output_file', action='store', type=str, help='output pkl file with the contacts information')
+
+
+# optional arguments
+ufcc_parser.add_argument('-v', '--version', action='version')
+ufcc_parser.add_argument('-c', '--cutoff', metavar='', type=int, help='distance cutoff to get the contacts (angstroms)', default=7, dest='cutoff')
+ufcc_parser.add_argument('-al', '--add_lipid_types', metavar='', type=list, help='additional lipid types to be included in the membrane group, supported lipid types are [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE]', default=[], dest='other_lipids')
+ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel'], default='serial', dest='backend')
+ufcc_parser.add_argument('-r', '--report', metavar='', type=bool, help='report file with a summary of warnings and compute statics of your calculation', default=False, nargs='?', const=True, dest='r_bool')
+ufcc_parser.add_argument('-rn', '--report_name', metavar='', type=str, help='name for report file', default='summary_report.pdf', dest='report')
+ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of CPU cores to use with the parallel backend', default=-1, dest='n_jobs')
+
+
+# Executing the parse_args() method
+args = ufcc_parser.parse_args()
+
+print('\n########### Starting calculation ##########')
+
+# Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
+mass_flag = 0
+mass_list = []
+warn2report = []
+with warnings.catch_warnings(record=True) as w:
+    target_system = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids) 
+    for warn in w:
+        syl = str(warn.message).split()
+        if syl[:5] == ['Failed', 'to', 'guess', 'the', 'mass']:
+            mass_flag=+1
+            mass_list.append(syl[-1])
+        else:
+            warn2report.append(str(warn.message))
+            print(warn.message)
+    if mass_flag > 0:
+        mass_warn = 'Warning: Please be aware that UFCC could NOT guess the mass for the following atomtypes: {}. If you are using Martini or you are sure that this is not due to an error in your system you can ignore this message.'.format(', '.join(mass_list))
+        print(mass_warn)
+        warn2report.append(mass_warn)
+
+t1 = perf_counter()
+if args.backend == 'serial':
+    print('\n1- Getting the contacts between the groups over the frames in the trajectory:')
+    target_system.contacts.compute(cutoff=args.cutoff)    
+    print('\n2- Getting the contacts metrics:')
+    target_system.contacts.count_contacts()
+    target_system.contacts.get_metrics(args.output_file)
+elif args.backend == 'parallel':
+    target_system.contacts.runner.backend = 'parallel'
+    target_system.contacts.runner.n_jobs = args.n_jobs
+    print('\n1- Getting the contacts between the groups over blocks of frames in the trajectory:')
+    target_system.contacts.compute(cutoff=args.cutoff)
+    print('\n2- Getting the contacts metrics:')
+    target_system.contacts.count_contacts()
+    target_system.contacts.get_metrics(args.output_file)
+cal_total_time = perf_counter() - t1
+
+print('\n################### Done! ##################')
+
+n_frames = target_system.query.whole.universe.trajectory.n_frames
+comp_stats = []
+comp_stats.append('Cutoff radio : {} Angstroms'.format(args.cutoff))
+comp_stats.append('Resource : CPU ({})'.format(args.backend))
+comp_stats.append('Total time : {: .2f} ns'.format(cal_total_time))
+comp_stats.append('Number of frames : {}'.format(n_frames))
+comp_stats.append('Average time per frame : {: .2f} ns'.format(cal_total_time/n_frames))
+comp_stats.append('Output file : {}'.format(args.output_file))
+
+print('\n############## Compute summary #############\n')
+for stat in comp_stats:
+    print(stat)
+print('\n########## Thanks for using ufcc! #########\n')
+
+class PDF(FPDF):
+    def header(self):
+        # Arial bold 15
+        self.set_font('Arial', 'B', 15)
+        # Calculate width of title and position
+        w = self.get_string_width(title) + 6
+        self.set_x((210 - w) / 2)
+        # Colors of frame, background and text
+        self.set_draw_color(250, 250, 250)
+        self.set_fill_color(250, 250, 250)
+        # Thickness of frame (1 mm)
+        self.set_line_width(1)
+        # Title
+        self.cell(w, 9, title, 1, 1, 'C', 1)
+        # Line break
+        self.ln(10)
+
+    def chapter_title(self, label):
+        # Arial 12
+        self.set_font('Arial', '', 12)
+        # Background color
+        self.set_fill_color(250, 250, 250)
+        # Title
+        self.cell(0, 6, label, 0, 1, 'L', 1)
+        # Line break
+        self.ln(4)
+
+    def chapter_body(self, text):
+        # Read text 
+        txt = '\n'.join(text)
+        # Times 12
+        self.set_font('Times', '', 12)
+        # Output justified text
+        self.multi_cell(0, 5, txt)
+        # Line break
+        self.ln(10)
+
+    def print_chapter(self, title, name):
+        self.chapter_title(title)
+        self.chapter_body(name)
+
+if args.r_bool:
+    pdf = PDF()
+    title = 'Calculation report.'
+    pdf.set_title(title)
+    pdf.add_page()
+    pdf.print_chapter('Warnings', warn2report)
+    pdf.print_chapter('Compute summary', comp_stats)
+    pdf.output(args.report, 'F')

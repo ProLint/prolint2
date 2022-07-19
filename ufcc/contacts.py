@@ -179,8 +179,10 @@ class Contacts(object):
         self.query = query
         self.database = database
         self.runner = Runner()
+        self.cutoff = None
         self.contacts = None
         self.counts = None
+        self.contact_metrics = None
 
     def compute(self, cutoff=7):
         """
@@ -191,6 +193,7 @@ class Contacts(object):
         cutoff : int (7)
             Value in Angstrom to be used as cutoff for the calculation of the contacts.
         """
+        self.cutoff = cutoff
         assert isinstance(
             self.query.selected,
             (mda.core.groups.AtomGroup),
@@ -243,7 +246,7 @@ class Contacts(object):
         """
 
         if self.contacts is None:
-            raise ValueError(".neighbours attribute is None: use .run() before calling .count_neighbours()")
+            raise ValueError("contacts attribute is None: use .compute() before calling .count_neighbours()")
 
         # Use lipid resnames to distinguish lipids
         count_by = np.full(
@@ -268,7 +271,6 @@ class Contacts(object):
         # Get counts at each frame
         for frame_index, contacts in tqdm(enumerate(self.contacts),
                                           total=self.query.selected.universe.trajectory.n_frames):
-
             ref, neigh = contacts.nonzero()
             unique, counts = np.unique([ref, [type_index[t] for t in count_by[neigh, frame_index]]],
                                        axis=1,
@@ -320,6 +322,42 @@ class Contacts(object):
 
         self.counts = counts
 
+    def get_metrics(self, save_file=''):
+        if self.contacts is None or self.counts is None:
+            raise ValueError("contacts or counts attributes are None: use .compute() and .count_neighbours() methods  before calling get_metrics")
+
+        n_frames = self.database.selected.universe.trajectory.n_frames
+        unique_lip_resnames = np.unique(self.database.selected.residues.resnames)
+        protein = list(self.counts[self.counts['FrameID'] == 0]['Protein']) * len(unique_lip_resnames)
+        res_ids = list(self.counts[self.counts['FrameID'] == 0]['ResID']) * len(unique_lip_resnames)
+        res_names = list(self.counts[self.counts['FrameID'] == 0]['Residue']) * len(unique_lip_resnames)
+        radius = self.cutoff
+        lipids = []
+        occupancy = []
+        lipid_number = []
+        sum_of_all_contacts = []
+        for lip in unique_lip_resnames:
+            for res in list(self.counts[self.counts['FrameID'] == 0]['ResID']):
+                lipids.append(lip)
+            pivot_t = self.counts.pivot_table(index='ResID', columns='FrameID', values=f"# {lip}")
+            occupancy += list(pivot_t.astype(bool).sum(axis=1) * 100 / n_frames)
+            lipid_number += list(pivot_t.sum(axis=1) / np.count_nonzero(self.database.selected.residues.resnames == lip))
+            # sum_of_all_contacts += list(pivot_t.sum(axis=1) / n_frames)
+
+        contact_metrics = pd.DataFrame({'Protein' : protein})
+        contact_metrics['ResID'] = res_ids
+        contact_metrics['ResName'] = res_names
+        contact_metrics['Lipids'] = lipids
+        contact_metrics['Radius'] = radius
+        contact_metrics['Occupancy'] = occupancy
+        contact_metrics['Lipid_Number'] = lipid_number
+        # contact_metrics['Sum_of_all_Contacts'] = sum_of_all_contacts
+
+        if save_file != '':
+            contact_metrics.to_csv(save_file, index=False)
+
+        self.contact_metrics = contact_metrics
+             
     def export_to_prolint(self, path='prolint_results.pkl'):
         """
         Temporal method to be able to use the analysis tools from **prolintpy**.
@@ -343,7 +381,8 @@ class Contacts(object):
         for protein in np.unique(self.query.selected.residues.macros):
             residues = self.query.selected.residues[self.query.selected.residues.macros == protein]            
             per_residue_results = {}
-            for idx in tqdm(residues.resindices):
+            for idx in (pbar := tqdm(residues.resindices)):
+                pbar.set_description('Exporting to Prolint in a per residue basis over protein residues')
                 per_residue_results[idx+1] = LPContacts(self.contacts, self.counts, n_residues_db, frames, PLASMA_LIPIDS, self.database, timestep, residue=idx)
 
             prolint_contacts[protein][0] = per_residue_results
@@ -351,7 +390,6 @@ class Contacts(object):
         with open(path, 'wb') as f:
             pickle.dump(prolint_contacts, f)
         
-
     def __str__(self):
         if not isinstance(self.contacts, np.ndarray):
             return "<ufcc.Contacts containing 0 contacts>"
