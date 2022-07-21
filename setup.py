@@ -1,5 +1,5 @@
 """
-Ultr-Fast Contacts Calculation (UFCC)
+Ultra-Fast Contacts Calculation (UFCC)
 =======================================
 
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
