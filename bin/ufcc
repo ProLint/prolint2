@@ -7,7 +7,6 @@ r"""Argument parser to use ufcc from the command-line
 """
 
 import argparse
-from tkinter import N
 import MDAnalysis as mda
 import ufcc._version as vers
 from ufcc import UFCC
