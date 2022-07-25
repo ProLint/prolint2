@@ -70,71 +70,110 @@ e  :  exit interactive selection and calculate de contacts between the Query and
 
             # updating database and query groups
             if input_list[0] == 'db':
-                if type(input_list[1]) != int:
-                    print('Error: Group_ID must be an integer.')
-                elif input_list[1] not in groups_dict.keys():
-                    print('Error: Group_ID must be a valid group ID.')
-                elif len(input_list) > 2:
+                if len(input_list) > 2:
                     print('Error: Too many arguments.')
+                elif len(input_list) < 2:
+                    print('Error: Too few arguments.')
                 else:
-                    target_system.database.select(groups_dict[int(input_list[1])][1])
-                    db_qr['Database'] = groups_dict[int(input_list[1])][1]
+                    try:
+                        int(input_list[1])
+                    except ValueError:
+                        print('Group_ID must be an integer.')
+                        continue
+                    if int(input_list[1]) not in groups_dict.keys():
+                        print('Error: Group_ID must be a valid group ID.')
+                    else:
+                        target_system.database.select(groups_dict[int(input_list[1])][1])
+                        db_qr['Database'] = groups_dict[int(input_list[1])][1]
             elif input_list[0] == 'qr':
-                if type(input_list[1]) != int:
-                    print('Error: Group_ID must be an integer.')
-                elif input_list[1] not in groups_dict.keys():
-                    print('Error: Group_ID must be a valid group ID.')
-                elif len(input_list) > 2:
+                if len(input_list) > 2:
                     print('Error: Too many arguments.')
+                elif len(input_list) < 2:
+                    print('Error: Too few arguments.')
                 else:
-                    target_system.query.select(groups_dict[int(input_list[1])][1])
-                    db_qr['Query'] = groups_dict[int(input_list[1])][1]
+                    try:
+                        int(input_list[1])
+                    except ValueError:
+                        print('Group_ID must be an integer.')
+                        continue
+                    if int(input_list[1]) not in groups_dict.keys():
+                        print('Error: Group_ID must be a valid group ID.')
+                    else:
+                        target_system.query.select(groups_dict[int(input_list[1])][1])
+                        db_qr['Query'] = groups_dict[int(input_list[1])][1]
 
             # creating subgroups
             elif input_list[0] == 'gb':
-                if type(input_list[1]) != int:
-                    print('Error: Group_ID must be an integer.')
-                elif input_list[1] not in groups_dict.keys():
-                    print('Error: Group_ID must be a valid group ID.')
-                elif input_list[2] not in target_system.query.whole.universe.atoms.attrs:
-                    print('Error: Attribute must be a valid attribute: {}.'.format(target_system.query.whole.universe.atoms.attrs))
-                elif len(input_list) > 3:
+                if len(input_list) > 3:
                     print('Error: Too many arguments.')
+                elif len(input_list) < 3:
+                    print('Error: Too few arguments.')
                 else:
-                    groups_to_add = groups_dict[int(input_list[1])][1].groupby(input_list[2])
-                    for label, ag in groups_to_add.items():
-                        groups_dict[max(groups_dict.keys()) + 1] = ['{} grouped by {} from {}'.format(label, input_list[2], groups_dict[int(input_list[1])][0]), ag]
+                    try:
+                        int(input_list[1])
+                    except ValueError:
+                        print('Group_ID must be an integer.')
+                        continue
+                    if int(input_list[1]) not in groups_dict.keys():
+                        print('Error: Group_ID must be a valid group ID.')
+                    elif not hasattr(groups_dict[int(input_list[1])][1], input_list[2]):
+                        print('The attribute {} is not included in the topological attributes of this system.'.format(input_list[2]))
+                    else:
+                        groups_to_add = groups_dict[int(input_list[1])][1].groupby(input_list[2])
+                        for label, ag in groups_to_add.items():
+                            groups_dict[max(groups_dict.keys()) + 1] = ['{} grouped by {} from {}'.format(label, input_list[2], groups_dict[int(input_list[1])][0]), ag]
             elif input_list[0] == 'sl':
-                if type(input_list[1]) != int:
-                    print('Error: Group_ID must be an integer.')
-                elif input_list[1] not in groups_dict.keys():
-                    print('Error: Group_ID must be a valid group ID.')
-                elif input_list[2] not in ['segment', 'residue', 'atom', 'molecule']:
-                    print('Error: Level must be a valid level: segment, residue, atom, molecule.')
-                elif len(input_list) > 3:
+                if len(input_list) > 3:
                     print('Error: Too many arguments.')
+                elif len(input_list) < 3:
+                    print('Error: Too few arguments.')
                 else:
-                    groups_to_add = groups_dict[int(input_list[1])][1].split(input_list[2])
-                    for ag in groups_to_add:
-                        groups_dict[max(groups_dict.keys()) + 1] = ['{} splitted from {}'.format(input_list[2],groups_dict[int(input_list[1])][0]), ag]
+                    try:
+                        int(input_list[1])
+                    except ValueError:
+                        print('Group_ID must be an integer.')
+                        continue
+                    if int(input_list[1]) not in groups_dict.keys():
+                        print('Error: Group_ID must be a valid group ID.')
+                    elif input_list[2] not in ['segment', 'residue', 'atom', 'molecule']:
+                        print('Error: Level must be a valid level: segment, residue, atom, molecule.')
+                    else:
+                        groups_to_add = groups_dict[int(input_list[1])][1].split(input_list[2])
+                        for ag in groups_to_add:
+                            groups_dict[max(groups_dict.keys()) + 1] = ['{} splitted from {}'.format(input_list[2],groups_dict[int(input_list[1])][0]), ag]
 
             # logical operations with groups
             elif input_list[0] == 'add':
-                if all([isinstance(item, int) for item in input_list[1:]]) and all([item in groups_dict.keys() for item in input_list[1:]]):  
-                    ag_list = [groups_dict[int(x)][1] for x in input_list[1:]]
-                    combined = add_atomgroups(ag_list).atoms
-                    groups_dict[max(groups_dict.keys()) + 1] = ['Group combined from {}'.format(input_list[1:]), combined]
+                if len(input_list) < 3:
+                    print('Error: Too few arguments.')
                 else:
-                    print('Error: All Group_IDs must be integers included in the list of selection groups.')
+                    try:
+                        for i in range(1, len(input_list)):
+                            int(input_list[i])
+                    except ValueError:
+                        print('All Group_IDs must be integers.')
+                        continue
+                    if not all([int(item) in groups_dict.keys() for item in input_list[1:]]):  
+                        print('Error: All Group_IDs must be valid group IDs.')
+                    else:
+                        ag_list = [groups_dict[int(x)][1] for x in input_list[1:]]
+                        combined = add_atomgroups(ag_list).atoms
+                        groups_dict[max(groups_dict.keys()) + 1] = ['Group combined from {}'.format(input_list[1:]), combined]
             elif input_list[0] == 'del':
-                if type(input_list[1]) != int:
-                    print('Error: Group_ID must be an integer.')
-                elif input_list[1] not in groups_dict.keys():
-                    print('Error: Group_ID must be a valid group ID.')
-                elif len(input_list) > 2:
+                if len(input_list) > 2:
                     print('Error: Too many arguments.')
+                elif len(input_list) < 2:
+                    print('Error: Too few arguments.')
                 else:
-                    groups_dict.pop(int(input_list[1]))
+                    try:
+                        int(input_list[1])
+                    except ValueError:
+                        print('Group_ID must be an integer.')
+                        continue
+                    if int(input_list[1]) not in groups_dict.keys():
+                        print('Error: Group_ID must be a valid group ID.')
+                    else:
+                        groups_dict.pop(int(input_list[1]))
 
             # help actions
             elif input_list[0] == 'lg':
@@ -154,8 +193,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
                 print('Unknown action key. Please type (h) to see the available action keys.')
 
         elif input_key != 'e' and len(input_key) == 0:
-            print_help_message()
-            input_key = input('>> ')
+            continue
         else:
             print('Exiting interactive selection.')
             break
