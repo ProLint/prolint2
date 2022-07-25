@@ -64,12 +64,15 @@ with warnings.catch_warnings(record=True) as w:
 
 # For interactive selection of the groups for the contacts calculation
 if args.i_bool:
+    db_qr = {
+       'Database' : target_system.database.selected,
+        'Query' : target_system.query.selected
+    }
+
     groups_dict = {
-        0: ['Database', target_system.database.selected],
-        1: ['Query', target_system.query.selected],
-        2: ['System', target_system.query.whole.universe.atoms],
-        3: ['Protein', target_system.query.whole],
-        4: ['Lipids', target_system.database.whole]
+        0: ['System', target_system.query.whole.universe.atoms],
+        1: ['Protein', target_system.query.whole],
+        2: ['Lipids', target_system.database.whole]
     }
 
     groups_to_add = target_system.database.whole.universe.select_atoms('not protein').groupby('resnames')
@@ -90,9 +93,15 @@ e  :  exit interactive selection and calculate de contacts between the Query and
 ''')
 
     def print_list_groups():
-        print('\nList of groups:\n')
+        print('\nSelection groups:\n')
         for key, value in groups_dict.items():
             print('({}) : {} --> {} atoms'.format(key, value[0], value[1].n_atoms))
+
+    def print_db_qr():
+        print('\nDatabase and Query groups:\n')
+        for key, value in db_qr.items():
+            print('{} --> {} atoms'.format(key, value.n_atoms))
+        print('-----------------------------------------------------')
         
     def print_help_message():
         print('You can type (lg) to list the groups at any time, or (h) to review the available action keys with examples.')
@@ -103,6 +112,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
             combined = mda.Merge(combined, ag)
         return combined
 
+    print_db_qr()
     print_list_groups()
     print_action_keys()
     
@@ -141,6 +151,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
 
             # help actions
             elif input_list[0] == 'lg':
+                print_db_qr()
                 print_list_groups()
             elif input_list[0] == 'h':
                 print_action_keys()
