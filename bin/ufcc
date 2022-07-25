@@ -7,9 +7,9 @@ r"""Argument parser to use ufcc from the command-line
 """
 
 import argparse
-import MDAnalysis as mda
 import ufcc._version as vers
 from ufcc import UFCC
+from ufcc.interactive_sel import interactive_selection
 from time import perf_counter
 import warnings
 from fpdf import FPDF
@@ -64,109 +64,7 @@ with warnings.catch_warnings(record=True) as w:
 
 # For interactive selection of the groups for the contacts calculation
 if args.i_bool:
-    db_qr = {
-       'Database' : target_system.database.selected,
-        'Query' : target_system.query.selected
-    }
-
-    groups_dict = {
-        0: ['System', target_system.query.whole.universe.atoms],
-        1: ['Protein', target_system.query.whole],
-        2: ['Lipids', target_system.database.whole]
-    }
-
-    groups_to_add = target_system.database.whole.universe.select_atoms('not protein').groupby('resnames')
-    for label, ag in groups_to_add.items():
-        groups_dict[max(groups_dict.keys()) + 1] = ['{}'.format(label), ag]
-
-    def print_action_keys():
-        print('''\nActions keys:
-db  :  update database group for contacts calculation. (i.e. >> d Group_ID) where Group_ID is the identifier of the group on the list of groups.
-qr  :  update query group for contacts calculation. (i.e. >> d Group_ID) where Group_ID is the identifier of the group on the list of groups.
-gp :  create subgroups grouped by any topology attribute ("names", "resnames", "masses", etc). (i.e. >> gp Group_ID resnames) creates new groups for every different resname in the Group_ID selected.
-sl  :  create new groups by splitting a previous group at the desired level ("segment", "residue", "atom", "molecule"). (i.e. >> sl Group_ID residue) splits the Group_ID selected into all the residues that make it up, and create a new group for each of them.
-add:  merge two or more groups and create a new group with the combination. (i.e. >> add Group_ID1 Group_ID2 ... Group_IDn) creates a new group for the combination of the groups Group_ID1 Group_ID2 ... Group_IDn.
-del:  delete a group from the list of groups. (i.e. >> del Group_ID) remove the Group_ID selected.
-lg :  print the list of groups.
-h  :  print the help for all the available action keys.
-e  :  exit interactive selection and calculate de contacts between the Query and Database groups. 
-''')
-
-    def print_list_groups():
-        print('\nSelection groups:\n')
-        for key, value in groups_dict.items():
-            print('({}) : {} --> {} atoms'.format(key, value[0], value[1].n_atoms))
-
-    def print_db_qr():
-        print('\nDatabase and Query groups:\n')
-        for key, value in db_qr.items():
-            print('{} --> {} atoms'.format(key, value.n_atoms))
-        print('-----------------------------------------------------')
-        
-    def print_help_message():
-        print('You can type (lg) to list the groups at any time, or (h) to review the available action keys with examples.')
-
-    def add_atomgroups(ag_list):
-        combined = ag_list[0]
-        for ag in ag_list[1:]:
-            combined = mda.Merge(combined, ag)
-        return combined
-
-    print_db_qr()
-    print_list_groups()
-    print_action_keys()
-    
-    input_key = ''
-    while input_key != 'e':
-        print_help_message()
-        input_key = input('>> ')
-        if input_key != 'e' and len(input_key) > 0:
-            input_list = input_key.split()
-
-            # updating database and query groups
-            if input_list[0] == 'db':
-                target_system.database.select(groups_dict[int(input_list[1])][1])
-                groups_dict[0][1] = groups_dict[int(input_list[1])][1]
-            elif input_list[0] == 'qr':
-                target_system.query.select(groups_dict[int(input_list[1])][1])
-                groups_dict[1][1] = groups_dict[int(input_list[1])][1]
-
-            # creating subgroups
-            elif input_list[0] == 'gb':
-                groups_to_add = groups_dict[int(input_list[1])][1].groupby(input_list[2])
-                for label, ag in groups_to_add.items():
-                    groups_dict[max(groups_dict.keys()) + 1] = ['{} grouped by {} from {}'.format(label, input_list[2], groups_dict[int(input_list[1])][0]), ag]
-            elif input_list[0] == 'sl':
-                groups_to_add = groups_dict[int(input_list[1])][1].split(input_list[2])
-                for ag in groups_to_add:
-                    groups_dict[max(groups_dict.keys()) + 1] = ['{} splitted from {}'.format(input_list[2],groups_dict[int(input_list[1])][0]), ag]
-
-            # logical operations with groups
-            elif input_list[0] == 'add':
-                ag_list = [groups_dict[int(x)][1] for x in input_list[1:]]
-                combined = add_atomgroups(ag_list).atoms
-                groups_dict[max(groups_dict.keys()) + 1] = ['Group combined from {}'.format(input_list[1:]), combined]
-            elif input_list[0] == 'del':
-                groups_dict.pop(int(input_list[1]))
-
-            # help actions
-            elif input_list[0] == 'lg':
-                print_db_qr()
-                print_list_groups()
-            elif input_list[0] == 'h':
-                print_action_keys()
-
-            # exit actions
-            else:
-                print('Unknown action key. Please type (h) to see the available action keys.')
-
-        elif input_key != 'e' and len(input_key) == 0:
-            print_help_message()
-            input_key = input('>> ')
-        else:
-            print('Exiting interactive selection.')
-            break
-
+    target_system = interactive_selection(target_system)
 
 print('\n########### Starting calculation ##########')
 t1 = perf_counter()
