@@ -110,7 +110,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
     while input_key != 'e':
         print_help_message()
         input_key = input('>> ')
-        if input_key != 'e':
+        if input_key != 'e' and len(input_key) > 0:
             input_list = input_key.split()
 
             # updating database and query groups
@@ -144,6 +144,17 @@ e  :  exit interactive selection and calculate de contacts between the Query and
                 print_list_groups()
             elif input_list[0] == 'h':
                 print_action_keys()
+
+            # exit actions
+            else:
+                print('Unknown action key. Please type (h) to see the available action keys.')
+
+        elif input_key != 'e' and len(input_key) == 0:
+            print_help_message()
+            input_key = input('>> ')
+        else:
+            print('Exiting interactive selection.')
+            break
 
 
 print('\n########### Starting calculation ##########')
