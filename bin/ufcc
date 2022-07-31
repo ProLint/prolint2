@@ -7,9 +7,9 @@ r"""Argument parser to use ufcc from the command-line
 """
 
 import argparse
-import MDAnalysis as mda
 import ufcc._version as vers
 from ufcc import UFCC
+from ufcc.interactive_sel import interactive_selection
 from time import perf_counter
 import warnings
 from fpdf import FPDF
@@ -37,12 +37,11 @@ ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend
 ufcc_parser.add_argument('-r', '--report', metavar='', type=bool, help='report file with a summary of warnings and compute statics of your calculation', default=False, nargs='?', const=True, dest='r_bool')
 ufcc_parser.add_argument('-rn', '--report_name', metavar='', type=str, help='name for report file', default='summary_report.pdf', dest='report')
 ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of CPU cores to use with the parallel backend', default=-1, dest='n_jobs')
+ufcc_parser.add_argument('-i', '--interactive', metavar='', type=bool, help='interactive selection of the atom groups for the calculation of the contacts', default=False, nargs='?', const=True, dest='i_bool')
 
 
 # Executing the parse_args() method
 args = ufcc_parser.parse_args()
-
-print('\n########### Starting calculation ##########')
 
 # Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
 mass_flag = 0
@@ -63,6 +62,11 @@ with warnings.catch_warnings(record=True) as w:
         print(mass_warn)
         warn2report.append(mass_warn)
 
+# For interactive selection of the groups for the contacts calculation
+if args.i_bool:
+    target_system = interactive_selection(target_system)
+
+print('\n########### Starting calculation ##########')
 t1 = perf_counter()
 if args.backend == 'serial':
     print('\n1- Getting the contacts between the groups over the frames in the trajectory:')
@@ -145,3 +149,7 @@ if args.r_bool:
     pdf.print_chapter('Warnings', warn2report)
     pdf.print_chapter('Compute summary', comp_stats)
     pdf.output(args.report, 'F')
+
+
+
+
