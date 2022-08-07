@@ -1,6 +1,5 @@
 import ast
 import json
-from data import dataf
 from bottle import route, run, template, debug, static_file
 
 # rendered_data = {
@@ -31,10 +30,9 @@ def listener(metadata):
     global data
 
     metadata = ast.literal_eval(metadata)
-    print ('metadata', metadata)
 
     lipid = metadata['lipid']
-    protein = metadata['protein']
+    # protein = metadata['protein']
 
     if not data_loaded:
 
@@ -50,18 +48,6 @@ def listener(metadata):
         data_loaded = True
 
     sliced_data = data[lipid]
-    # print ('sliced_data', sliced_data)
-    # for key, value in data.items():
-    #     rendered_data['proteins'] = {
-    #         "name": "GIRK",
-    #         "lipids": key
-    #     }
-    # print ('rendered', rendered_data)
-
-    # rendered_data['protein'] = metadata.get('protein')
-    # rendered_data['lipid'] = metadata.get('lipid')
-    # return json.dumps(data)
-    print (data.keys())
     return {lipid: sliced_data}
 
 
