@@ -11,7 +11,6 @@
  */
 
 // Create root element
-// https://www.amcharts.com/docs/v5/getting-started/#Root_element
 var root = am5.Root.new("chartdiv");
 
 // Create custom theme
@@ -29,14 +28,14 @@ root.setThemes([
 
 // Data
 // fetch('/data/' + document.getElementById('lipids').value)
-fetch('d.json')
+fetch('girk.json')
     .then(response => response.json())
     .then(temperatures => {
 
         console.log('temps', temperatures)
 
         // Modify defaults
-        root.numberFormatter.set("numberFormat", "+#.0°C|#.0°C|0.0°C");
+        // root.numberFormatter.set("numberFormat", "+#.0°C|#.0°C|0.0°C");
 
         var startYear = 1973;
         var endYear = 2016;
@@ -47,7 +46,8 @@ fetch('d.json')
         var colorSet = am5.ColorSet.new(root, {});
 
         // Params
-        var innerRadius = 20
+        var innerRadius = 20;
+        var lipidSelection = "CHOL";
 
         // Create chart
         // https://www.amcharts.com/docs/v5/charts/radar-chart/
@@ -103,8 +103,8 @@ fetch('d.json')
         }));
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
-            min: -3,
-            max: 6,
+            min: 0,
+            max: 4,
             extraMax: 0.1,
             renderer: yRenderer
         }));
@@ -163,13 +163,16 @@ fetch('d.json')
         series.data.setAll(data);
         categoryAxis.data.setAll(data);
 
-        series.appear(500);
-        chart.appear(500, 100);
+        series.appear(10);
+        chart.appear(10, 100);
 
         function generateRadarData() {
             var data = [];
             var i = 0;
             for (var continent in temperatures) {
+                if (continent != lipidSelection) {
+                    continue
+                }
                 var continentData = temperatures[continent];
 
                 continentData.forEach(function (country) {
@@ -177,8 +180,9 @@ fetch('d.json')
                         "country": country[0]
                     }
 
-                    for (var y = 2; y < country.length; y++) {
-                        rawDataItem["value" + (startYear + y - 2)] = country[y];
+                    var startY = 1
+                    for (var y = startY; y < country.length; y++) {
+                        rawDataItem["value" + (startYear + y - startY)] = country[y];
                     }
 
                     data.push(rawDataItem);
@@ -188,6 +192,7 @@ fetch('d.json')
                 i++;
 
             }
+            console.log('dataProcessed', data)
             return data;
         }
 
