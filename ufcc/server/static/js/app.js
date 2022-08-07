@@ -26,6 +26,7 @@ root.fps = 60;
 // fetch('/data/' + document.getElementById('lipids').value)
 var obj = {
     "lipid": document.getElementById('lipids').value,
+    "protein": document.getElementById('proteins').value
 }
 fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
@@ -300,6 +301,7 @@ fetch('/data/' + JSON.stringify(obj))
         document.getElementById('lipids').addEventListener('change', function (e) {
 
             obj.lipid = e.target.value
+            obj.protein = document.getElementById('proteins').value
             fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(abcdef => {
@@ -322,8 +324,5 @@ fetch('/data/' + JSON.stringify(obj))
             chart.appear(500, 100);
 
         });
-
-
-
 
     });
