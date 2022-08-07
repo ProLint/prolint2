@@ -19,6 +19,7 @@ def app():
 @route('/data/:metadata')
 def listener(metadata):
     print ('Receiving request: ')
+    print ('metadata', metadata)
     metadata = ast.literal_eval(metadata)
 
     print (metadata)
@@ -27,7 +28,7 @@ def listener(metadata):
     # lipid = metadata.split(':')[0]
 
     # print ('lipid', lipid)
-    lipid = "POPS"
+    lipid = metadata['lipid']
     class PairsHook(dict):
         def __init__(self, pairs):
             key = [x for x in pairs if x[0] == lipid]

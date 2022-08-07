@@ -28,12 +28,8 @@ var obj = {
     "lipid": document.getElementById('lipids').value,
 }
 fetch('/data/' + JSON.stringify(obj))
-// fetch('/data/girk.json')
-// fetch('girk.json')
     .then(response => response.json())
     .then(contactData => {
-
-        // console.log('contactData', contactData)
 
         var startFrameGroup = 0;
         var endFrameGroup = 1;
@@ -107,6 +103,10 @@ fetch('/data/' + JSON.stringify(obj))
             renderer: yRenderer
         }));
 
+        // Pie chart label
+        var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
+            above: true
+        }));
 
         // Create series
         // https://www.amcharts.com/docs/v5/charts/radar-chart/#Adding_series
@@ -153,23 +153,19 @@ fetch('/data/' + JSON.stringify(obj))
         //     fill: am5.color(0x673AB7)
         // }));
 
-
         // Generate and set data
         // https://www.amcharts.com/docs/v5/charts/radar-chart/#Setting_data
         var data = generateRadarData(contactData);
         series.data.setAll(data);
         categoryAxis.data.setAll(data);
 
-        series.appear(10);
-        chart.appear(10, 100);
+        series.appear(500);
+        chart.appear(500, 100);
 
         function generateRadarData(cData) {
             var data = [];
             var i = 0;
             for (var lipid in cData) {
-                // if (lipid != lipidSelection) {
-                //     continue
-                // }
                 var lipidData = cData[lipid];
 
                 lipidData.forEach(function (residue) {
@@ -189,15 +185,11 @@ fetch('/data/' + JSON.stringify(obj))
                 i++;
 
             }
-            // console.log('dataProcessed', data)
             return data;
         }
 
 
         function createRange(name, lipidData, index) {
-            var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
-                above: true
-            }));
             axisRange.get("label").setAll({
                 text: name
             });
@@ -290,11 +282,9 @@ fetch('/data/' + JSON.stringify(obj))
 
         function updateRadarData(frameGroup) {
             if (currentFrameGroup != frameGroup) {
-                // console.log('INSIDE UPDATE', frameGroup)
                 currentFrameGroup = frameGroup;
                 // frameGroupLabel.set("text", currentFrameGroup.toString());
                 am5.array.each(series.dataItems, function (dataItem) {
-                    console.log('dataItem', dataItem)
                     var newValue = dataItem.dataContext["value_" + frameGroup];
                     dataItem.set("valueY", newValue);
                     dataItem.animate({
@@ -309,21 +299,28 @@ fetch('/data/' + JSON.stringify(obj))
 
         document.getElementById('lipids').addEventListener('change', function (e) {
 
-            fetch('/data/' + e.target.value)
+            obj.lipid = e.target.value
+            fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
-                .then(contactData => {
-                    // preparedData = prepareDataInput(data);
-                    // distanceSeries.data.setAll(preparedData['weeklyData']);
-                    // weekAxis.data.setAll(weekAxisData);
-                    // bubbleSeries.data.setAll(preparedData['dailyData']);
+                .then(abcdef => {
 
-                    var data = generateRadarData(contactData);
-                    console.log('newData', data)
-                    // series.data.setAll(data);
-                    // categoryAxis.data.setAll(data);
-                    updateRadarData(1)
+                    var duta = generateRadarData(abcdef);
+                    series.data.setAll(duta);
+                    categoryAxis.data.setAll(duta);
 
+                    am5.array.each(series.dataItems, function (dataItem) {
+                        var newValue = dataItem.dataContext["value_" + 0];
+                        dataItem.set("valueY", newValue);
+                        dataItem.animate({
+                            key: "valueYWorking",
+                            to: newValue,
+                            duration: 500
+                        });
+                    });
                 });
+            series.appear(1000);
+            chart.appear(500, 100);
+
         });
 
 
