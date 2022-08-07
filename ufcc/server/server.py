@@ -24,6 +24,8 @@ def listener(metadata):
         data = dataf('2')
     else:
         data = dataf('3')
+
+    print (json.dumps(data))
     return json.dumps(data)
 
 
