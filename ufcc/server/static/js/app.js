@@ -10,36 +10,28 @@
  * ---------------------------------------
  */
 
-// Create root element
 var root = am5.Root.new("chartdiv");
 
-// Create custom theme
-// https://www.amcharts.com/docs/v5/concepts/themes/#Quick_custom_theme
-const myTheme = am5.Theme.new(root);
-myTheme.rule("Label").set("fontSize", 10);
-myTheme.rule("Grid").set("strokeOpacity", 0.06);
+const theme = am5.Theme.new(root);
+theme.rule("Label").set("fontSize", 10);
+theme.rule("Grid").set("strokeOpacity", 0.06);
 
-// Set themes
-// https://www.amcharts.com/docs/v5/concepts/themes/
 root.setThemes([
     am5themes_Animated.new(root),
-    myTheme
+    theme
 ]);
 
 // Data
 // fetch('/data/' + document.getElementById('lipids').value)
 fetch('girk.json')
     .then(response => response.json())
-    .then(temperatures => {
+    .then(contactData => {
 
-        console.log('temps', temperatures)
+        // console.log('contactData', contactData)
 
-        // Modify defaults
-        // root.numberFormatter.set("numberFormat", "+#.0°C|#.0°C|0.0°C");
-
-        var startYear = 1973;
-        var endYear = 2016;
-        var currentYear = 1974;
+        var startFrameGroup = 0;
+        var endFrameGroup = 1;
+        var currentFrameGroup = 1;
 
         var div = document.getElementById("chartdiv");
 
@@ -98,7 +90,7 @@ fetch('girk.json')
 
         var categoryAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
             maxDeviation: 0,
-            categoryField: "country",
+            categoryField: "residue",
             renderer: xRenderer
         }));
 
@@ -117,8 +109,8 @@ fetch('girk.json')
             name: "Series",
             xAxis: categoryAxis,
             yAxis: valueAxis,
-            valueYField: "value" + currentYear,
-            categoryXField: "country",
+            valueYField: "value_" + currentFrameGroup,
+            categoryXField: "residue",
             tooltip: am5.Tooltip.new(root, {
                 labelText: "{categoryX}: {valueY}"
             })
@@ -149,7 +141,7 @@ fetch('girk.json')
         // Add year label
         var yearLabel = chart.radarContainer.children.push(am5.Label.new(root, {
             fontSize: "2em",
-            text: currentYear.toString(),
+            text: currentFrameGroup.toString(),
             centerX: am5.p50,
             centerY: am5.p50,
             fill: am5.color(0x673AB7)
@@ -159,7 +151,6 @@ fetch('girk.json')
         // Generate and set data
         // https://www.amcharts.com/docs/v5/charts/radar-chart/#Setting_data
         var data = generateRadarData();
-        console.log('data', data)
         series.data.setAll(data);
         categoryAxis.data.setAll(data);
 
@@ -169,45 +160,45 @@ fetch('girk.json')
         function generateRadarData() {
             var data = [];
             var i = 0;
-            for (var continent in temperatures) {
-                if (continent != lipidSelection) {
+            for (var lipid in contactData) {
+                if (lipid != lipidSelection) {
                     continue
                 }
-                var continentData = temperatures[continent];
+                var lipidData = contactData[lipid];
 
-                continentData.forEach(function (country) {
+                lipidData.forEach(function (residue) {
                     var rawDataItem = {
-                        "country": country[0]
+                        "residue": residue[0]
                     }
 
                     var startY = 1
-                    for (var y = startY; y < country.length; y++) {
-                        rawDataItem["value" + (startYear + y - startY)] = country[y];
+                    for (var y = startY; y < residue.length; y++) {
+                        rawDataItem["value_" + (startFrameGroup + y - startY)] = residue[y];
                     }
 
                     data.push(rawDataItem);
                 });
 
-                createRange(continent, continentData, i);
+                createRange(lipid, lipidData, i);
                 i++;
 
             }
-            console.log('dataProcessed', data)
+            // console.log('dataProcessed', data)
             return data;
         }
 
 
-        function createRange(name, continentData, index) {
+        function createRange(name, lipidData, index) {
             var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
                 above: true
             }));
             axisRange.get("label").setAll({
                 text: name
             });
-            // first country
-            axisRange.set("category", continentData[0][0]);
-            // last country
-            axisRange.set("endCategory", continentData[continentData.length - 1][0]);
+            // first residue
+            axisRange.set("category", lipidData[0][0]);
+            // last residue
+            axisRange.set("endCategory", lipidData[lipidData.length - 1][0]);
 
             // every 3rd color for a bigger contrast
             var fill = axisRange.get("axisFill");
@@ -251,6 +242,7 @@ fetch('girk.json')
 
         var playButton = container.children.push(am5.Button.new(root, {
             themeTags: ["play"],
+            visible: false,
             centerY: am5.p50,
             marginRight: 15,
             icon: am5.Graphics.new(root, {
@@ -272,6 +264,7 @@ fetch('girk.json')
 
         var slider = container.children.push(am5.Slider.new(root, {
             orientation: "horizontal",
+            visible: false,
             start: 0.0,
             centerY: am5.p50
         }));
@@ -283,19 +276,19 @@ fetch('girk.json')
         });
 
         slider.events.on("rangechanged", function () {
-            // val = Math.round(slider.get("start", 0)* (endYear - startYear));
-            // val = slider.get("start", 0) //* (endYear - startYear)
+            // val = Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup));
+            // val = slider.get("start", 0) //* (endFrameGroup - startFrameGroup)
             // console.log('before UPDATE', val)
-            updateRadarData(startYear + Math.round(slider.get("start", 0) * (endYear - startYear)));
+            updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
         });
 
         function updateRadarData(year) {
-            if (currentYear != year) {
+            if (currentFrameGroup != year) {
                 // console.log('INSIDE UPDATE', year)
-                currentYear = year;
-                yearLabel.set("text", currentYear.toString());
+                currentFrameGroup = year;
+                yearLabel.set("text", currentFrameGroup.toString());
                 am5.array.each(series.dataItems, function (dataItem) {
-                    var newValue = dataItem.dataContext["value" + year];
+                    var newValue = dataItem.dataContext["value_" + year];
                     dataItem.set("valueY", newValue);
                     dataItem.animate({
                         key: "valueYWorking",
