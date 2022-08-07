@@ -21,6 +21,7 @@ root.setThemes([
     theme
 ]);
 
+root.fps = 60;
 // Data
 // fetch('/data/' + document.getElementById('lipids').value)
 fetch('girk.json')
