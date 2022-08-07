@@ -1,3 +1,4 @@
+import ast
 import json
 from data import dataf
 from bottle import route, run, template, debug, static_file
@@ -18,14 +19,22 @@ def app():
 @route('/data/:metadata')
 def listener(metadata):
     print ('Receiving request: ')
+    metadata = ast.literal_eval(metadata)
 
+    print (metadata)
+    print ("metadata['lipid']", metadata['lipid'])
+    print (type(metadata))
+    # lipid = metadata.split(':')[0]
+
+    # print ('lipid', lipid)
+    lipid = "POPS"
     class PairsHook(dict):
         def __init__(self, pairs):
-            key = [x for x in pairs if x[0] == 'CHOL']
+            key = [x for x in pairs if x[0] == lipid]
             super(PairsHook, self).__init__(key)
 
     with open('girk.json', 'r') as fp:
-        data = json.load(fp)
+        data = json.load(fp, object_pairs_hook=PairsHook)
 
     # print (metadata.split(':'))
     # if metadata == '1':
@@ -36,6 +45,7 @@ def listener(metadata):
     #     data = dataf('3')
 
     # return json.dumps(data)
+    print (data.keys())
     return data
 
 

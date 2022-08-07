@@ -22,9 +22,13 @@ root.setThemes([
 ]);
 
 root.fps = 60;
-// Data
+// Data JSON.stringify(obj)
 // fetch('/data/' + document.getElementById('lipids').value)
-fetch('/data/girk.json')
+var obj = {
+    "lipid": document.getElementById('lipids').value,
+}
+fetch('/data/' + JSON.stringify(obj))
+// fetch('/data/girk.json')
 // fetch('girk.json')
     .then(response => response.json())
     .then(contactData => {
@@ -41,7 +45,7 @@ fetch('/data/girk.json')
 
         // Params
         var innerRadius = 20;
-        var lipidSelection = "CHOL";
+        // var lipidSelection = "CHOL";
 
         // Create chart
         // https://www.amcharts.com/docs/v5/charts/radar-chart/
@@ -152,21 +156,21 @@ fetch('/data/girk.json')
 
         // Generate and set data
         // https://www.amcharts.com/docs/v5/charts/radar-chart/#Setting_data
-        var data = generateRadarData();
+        var data = generateRadarData(contactData);
         series.data.setAll(data);
         categoryAxis.data.setAll(data);
 
         series.appear(10);
         chart.appear(10, 100);
 
-        function generateRadarData() {
+        function generateRadarData(cData) {
             var data = [];
             var i = 0;
-            for (var lipid in contactData) {
-                if (lipid != lipidSelection) {
-                    continue
-                }
-                var lipidData = contactData[lipid];
+            for (var lipid in cData) {
+                // if (lipid != lipidSelection) {
+                //     continue
+                // }
+                var lipidData = cData[lipid];
 
                 lipidData.forEach(function (residue) {
                     var rawDataItem = {
@@ -290,6 +294,7 @@ fetch('/data/girk.json')
                 currentFrameGroup = frameGroup;
                 // frameGroupLabel.set("text", currentFrameGroup.toString());
                 am5.array.each(series.dataItems, function (dataItem) {
+                    console.log('dataItem', dataItem)
                     var newValue = dataItem.dataContext["value_" + frameGroup];
                     dataItem.set("valueY", newValue);
                     dataItem.animate({
@@ -300,5 +305,28 @@ fetch('/data/girk.json')
                 });
             }
         }
+
+
+        document.getElementById('lipids').addEventListener('change', function (e) {
+
+            fetch('/data/' + e.target.value)
+                .then(response => response.json())
+                .then(contactData => {
+                    // preparedData = prepareDataInput(data);
+                    // distanceSeries.data.setAll(preparedData['weeklyData']);
+                    // weekAxis.data.setAll(weekAxisData);
+                    // bubbleSeries.data.setAll(preparedData['dailyData']);
+
+                    var data = generateRadarData(contactData);
+                    console.log('newData', data)
+                    // series.data.setAll(data);
+                    // categoryAxis.data.setAll(data);
+                    updateRadarData(1)
+
+                });
+        });
+
+
+
 
     });
