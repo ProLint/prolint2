@@ -24,7 +24,8 @@ root.setThemes([
 root.fps = 60;
 // Data
 // fetch('/data/' + document.getElementById('lipids').value)
-fetch('girk.json')
+fetch('/data/girk.json')
+// fetch('girk.json')
     .then(response => response.json())
     .then(contactData => {
 
