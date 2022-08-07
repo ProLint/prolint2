@@ -139,14 +139,14 @@ fetch('girk.json')
         //     orientation: "vertical"
         // }));
 
-        // Add year label
-        var yearLabel = chart.radarContainer.children.push(am5.Label.new(root, {
-            fontSize: "2em",
-            text: currentFrameGroup.toString(),
-            centerX: am5.p50,
-            centerY: am5.p50,
-            fill: am5.color(0x673AB7)
-        }));
+        // Add frameGroup label
+        // var frameGroupLabel = chart.radarContainer.children.push(am5.Label.new(root, {
+        //     fontSize: "2em",
+        //     text: currentFrameGroup.toString(),
+        //     centerX: am5.p50,
+        //     centerY: am5.p50,
+        //     fill: am5.color(0x673AB7)
+        // }));
 
 
         // Generate and set data
@@ -283,13 +283,13 @@ fetch('girk.json')
             updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
         });
 
-        function updateRadarData(year) {
-            if (currentFrameGroup != year) {
-                // console.log('INSIDE UPDATE', year)
-                currentFrameGroup = year;
-                yearLabel.set("text", currentFrameGroup.toString());
+        function updateRadarData(frameGroup) {
+            if (currentFrameGroup != frameGroup) {
+                // console.log('INSIDE UPDATE', frameGroup)
+                currentFrameGroup = frameGroup;
+                // frameGroupLabel.set("text", currentFrameGroup.toString());
                 am5.array.each(series.dataItems, function (dataItem) {
-                    var newValue = dataItem.dataContext["value_" + year];
+                    var newValue = dataItem.dataContext["value_" + frameGroup];
                     dataItem.set("valueY", newValue);
                     dataItem.animate({
                         key: "valueYWorking",
