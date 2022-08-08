@@ -368,6 +368,56 @@ fetch('/data/' + JSON.stringify(obj))
           pieSeries.slices.template.events.on("click", function(e) {
             selectSlice(e.target);
 
+            // var lipid = e.target.dataItem.dataContext.category
+            // if (lipid != axisRange.get("label").get('text')) {
+            //     obj.lipid = lipid
+            //     obj.protein = document.getElementById('proteins').value
+            //     fetch('/data/' + JSON.stringify(obj))
+            //         .then(response => response.json())
+            //         .then(updateData => {
+
+            //             var updateData = generateRadarData(updateData);
+            //             series.data.setAll(updateData);
+            //             // categoryAxis.data.setAll(updateData);
+
+            //             am5.array.each(series.dataItems, function (dataItem) {
+            //                 var newValue = dataItem.dataContext["value_" + 0];
+            //                 dataItem.set("valueY", newValue);
+            //                 dataItem.animate({
+            //                     key: "valueYWorking",
+            //                     to: newValue,
+            //                     duration: 0
+            //                 });
+            //             });
+            //         });
+            //     series.appear(1000);
+            //     // chart.appear(500, 100);
+
+            // }
+
+          });
+
+          // Create sub chart
+          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/
+          var subChart = pieContainer.children.push(
+            am5percent.PieChart.new(pieRoot, {
+              radius: am5.percent(50),
+              tooltip: am5.Tooltip.new(pieRoot, {})
+            })
+          );
+
+          // Create sub series
+          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Series
+          var subSeries = subChart.series.push(
+            am5percent.PieSeries.new(pieRoot, {
+              valueField: "value",
+              categoryField: "category"
+            })
+          );
+
+
+          subSeries.slices.template.events.on("click", function(e) {
+
             var lipid = e.target.dataItem.dataContext.category
             if (lipid != axisRange.get("label").get('text')) {
                 obj.lipid = lipid
@@ -392,37 +442,18 @@ fetch('/data/' + JSON.stringify(obj))
                     });
                 series.appear(1000);
                 // chart.appear(500, 100);
-
             }
-
           });
 
-          // Create sub chart
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/
-          var subChart = pieContainer.children.push(
-            am5percent.PieChart.new(pieRoot, {
-              radius: am5.percent(50),
-              tooltip: am5.Tooltip.new(pieRoot, {})
-            })
-          );
-
-          // Create sub series
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Series
-          var subSeries = subChart.series.push(
-            am5percent.PieSeries.new(pieRoot, {
-              valueField: "value",
-              categoryField: "category"
-            })
-          );
 
           subSeries.data.setAll([
-            { category: "A", value: 0 },
-            { category: "B", value: 0 },
-            { category: "C", value: 0 },
-            { category: "D", value: 0 },
-            { category: "E", value: 0 },
-            { category: "F", value: 0 },
-            { category: "G", value: 0 }
+            { category: "CHOL", value: 0 },
+            { category: "POPE", value: 0 },
+            { category: "POPS", value: 0 },
+            // { category: "D", value: 0 },
+            // { category: "E", value: 0 },
+            // { category: "F", value: 0 },
+            // { category: "G", value: 0 }
           ]);
           subSeries.slices.template.set("toggleKey", "none");
 
@@ -468,6 +499,12 @@ fetch('/data/' + JSON.stringify(obj))
             }
           }
 
+
+
+
+
+
+
           // lines
           var line0 = pieContainer.children.push(
             am5.Line.new(pieRoot, {
@@ -488,7 +525,7 @@ fetch('/data/' + JSON.stringify(obj))
           // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Setting_data
           pieSeries.data.setAll([
             {
-              category: "CHOL",
+              category: "Protein1",
               value: 500,
               subData: [
                 { category: "CHOL", value: 200 },
@@ -497,7 +534,7 @@ fetch('/data/' + JSON.stringify(obj))
             ]
             },
             {
-                category: "POPS",
+                category: "Protein2",
                 value: 300,
                 subData: [
                     { category: "CHOL", value: 150 },
@@ -507,7 +544,7 @@ fetch('/data/' + JSON.stringify(obj))
                 ]
               },
               {
-                category: "POPE",
+                category: "Protein3",
                 value: 300,
                 subData: [
                     { category: "CHOL", value: 400 },
