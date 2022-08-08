@@ -594,7 +594,7 @@ fetch('/data/' + JSON.stringify(obj))
           // Data
           var data = [
             {
-              category: "John",
+              category: "Lipid 1",
               fromDate: 0,
               toDate: 10,
               columnSettings: {
@@ -602,7 +602,7 @@ fetch('/data/' + JSON.stringify(obj))
               }
             },
             {
-              category: "John",
+              category: "Lipid 1",
               fromDate: 45,
               toDate: 75,
               columnSettings: {
@@ -610,7 +610,7 @@ fetch('/data/' + JSON.stringify(obj))
               }
             },
             {
-              category: "John",
+              category: "Lipid 1",
               fromDate: 90,
               toDate: 100,
               columnSettings: {
@@ -619,7 +619,7 @@ fetch('/data/' + JSON.stringify(obj))
             },
 
             {
-              category: "Jane",
+              category: "Lipid 2",
               fromDate: 10,
               toDate: 35,
               columnSettings: {
@@ -627,7 +627,7 @@ fetch('/data/' + JSON.stringify(obj))
               }
             },
             {
-              category: "Jane",
+              category: "Lipid 2",
               fromDate: 45,
               toDate: 60,
               columnSettings: {
@@ -636,7 +636,7 @@ fetch('/data/' + JSON.stringify(obj))
             },
 
             {
-              category: "Peter",
+              category: "Lipid 3",
               fromDate: 20,
               toDate: 35,
               columnSettings: {
@@ -644,7 +644,7 @@ fetch('/data/' + JSON.stringify(obj))
               }
             },
             {
-              category: "Peter",
+              category: "Lipid 3",
               fromDate: 35,
               toDate: 80,
               columnSettings: {
@@ -653,7 +653,7 @@ fetch('/data/' + JSON.stringify(obj))
             },
 
             {
-              category: "Melania",
+              category: "Lipid 4",
               fromDate: 77,
               toDate: 88,
               columnSettings: {
@@ -661,7 +661,7 @@ fetch('/data/' + JSON.stringify(obj))
               }
             },
             {
-              category: "Melania",
+              category: "Lipid 4",
               fromDate: 89,
               toDate: 94,
               columnSettings: {
@@ -670,7 +670,7 @@ fetch('/data/' + JSON.stringify(obj))
             },
 
             {
-              category: "Donald",
+              category: "Lipid 5",
               fromDate: 34,
               toDate: 88,
               columnSettings: {
@@ -693,11 +693,11 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           ganttYAxis.data.setAll([
-            { category: "John" },
-            { category: "Jane" },
-            { category: "Peter" },
-            { category: "Melania" },
-            { category: "Donald" }
+            { category: "Lipid 1" },
+            { category: "Lipid 2" },
+            { category: "Lipid 3" },
+            { category: "Lipid 4" },
+            { category: "Lipid 5" }
           ]);
 
         //   var ganttXAxis = ganttChart.xAxes.push(
