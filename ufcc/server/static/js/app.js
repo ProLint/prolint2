@@ -53,7 +53,7 @@ fetch('/data/' + JSON.stringify(obj))
         var colorSet = am5.ColorSet.new(root, {});
 
         // Params
-        var innerRadius = 45;
+        var innerRadius = 50;
 
         // Create chart
         var chart = root.container.children.push(am5radar.RadarChart.new(root, {
@@ -62,7 +62,7 @@ fetch('/data/' + JSON.stringify(obj))
             wheelX: "panX",
             wheelY: "zoomX",
             innerRadius: am5.percent(innerRadius),
-            radius: am5.percent(75),
+            radius: am5.percent(85),
             startAngle: 270 - 170,
             endAngle: 270 + 170
             // Right handed half circle:
