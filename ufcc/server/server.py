@@ -1,7 +1,11 @@
+import os
 import ast
 import json
 from bottle import route, run, template, debug, static_file
 
+# from ufcc import config
+
+SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 # rendered_data = {
 #     "proteins": {
 #         "name": None,
@@ -12,16 +16,21 @@ data = None
 data_loaded = False
 
 @route('/static/<filepath:path>')
+# @route(os.path.join(config.PWD, '/static/<filepath:path>'))
 def server_static(filepath):
-    return static_file(filepath, root='static')
+    return static_file(filepath, root=os.path.join(SERVER_PATH, 'static'))
 
 @route('/')
 def index():
-    return template('home.tpl')
+    # print ('zxcva', config.PWD)
+    # print ('server is running: ', os.path.abspath(os.path.dirname(__file__)))
+    return template(os.path.join(SERVER_PATH, 'home.tpl'))
+    # return template(os.path.join(config.PWD, 'home.tpl'))
 
 @route('/app')
 def app():
-    return static_file('index.html', root='.')
+    print ('WORKING ...')
+    return static_file('index.html', root=SERVER_PATH)
 
 @route('/data/:metadata')
 def listener(metadata):
@@ -46,7 +55,7 @@ def listener(metadata):
         #         key = [x for x in pairs if x[0] == lipid]
         #         super(PairsHook, self).__init__(key)
 
-        with open('girk.json', 'r') as fp:
+        with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
             # data = json.load(fp, object_pairs_hook=PairsHook)
             data = json.load(fp)
 
@@ -91,6 +100,10 @@ def listener(metadata):
 
 
 
-debug(True)
-run(reloader=True, host='localhost', port=8351)
+# debug(True)
+# run(reloader=True, host='localhost', port=8351)
+
+def start_server():
+    debug(False)
+    run(reloader=True, host='localhost', port=8351)
 
