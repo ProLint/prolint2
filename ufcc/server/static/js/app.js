@@ -22,8 +22,8 @@ root.setThemes([
 ]);
 
 root.fps = 60;
-// Data JSON.stringify(obj)
-// fetch('/data/' + document.getElementById('lipids').value)
+
+// Fetch the data from the backend
 var obj = {
     "lipid": "",
     "protein": ""
@@ -42,10 +42,8 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Params
         var innerRadius = 20;
-        // var lipidSelection = "CHOL";
 
         // Create chart
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/
         var chart = root.container.children.push(am5radar.RadarChart.new(root, {
             panX: false,
             panY: false,
@@ -62,7 +60,6 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         // Add cursor
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Cursor
         var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
             behavior: "zoomX",
             radius: am5.percent(innerRadius),
@@ -72,7 +69,6 @@ fetch('/data/' + JSON.stringify(obj))
         cursor.lineY.set("opacity", 0.5);
 
         // Create axes and their renderers
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Adding_axes
         var xRenderer = am5radar.AxisRendererCircular.new(root, {
             minGridDistance: 10
         });
@@ -110,7 +106,6 @@ fetch('/data/' + JSON.stringify(obj))
         }));
 
         // Create series
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Adding_series
         var series = chart.series.push(am5radar.RadarColumnSeries.new(root, {
             calculateAggregates: true,
             name: "Series",
@@ -127,7 +122,6 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         // Set up heat rules
-        // https://www.amcharts.com/docs/v5/concepts/settings/heat-rules/
         series.set("heatRules", [{
             target: series.columns.template,
             key: "fill",
@@ -137,7 +131,6 @@ fetch('/data/' + JSON.stringify(obj))
         }]);
 
         // Add scrollbars
-        // https://www.amcharts.com/docs/v5/charts/xy-chart/scrollbars/
         // chart.set("scrollbarX", am5.Scrollbar.new(root, {
         //     orientation: "horizontal"
         // }));
@@ -155,7 +148,6 @@ fetch('/data/' + JSON.stringify(obj))
         // }));
 
         // Generate and set data
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Setting_data
         var data = generateRadarData(contactData);
         series.data.setAll(data);
         categoryAxis.data.setAll(data);
@@ -300,7 +292,6 @@ fetch('/data/' + JSON.stringify(obj))
         var pieRoot = am5.Root.new("chartdiv2");
 
         // Set themes
-        // https://www.amcharts.com/docs/v5/concepts/themes/
         pieRoot.setThemes([am5themes_Animated.new(pieRoot)]);
 
         var pieContainer = pieRoot.container.children.push(
@@ -312,7 +303,6 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           // Create main chart
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/
           var pieChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
               tooltip: am5.Tooltip.new(pieRoot, {})
@@ -320,7 +310,6 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           // Create series
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Series
           var pieSeries = pieChart.series.push(
             am5percent.PieSeries.new(pieRoot, {
               valueField: "value",
@@ -373,7 +362,6 @@ fetch('/data/' + JSON.stringify(obj))
           });
 
           // Create sub chart
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/
           var subChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
               radius: am5.percent(50),
@@ -382,7 +370,6 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           // Create sub series
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Series
           var subSeries = subChart.series.push(
             am5percent.PieSeries.new(pieRoot, {
               valueField: "value",
@@ -498,7 +485,6 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           // Set data
-          // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Setting_data
           pieSeries.data.setAll([
             {
               category: "Protein1",
