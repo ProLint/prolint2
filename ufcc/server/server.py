@@ -117,17 +117,19 @@ def listener(metadata):
             "endFrame": 60,
         }
     ]
+    top_10_lipids = ['Lipid 1', 'Lipid 2']
     # This is the object we will send to the front end.
     # It should have everything the apps need to work.
     # "data" is required by the radarApp
     # "proteins", "lipids", and "pieData" are needed by the pieApp # TODO: maybe we should simplify these requirements?
-    #
+    # "ganttData", and "topLipids" are needed by the gantt chart app.
     response = {
         "data": {lipid: sliced_data},
         "proteins": ['Protein0'],
         "lipids": list(data['Protein0'].keys()),
         "pieData": pie_data,
-        "ganttData": gantt_data
+        "ganttData": gantt_data,
+        "topLipids": top_10_lipids
     }
     return response
     # return {lipid: sliced_data}

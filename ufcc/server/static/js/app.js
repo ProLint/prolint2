@@ -611,13 +611,7 @@ fetch('/data/' + JSON.stringify(obj))
             })
         );
 
-        ganttYAxis.data.setAll([{
-                category: "Lipid 1"
-            },
-            {
-                category: "Lipid 2"
-            }
-        ]);
+        ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({category: v})))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
