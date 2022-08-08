@@ -2,12 +2,6 @@ import ast
 import json
 from bottle import route, run, template, debug, static_file
 
-# rendered_data = {
-#     "proteins": {
-#         "name": None,
-#         "lipids": []
-#     },
-# }
 data = None
 data_loaded = False
 
@@ -62,7 +56,7 @@ def listener(metadata):
     # get the protein from the server
     sliced_data = data['Protein0'][lipid]
 
-    # PieChart App Input Data:
+    # PieChart App Input Data requirement:
     # Value can be system data: e.g. the ratio of the different lipids, but in that case all
     # values for all different proteins would be the same (not necessarily a bad thing)
     # Values can also be relative ratio of contacts with the different lipids, in which case
@@ -89,7 +83,7 @@ def listener(metadata):
     # }
     ]
 
-
+    # ganttApp data input requirement
     gantt_data = [{
             "category": "Lipid 1",
             "startFrame": 0,
@@ -118,6 +112,7 @@ def listener(metadata):
         }
     ]
     top_10_lipids = ['Lipid 1', 'Lipid 2']
+
     # This is the object we will send to the front end.
     # It should have everything the apps need to work.
     # "data" is required by the radarApp
@@ -133,7 +128,6 @@ def listener(metadata):
     }
     return response
     # return {lipid: sliced_data}
-
 
 
 debug(True)
