@@ -594,7 +594,7 @@ fetch('/data/' + JSON.stringify(obj))
         var colors = ganttChart.get("colors");
 
         // Data
-        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, fill: colorSet.getIndex(50),}))
+        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
         console.log('ganttData', ganttData)
 
         // Create axes
