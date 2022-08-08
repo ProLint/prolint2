@@ -68,16 +68,16 @@ def listener(metadata):
             { "category": "POPS", "value": 50 }
         ]
     },
-    {
-        "category": "Protein1",
-        "value": 300,
-        "subData": [
-            { "category": "CHOL", "value": 100 },
-            { "category": "POPE", "value": 150 },
-            { "category": "POPS", "value": 50 }
+    # {
+    #     "category": "Protein1",
+    #     "value": 300,
+    #     "subData": [
+    #         { "category": "CHOL", "value": 100 },
+    #         { "category": "POPE", "value": 150 },
+    #         { "category": "POPS", "value": 50 }
 
-        ]
-    }
+    #     ]
+    # }
     ]
 
     response = {

@@ -33,10 +33,15 @@ fetch('/data/' + JSON.stringify(obj))
     .then(responseData => {
 
 
-        console.log('responseData', responseData)
-        var contactData = responseData['data']
-        var lipids = responseData['lipids']
-        var proteins = responseData['proteins']
+        // console.log('responseData', responseData);
+        var contactData = responseData['data'];
+        var lipids = responseData['lipids'];
+        var proteins = responseData['proteins'];
+
+        var systemHasOneProtein = false;
+        if (proteins.length == 1) {
+            systemHasOneProtein = true
+        }
 
         var startFrameGroup = 0;
         var endFrameGroup = 1;
@@ -451,11 +456,21 @@ fetch('/data/' + JSON.stringify(obj))
               var arc = selectedSlice.get("arc");
               var radius = selectedSlice.get("radius");
 
-              var x00 = radius * am5.math.cos(startAngle);
-              var y00 = radius * am5.math.sin(startAngle);
+              if (!systemHasOneProtein) {
+                var x00 = radius * am5.math.cos(startAngle);
+                var y00 = radius * am5.math.sin(startAngle);
 
-              var x10 = radius * am5.math.cos(startAngle + arc);
-              var y10 = radius * am5.math.sin(startAngle + arc);
+                var x10 = radius * am5.math.cos(startAngle + arc);
+                var y10 = radius * am5.math.sin(startAngle + arc);
+
+              } else {
+                var x00 = radius * am5.math.sin(startAngle);
+                var y00 = radius * am5.math.cos(startAngle);
+
+                var x10 = radius * am5.math.sin(startAngle + arc);
+                var y10 = -radius * am5.math.cos(startAngle + arc);
+
+              }
 
               var subRadius = subSeries.slices.getIndex(0).get("radius");
               var x01 = 0;
