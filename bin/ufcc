@@ -14,14 +14,7 @@ from ufcc.interactive_sel import interactive_selection
 from time import perf_counter
 import warnings
 from fpdf import FPDF
-from ufcc import config
 from ufcc.server.server import start_server
-
-# _ROOT = os.path.abspath(os.path.dirname(__file__))
-# base_dir = '/'.join(_ROOT.split('/')[:-1])
-# config.PWD = os.path.join(base_dir, 'ufcc/server')
-
-start_server()
 
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(prog='ufcc',

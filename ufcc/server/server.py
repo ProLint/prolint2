@@ -3,8 +3,6 @@ import ast
 import json
 from bottle import route, run, template, debug, static_file
 
-# from ufcc import config
-
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 # rendered_data = {
 #     "proteins": {
@@ -16,20 +14,15 @@ data = None
 data_loaded = False
 
 @route('/static/<filepath:path>')
-# @route(os.path.join(config.PWD, '/static/<filepath:path>'))
 def server_static(filepath):
     return static_file(filepath, root=os.path.join(SERVER_PATH, 'static'))
 
 @route('/')
 def index():
-    # print ('zxcva', config.PWD)
-    # print ('server is running: ', os.path.abspath(os.path.dirname(__file__)))
     return template(os.path.join(SERVER_PATH, 'home.tpl'))
-    # return template(os.path.join(config.PWD, 'home.tpl'))
 
 @route('/app')
 def app():
-    print ('WORKING ...')
     return static_file('index.html', root=SERVER_PATH)
 
 @route('/data/:metadata')
@@ -98,12 +91,9 @@ def listener(metadata):
     return response
     # return {lipid: sliced_data}
 
+def start_server(debug_bool=False, reloader=True, port=8351):
+    debug(debug_bool)
+    run(reloader=reloader, host='localhost', port=port)
 
-
-# debug(True)
-# run(reloader=True, host='localhost', port=8351)
-
-def start_server():
-    debug(False)
-    run(reloader=True, host='localhost', port=8351)
-
+if __name__ == '__main__':
+    start_server(debug_bool=True)
