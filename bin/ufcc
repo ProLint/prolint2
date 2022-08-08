@@ -16,18 +16,6 @@ import warnings
 from fpdf import FPDF
 from ufcc.server.server import start_server
 
-# import requests
-payload = "{\"name\":\"Liri\",\"age\":5,\"SuperHero\":[ \"Buzz\", \"Woody\",\"IronMan\"]}"
-# url = "localhost:8351/ufcc"
-# headers = {
-#   'content-type': "application/json",
-#   'cache-control': "no-cache"
-#   }
-# response = requests.request("POST", url, data=payload, headers=headers)
-
-start_server(payload=payload)
-
-
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(prog='ufcc',
                                     #   usage='%(prog)s [optional-arguments] structure_file trajectory_file',
@@ -114,16 +102,9 @@ for stat in comp_stats:
     print(stat)
 print('\n########## Thanks for using ufcc! #########\n')
 
-# import requests
-# payload = "{\"name\":\"John\",\"age\":30,\"cars\":[ \"Ford\", \"BMW\",\"Fiat\"]}"
-# url = "localhost:8351/ufcc"
-# headers = {
-#   'content-type': "application/json",
-#   'cache-control': "no-cache"
-#   }
-# response = requests.request("POST", url, data=payload, headers=headers)
+payload = target_system.contacts.get_metrics(args.output_file, server=True)
+start_server(payload=payload)
 
-# start_server()
 
 class PDF(FPDF):
     def header(self):

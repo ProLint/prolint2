@@ -11,7 +11,7 @@ BACKEND_DATA = None
 #         "lipids": []
 #     },
 # }
-# data = None
+data = None
 data_loaded = False
 
 @route('/static/<filepath:path>')
@@ -36,6 +36,7 @@ def ufcc():
 def listener(metadata):
 
     global data_loaded
+    global data
     global BACKEND_DATA
     print ('BACKEND_DATA', BACKEND_DATA)
 
