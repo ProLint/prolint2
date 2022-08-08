@@ -414,7 +414,8 @@ fetch('/data/' + JSON.stringify(obj))
           var subSeries = subChart.series.push(
             am5percent.PieSeries.new(pieRoot, {
               valueField: "value",
-              categoryField: "category"
+              categoryField: "category",
+              alignLabels: false
             })
           );
 
@@ -458,7 +459,12 @@ fetch('/data/' + JSON.stringify(obj))
             // { category: "F", value: 0 },
             // { category: "G", value: 0 }
           ]);
-          subSeries.slices.template.set("toggleKey", "none");
+            subSeries.labels.template.setAll({
+                textType: "circular",
+                radius: 4
+            });
+            subSeries.ticks.template.set("visible", false);
+            subSeries.slices.template.set("toggleKey", "none");
 
           var selectedSlice;
 
