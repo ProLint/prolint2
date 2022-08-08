@@ -35,6 +35,8 @@ fetch('/data/' + JSON.stringify(obj))
 
         console.log('responseData', responseData)
         var contactData = responseData['data']
+        var lipids = responseData['lipids']
+        var proteins = responseData['proteins']
 
         var startFrameGroup = 0;
         var endFrameGroup = 1;
@@ -418,12 +420,12 @@ fetch('/data/' + JSON.stringify(obj))
             }
           });
 
-
-          subSeries.data.setAll([
-            { category: "CHOL", value: 0 },
-            { category: "POPE", value: 0 },
-            { category: "POPS", value: 0 },
-          ]);
+          subSeries.data.setAll(lipids.map(lipidName => ({category: lipidName, value: 0})))
+        //   subSeries.data.setAll([
+        //     { category: "CHOL", value: 0 },
+        //     { category: "POPE", value: 0 },
+        //     { category: "POPS", value: 0 },
+        //   ]);
             subSeries.labels.template.setAll({
                 textType: "circular",
                 radius: 4
@@ -493,36 +495,7 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           // Set data
-          pieSeries.data.setAll([
-            {
-              category: "Protein1",
-              value: 500,
-              subData: [
-                { category: "CHOL", value: 200 },
-                { category: "POPE", value: 150 },
-                { category: "POPS", value: 100 }
-            ]
-            },
-            {
-                category: "Protein2",
-                value: 300,
-                subData: [
-                    { category: "POPS", value: 600 },
-                    { category: "CHOL", value: 150 },
-                    { category: "POPE", value: 50 }
-
-                ]
-              },
-              {
-                category: "Protein3",
-                value: 300,
-                subData: [
-                    { category: "CHOL", value: 400 },
-                    { category: "POPE", value: 280 },
-                    { category: "POPS", value: 40 }
-                    ]
-              }
-              ]);
+          pieSeries.data.setAll(responseData['pieData']);
 
           function selectSlice(slice) {
             selectedSlice = slice;
