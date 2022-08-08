@@ -22,11 +22,11 @@ root.setThemes([
 ]);
 
 root.fps = 60;
-// Data JSON.stringify(obj)
-// fetch('/data/' + document.getElementById('lipids').value)
+
+// Fetch the data from the backend
 var obj = {
-    "lipid": document.getElementById('lipids').value,
-    "protein": document.getElementById('proteins').value
+    "lipid": "",
+    "protein": ""
 }
 fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
@@ -42,10 +42,8 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Params
         var innerRadius = 20;
-        // var lipidSelection = "CHOL";
 
         // Create chart
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/
         var chart = root.container.children.push(am5radar.RadarChart.new(root, {
             panX: false,
             panY: false,
@@ -62,7 +60,6 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         // Add cursor
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Cursor
         var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
             behavior: "zoomX",
             radius: am5.percent(innerRadius),
@@ -72,7 +69,6 @@ fetch('/data/' + JSON.stringify(obj))
         cursor.lineY.set("opacity", 0.5);
 
         // Create axes and their renderers
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Adding_axes
         var xRenderer = am5radar.AxisRendererCircular.new(root, {
             minGridDistance: 10
         });
@@ -110,7 +106,6 @@ fetch('/data/' + JSON.stringify(obj))
         }));
 
         // Create series
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Adding_series
         var series = chart.series.push(am5radar.RadarColumnSeries.new(root, {
             calculateAggregates: true,
             name: "Series",
@@ -127,7 +122,6 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         // Set up heat rules
-        // https://www.amcharts.com/docs/v5/concepts/settings/heat-rules/
         series.set("heatRules", [{
             target: series.columns.template,
             key: "fill",
@@ -137,7 +131,6 @@ fetch('/data/' + JSON.stringify(obj))
         }]);
 
         // Add scrollbars
-        // https://www.amcharts.com/docs/v5/charts/xy-chart/scrollbars/
         // chart.set("scrollbarX", am5.Scrollbar.new(root, {
         //     orientation: "horizontal"
         // }));
@@ -155,7 +148,6 @@ fetch('/data/' + JSON.stringify(obj))
         // }));
 
         // Generate and set data
-        // https://www.amcharts.com/docs/v5/charts/radar-chart/#Setting_data
         var data = generateRadarData(contactData);
         series.data.setAll(data);
         categoryAxis.data.setAll(data);
@@ -163,11 +155,11 @@ fetch('/data/' + JSON.stringify(obj))
         series.appear(500);
         chart.appear(500, 100);
 
-        function generateRadarData(cData) {
+        function generateRadarData(contactData) {
             var data = [];
             var i = 0;
-            for (var lipid in cData) {
-                var lipidData = cData[lipid];
+            for (var lipid in contactData) {
+                var lipidData = contactData[lipid];
 
                 lipidData.forEach(function (residue) {
                     var rawDataItem = {
@@ -178,7 +170,7 @@ fetch('/data/' + JSON.stringify(obj))
                     for (var y = startY; y < residue.length; y++) {
                         rawDataItem["value_" + (startFrameGroup + y - startY)] = residue[y];
                     }
-
+                    // rawDataItem['protein'] = "GIRK"
                     data.push(rawDataItem);
                 });
 
@@ -277,7 +269,7 @@ fetch('/data/' + JSON.stringify(obj))
         slider.events.on("rangechanged", function () {
             // val = Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup));
             // val = slider.get("start", 0) //* (endFrameGroup - startFrameGroup)
-            // console.log('before UPDATE', val)
+            // console.log('before UPDATE')
             updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
         });
 
@@ -297,18 +289,62 @@ fetch('/data/' + JSON.stringify(obj))
             }
         }
 
+        var pieRoot = am5.Root.new("chartdiv2");
 
-        document.getElementById('lipids').addEventListener('change', function (e) {
+        // Set themes
+        pieRoot.setThemes([am5themes_Animated.new(pieRoot)]);
 
-            obj.lipid = e.target.value
-            obj.protein = document.getElementById('proteins').value
+        var pieContainer = pieRoot.container.children.push(
+            am5.Container.new(pieRoot, {
+              width: am5.p100,
+              height: am5.p100,
+              layout: pieRoot.horizontalLayout
+            })
+          );
+
+          // Create main chart
+          var pieChart = pieContainer.children.push(
+            am5percent.PieChart.new(pieRoot, {
+              tooltip: am5.Tooltip.new(pieRoot, {})
+            })
+          );
+
+          // Create series
+          var pieSeries = pieChart.series.push(
+            am5percent.PieSeries.new(pieRoot, {
+              valueField: "value",
+              categoryField: "category",
+              alignLabels: false
+            })
+          );
+
+          pieSeries.labels.template.setAll({
+            textType: "circular",
+            radius: 4
+          });
+          pieSeries.ticks.template.set("visible", false);
+          pieSeries.slices.template.set("toggleKey", "none");
+
+          // add events
+          pieSeries.slices.template.events.on("click", function(e) {
+            selectSlice(e.target);
+
+            console.log('series', series)
+
+            // TODO:
+            // only execute when the protein changes
+            var protein = e.target.dataItem.dataContext.category
+            var lipid = subSeries.slices.getIndex(0).dataItem.dataContext.category
+
+            obj.lipid = lipid
+            obj.protein = protein
             fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
-                .then(abcdef => {
+                .then(updateData => {
 
-                    var duta = generateRadarData(abcdef);
-                    series.data.setAll(duta);
-                    categoryAxis.data.setAll(duta);
+                    var updateData = generateRadarData(updateData);
+                    series.data.setAll(updateData);
+                    // categoryAxis.data.setAll(updateData);
 
                     am5.array.each(series.dataItems, function (dataItem) {
                         var newValue = dataItem.dataContext["value_" + 0];
@@ -316,13 +352,214 @@ fetch('/data/' + JSON.stringify(obj))
                         dataItem.animate({
                             key: "valueYWorking",
                             to: newValue,
-                            duration: 500
+                            duration: 0
                         });
                     });
                 });
             series.appear(1000);
-            chart.appear(500, 100);
+            // chart.appear(500, 100);
 
-        });
+          });
+
+          // Create sub chart
+          var subChart = pieContainer.children.push(
+            am5percent.PieChart.new(pieRoot, {
+              radius: am5.percent(50),
+              tooltip: am5.Tooltip.new(pieRoot, {})
+            })
+          );
+
+          // Create sub series
+          var subSeries = subChart.series.push(
+            am5percent.PieSeries.new(pieRoot, {
+              valueField: "value",
+              categoryField: "category",
+              alignLabels: false
+            })
+          );
+
+          // subSeries click event to link to radar chart
+          subSeries.slices.template.events.on("click", function(e) {
+
+            var lipid = e.target.dataItem.dataContext.category
+            if (lipid != axisRange.get("label").get('text')) {
+                obj.lipid = lipid
+                // TODO:
+                // get correct protein
+                obj.protein = "GIRK"
+                fetch('/data/' + JSON.stringify(obj))
+                    .then(response => response.json())
+                    .then(updateData => {
+
+                        var updateData = generateRadarData(updateData);
+                        series.data.setAll(updateData);
+                        // categoryAxis.data.setAll(updateData);
+
+                        am5.array.each(series.dataItems, function (dataItem) {
+                            var newValue = dataItem.dataContext["value_" + 0];
+                            dataItem.set("valueY", newValue);
+                            dataItem.animate({
+                                key: "valueYWorking",
+                                to: newValue,
+                                duration: 0
+                            });
+                        });
+                    });
+                series.appear(1000);
+                // chart.appear(500, 100);
+            }
+          });
+
+
+          subSeries.data.setAll([
+            { category: "CHOL", value: 0 },
+            { category: "POPE", value: 0 },
+            { category: "POPS", value: 0 },
+          ]);
+            subSeries.labels.template.setAll({
+                textType: "circular",
+                radius: 4
+            });
+            subSeries.ticks.template.set("visible", false);
+            subSeries.slices.template.set("toggleKey", "none");
+
+          var selectedSlice;
+
+          pieSeries.on("startAngle", function() {
+            updateLines();
+          });
+
+        //   pieContainer.events.on("boundschanged", function() {
+        //     pieRoot.events.on("frameended", function(){
+        //       updateLines();
+        //      })
+        //   })
+
+          function updateLines() {
+            if (selectedSlice) {
+              var startAngle = selectedSlice.get("startAngle");
+              var arc = selectedSlice.get("arc");
+              var radius = selectedSlice.get("radius");
+
+              var x00 = radius * am5.math.cos(startAngle);
+              var y00 = radius * am5.math.sin(startAngle);
+
+              var x10 = radius * am5.math.cos(startAngle + arc);
+              var y10 = radius * am5.math.sin(startAngle + arc);
+
+              var subRadius = subSeries.slices.getIndex(0).get("radius");
+              var x01 = 0;
+              var y01 = -subRadius;
+
+              var x11 = 0;
+              var y11 = subRadius;
+
+              var point00 = pieSeries.toGlobal({ x: x00, y: y00 });
+              var point10 = pieSeries.toGlobal({ x: x10, y: y10 });
+
+              var point01 = subSeries.toGlobal({ x: x01, y: y01 });
+              var point11 = subSeries.toGlobal({ x: x11, y: y11 });
+
+              line0.set("points", [point00, point01]);
+              line1.set("points", [point10, point11]);
+            }
+          }
+
+
+
+
+          // lines
+          var line0 = pieContainer.children.push(
+            am5.Line.new(pieRoot, {
+              position: "absolute",
+              stroke: pieRoot.interfaceColors.get("text"),
+              strokeDasharray: [2, 2]
+            })
+          );
+          var line1 = pieContainer.children.push(
+            am5.Line.new(pieRoot, {
+              position: "absolute",
+              stroke: pieRoot.interfaceColors.get("text"),
+              strokeDasharray: [2, 2]
+            })
+          );
+
+          // Set data
+          pieSeries.data.setAll([
+            {
+              category: "Protein1",
+              value: 500,
+              subData: [
+                { category: "CHOL", value: 200 },
+                { category: "POPE", value: 150 },
+                { category: "POPS", value: 100 }
+            ]
+            },
+            {
+                category: "Protein2",
+                value: 300,
+                subData: [
+                    { category: "POPS", value: 600 },
+                    { category: "CHOL", value: 150 },
+                    { category: "POPE", value: 50 }
+
+                ]
+              },
+              {
+                category: "Protein3",
+                value: 300,
+                subData: [
+                    { category: "CHOL", value: 400 },
+                    { category: "POPE", value: 280 },
+                    { category: "POPS", value: 40 }
+                    ]
+              }
+              ]);
+
+          function selectSlice(slice) {
+            selectedSlice = slice;
+            var dataItem = slice.dataItem;
+            var dataContext = dataItem.dataContext;
+
+            if (dataContext) {
+              var i = 0;
+              subSeries.data.each(function(dataObject) {
+                var dataObj = dataContext.subData[i];
+                if(dataObj){
+                    subSeries.data.setIndex(i, dataObj);
+                    if(!subSeries.dataItems[i].get("visible")){
+                        subSeries.dataItems[i].show();
+                    }
+                }
+                else{
+                    subSeries.dataItems[i].hide();
+                }
+
+                i++;
+              });
+            }
+
+            var middleAngle = slice.get("startAngle") + slice.get("arc") / 2;
+            var firstAngle = pieSeries.dataItems[0].get("slice").get("startAngle");
+
+            pieSeries.animate({
+              key: "startAngle",
+              to: firstAngle - middleAngle,
+              duration: 1000,
+              easing: am5.ease.out(am5.ease.cubic)
+            });
+            pieSeries.animate({
+              key: "endAngle",
+              to: firstAngle - middleAngle + 360,
+              duration: 1000,
+              easing: am5.ease.out(am5.ease.cubic)
+            });
+          }
+
+          pieContainer.appear(1000, 10);
+
+          pieSeries.events.on("datavalidated", function() {
+            selectSlice(pieSeries.slices.getIndex(0));
+          });
 
     });

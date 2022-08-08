@@ -32,14 +32,19 @@ def listener(metadata):
     metadata = ast.literal_eval(metadata)
 
     lipid = metadata['lipid']
-    # protein = metadata['protein']
+    protein = metadata['protein']
+
+    if lipid == "" and protein == "":
+        # Starting setup:
+        lipid = "CHOL"
+        protein = "GIRK"
 
     if not data_loaded:
 
-        class PairsHook(dict):
-            def __init__(self, pairs):
-                key = [x for x in pairs if x[0] == lipid]
-                super(PairsHook, self).__init__(key)
+        # class PairsHook(dict):
+        #     def __init__(self, pairs):
+        #         key = [x for x in pairs if x[0] == lipid]
+        #         super(PairsHook, self).__init__(key)
 
         with open('girk.json', 'r') as fp:
             # data = json.load(fp, object_pairs_hook=PairsHook)
@@ -53,5 +58,5 @@ def listener(metadata):
 
 
 debug(True)
-run(reloader=True, host='localhost', port=8080)
+run(reloader=True, host='localhost', port=8351)
 
