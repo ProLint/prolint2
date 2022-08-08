@@ -30,7 +30,18 @@ var obj = {
 }
 fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
-    .then(contactData => {
+    .then(responseData => {
+
+
+        // console.log('responseData', responseData);
+        var contactData = responseData['data'];
+        var lipids = responseData['lipids'];
+        var proteins = responseData['proteins'];
+
+        var systemHasOneProtein = false;
+        if (proteins.length == 1) {
+            systemHasOneProtein = true
+        }
 
         var startFrameGroup = 0;
         var endFrameGroup = 1;
@@ -156,6 +167,7 @@ fetch('/data/' + JSON.stringify(obj))
         chart.appear(500, 100);
 
         function generateRadarData(contactData) {
+            // contactData = contactData['Protein0']
             var data = [];
             var i = 0;
             for (var lipid in contactData) {
@@ -340,8 +352,9 @@ fetch('/data/' + JSON.stringify(obj))
             obj.protein = protein
             fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
-                .then(updateData => {
+                .then(responseData => {
 
+                    updateData = responseData['data']
                     var updateData = generateRadarData(updateData);
                     series.data.setAll(updateData);
                     // categoryAxis.data.setAll(updateData);
@@ -389,7 +402,9 @@ fetch('/data/' + JSON.stringify(obj))
                 obj.protein = "GIRK"
                 fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
-                    .then(updateData => {
+                    .then(responseData => {
+
+                        updateData = responseData['data']
 
                         var updateData = generateRadarData(updateData);
                         series.data.setAll(updateData);
@@ -410,12 +425,12 @@ fetch('/data/' + JSON.stringify(obj))
             }
           });
 
-
-          subSeries.data.setAll([
-            { category: "CHOL", value: 0 },
-            { category: "POPE", value: 0 },
-            { category: "POPS", value: 0 },
-          ]);
+          subSeries.data.setAll(lipids.map(lipidName => ({category: lipidName, value: 0})))
+        //   subSeries.data.setAll([
+        //     { category: "CHOL", value: 0 },
+        //     { category: "POPE", value: 0 },
+        //     { category: "POPS", value: 0 },
+        //   ]);
             subSeries.labels.template.setAll({
                 textType: "circular",
                 radius: 4
@@ -441,11 +456,21 @@ fetch('/data/' + JSON.stringify(obj))
               var arc = selectedSlice.get("arc");
               var radius = selectedSlice.get("radius");
 
-              var x00 = radius * am5.math.cos(startAngle);
-              var y00 = radius * am5.math.sin(startAngle);
+              if (!systemHasOneProtein) {
+                var x00 = radius * am5.math.cos(startAngle);
+                var y00 = radius * am5.math.sin(startAngle);
 
-              var x10 = radius * am5.math.cos(startAngle + arc);
-              var y10 = radius * am5.math.sin(startAngle + arc);
+                var x10 = radius * am5.math.cos(startAngle + arc);
+                var y10 = radius * am5.math.sin(startAngle + arc);
+
+              } else {
+                var x00 = radius * am5.math.sin(startAngle);
+                var y00 = radius * am5.math.cos(startAngle);
+
+                var x10 = radius * am5.math.sin(startAngle + arc);
+                var y10 = -radius * am5.math.cos(startAngle + arc);
+
+              }
 
               var subRadius = subSeries.slices.getIndex(0).get("radius");
               var x01 = 0;
@@ -485,36 +510,7 @@ fetch('/data/' + JSON.stringify(obj))
           );
 
           // Set data
-          pieSeries.data.setAll([
-            {
-              category: "Protein1",
-              value: 500,
-              subData: [
-                { category: "CHOL", value: 200 },
-                { category: "POPE", value: 150 },
-                { category: "POPS", value: 100 }
-            ]
-            },
-            {
-                category: "Protein2",
-                value: 300,
-                subData: [
-                    { category: "POPS", value: 600 },
-                    { category: "CHOL", value: 150 },
-                    { category: "POPE", value: 50 }
-
-                ]
-              },
-              {
-                category: "Protein3",
-                value: 300,
-                subData: [
-                    { category: "CHOL", value: 400 },
-                    { category: "POPE", value: 280 },
-                    { category: "POPS", value: 40 }
-                    ]
-              }
-              ]);
+          pieSeries.data.setAll(responseData['pieData']);
 
           function selectSlice(slice) {
             selectedSlice = slice;

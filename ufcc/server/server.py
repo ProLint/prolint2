@@ -52,8 +52,42 @@ def listener(metadata):
 
         data_loaded = True
 
-    sliced_data = data[lipid]
-    return {lipid: sliced_data}
+    sliced_data = data['Protein0'][lipid]
+
+    # Value can be system data: e.g. the ratio of the different lipids, but in that case all
+    # values for all different proteins would be the same (not necessarily a bad thing)
+    # Values can also be relative ratio of contacts with the different lipids, in which case
+    # they are specific for any protein (then again, without normalization it's unclear how
+    # useful this information is.)
+    pie_data = [{
+        "category": "Protein0",
+        "value": 500,
+        "subData": [
+            { "category": "CHOL", "value": 300 },
+            { "category": "POPE", "value": 150 },
+            { "category": "POPS", "value": 50 }
+        ]
+    },
+    # {
+    #     "category": "Protein1",
+    #     "value": 300,
+    #     "subData": [
+    #         { "category": "CHOL", "value": 100 },
+    #         { "category": "POPE", "value": 150 },
+    #         { "category": "POPS", "value": 50 }
+
+    #     ]
+    # }
+    ]
+
+    response = {
+        "data": {lipid: sliced_data},
+        "proteins": ['Protein0'],
+        "lipids": list(data['Protein0'].keys()),
+        "pieData": pie_data
+    }
+    return response
+    # return {lipid: sliced_data}
 
 
 

@@ -23,14 +23,21 @@ csv_in = open('out_girk.csv')
 js = {}
 for row in csv.DictReader(csv_in):
     lipid = row['Lipids']
+    protein = row['Protein']
     # if lipid != "CHOL": continue
     residue_id = row['ResName'] + " " + row['ResID']
     lipid_number_value = float(row['Lipid_Number'])
     value = [residue_id, float("{:.2f}".format(lipid_number_value))]
-    if js.get(lipid):
-        js[lipid].append(value)
+
+    if js.get(protein):
+        if js.get(protein).get(lipid):
+            # print ('TEST')
+            js[protein][lipid].append(value)
+        else:
+            js[protein][lipid] = [value]
     else:
-        js[lipid] = [value]
+        print ('TEST')
+        js[protein] = {lipid: [value]}
 
 with open('girk.json', 'w') as fp:
     json.dump(js, fp)
