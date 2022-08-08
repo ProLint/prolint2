@@ -583,24 +583,24 @@ fetch('/data/' + JSON.stringify(obj))
           var ganttData = [
             {
               category: "Lipid 1",
-              fromDate: 0,
-              toDate: 10,
+              startFrame: 0,
+              endFrame: 10,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(0), 0)
               }
             },
             {
               category: "Lipid 1",
-              fromDate: 45,
-              toDate: 75,
+              startFrame: 45,
+              endFrame: 75,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(0), 0.4)
               }
             },
             {
               category: "Lipid 1",
-              fromDate: 90,
-              toDate: 100,
+              startFrame: 90,
+              endFrame: 100,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(0), 0.8)
               }
@@ -608,16 +608,16 @@ fetch('/data/' + JSON.stringify(obj))
 
             {
               category: "Lipid 2",
-              fromDate: 10,
-              toDate: 35,
+              startFrame: 10,
+              endFrame: 35,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(2), 0)
               }
             },
             {
               category: "Lipid 2",
-              fromDate: 45,
-              toDate: 60,
+              startFrame: 45,
+              endFrame: 60,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(2), 0.4)
               }
@@ -625,16 +625,16 @@ fetch('/data/' + JSON.stringify(obj))
 
             {
               category: "Lipid 3",
-              fromDate: 20,
-              toDate: 35,
+              startFrame: 20,
+              endFrame: 35,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(4), 0)
               }
             },
             {
               category: "Lipid 3",
-              fromDate: 35,
-              toDate: 80,
+              startFrame: 35,
+              endFrame: 80,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(4), 0.4)
               }
@@ -642,16 +642,16 @@ fetch('/data/' + JSON.stringify(obj))
 
             {
               category: "Lipid 4",
-              fromDate: 77,
-              toDate: 88,
+              startFrame: 77,
+              endFrame: 88,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(6), 0)
               }
             },
             {
               category: "Lipid 4",
-              fromDate: 89,
-              toDate: 94,
+              startFrame: 89,
+              endFrame: 94,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(6), 0.4)
               }
@@ -659,8 +659,8 @@ fetch('/data/' + JSON.stringify(obj))
 
             {
               category: "Lipid 5",
-              fromDate: 34,
-              toDate: 88,
+              startFrame: 34,
+              endFrame: 88,
               columnSettings: {
                 fill: am5.Color.brighten(colors.getIndex(8), 0)
               }
@@ -696,8 +696,8 @@ fetch('/data/' + JSON.stringify(obj))
           var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
             xAxis: ganttXAxis,
             yAxis: ganttYAxis,
-            openValueXField: "fromDate",
-            valueXField: "toDate",
+            openValueXField: "startFrame",
+            valueXField: "endFrame",
             categoryYField: "category",
             sequencedInterpolation: true
           }));
