@@ -25,8 +25,8 @@ root.fps = 60;
 // Data JSON.stringify(obj)
 // fetch('/data/' + document.getElementById('lipids').value)
 var obj = {
-    "lipid": document.getElementById('lipids').value,
-    "protein": document.getElementById('proteins').value
+    "lipid": "",
+    "protein": ""
 }
 fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
@@ -277,7 +277,7 @@ fetch('/data/' + JSON.stringify(obj))
         slider.events.on("rangechanged", function () {
             // val = Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup));
             // val = slider.get("start", 0) //* (endFrameGroup - startFrameGroup)
-            console.log('before UPDATE')
+            // console.log('before UPDATE')
             updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
         });
 
@@ -296,34 +296,6 @@ fetch('/data/' + JSON.stringify(obj))
                 });
             }
         }
-
-
-        document.getElementById('lipids').addEventListener('change', function (e) {
-
-            obj.lipid = e.target.value
-            obj.protein = document.getElementById('proteins').value
-            fetch('/data/' + JSON.stringify(obj))
-                .then(response => response.json())
-                .then(updateData => {
-
-                    var updateData = generateRadarData(updateData);
-                    series.data.setAll(updateData);
-                    categoryAxis.data.setAll(updateData);
-
-                    am5.array.each(series.dataItems, function (dataItem) {
-                        var newValue = dataItem.dataContext["value_" + 0];
-                        dataItem.set("valueY", newValue);
-                        dataItem.animate({
-                            key: "valueYWorking",
-                            to: newValue,
-                            duration: 500
-                        });
-                    });
-                });
-            series.appear(1000);
-            chart.appear(500, 100);
-        });
-
 
         var pieRoot = am5.Root.new("chartdiv2");
 
@@ -425,7 +397,9 @@ fetch('/data/' + JSON.stringify(obj))
             var lipid = e.target.dataItem.dataContext.category
             if (lipid != axisRange.get("label").get('text')) {
                 obj.lipid = lipid
-                obj.protein = document.getElementById('proteins').value
+                // TODO:
+                // get correct protein
+                obj.protein = "GIRK"
                 fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(updateData => {
@@ -454,10 +428,6 @@ fetch('/data/' + JSON.stringify(obj))
             { category: "CHOL", value: 0 },
             { category: "POPE", value: 0 },
             { category: "POPS", value: 0 },
-            // { category: "D", value: 0 },
-            // { category: "E", value: 0 },
-            // { category: "F", value: 0 },
-            // { category: "G", value: 0 }
           ]);
             subSeries.labels.template.setAll({
                 textType: "circular",
@@ -505,12 +475,7 @@ fetch('/data/' + JSON.stringify(obj))
 
               line0.set("points", [point00, point01]);
               line1.set("points", [point10, point11]);
-
-            //   console.log('subseries', subSeries.slices.getIndex(0).dataItem.dataContext.category)
-
-            // return subSeries.slices.getIndex(0).dataItem.dataContext.category;
             }
-            // return false;
           }
 
 
@@ -610,13 +575,5 @@ fetch('/data/' + JSON.stringify(obj))
           pieSeries.events.on("datavalidated", function() {
             selectSlice(pieSeries.slices.getIndex(0));
           });
-
-
-
-
-
-
-
-
 
     });
