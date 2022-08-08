@@ -32,6 +32,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
+
+        console.log('responseData', responseData)
         var contactData = responseData['data']
 
         var startFrameGroup = 0;
@@ -343,8 +345,9 @@ fetch('/data/' + JSON.stringify(obj))
             obj.protein = protein
             fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
-                .then(updateData => {
+                .then(responseData => {
 
+                    updateData = responseData['data']
                     var updateData = generateRadarData(updateData);
                     series.data.setAll(updateData);
                     // categoryAxis.data.setAll(updateData);
@@ -392,7 +395,9 @@ fetch('/data/' + JSON.stringify(obj))
                 obj.protein = "GIRK"
                 fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
-                    .then(updateData => {
+                    .then(responseData => {
+
+                        updateData = responseData['data']
 
                         var updateData = generateRadarData(updateData);
                         series.data.setAll(updateData);
