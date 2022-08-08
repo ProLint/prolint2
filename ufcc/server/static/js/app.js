@@ -163,11 +163,11 @@ fetch('/data/' + JSON.stringify(obj))
         series.appear(500);
         chart.appear(500, 100);
 
-        function generateRadarData(cData) {
+        function generateRadarData(contactData) {
             var data = [];
             var i = 0;
-            for (var lipid in cData) {
-                var lipidData = cData[lipid];
+            for (var lipid in contactData) {
+                var lipidData = contactData[lipid];
 
                 lipidData.forEach(function (residue) {
                     var rawDataItem = {
@@ -277,7 +277,7 @@ fetch('/data/' + JSON.stringify(obj))
         slider.events.on("rangechanged", function () {
             // val = Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup));
             // val = slider.get("start", 0) //* (endFrameGroup - startFrameGroup)
-            // console.log('before UPDATE', val)
+            console.log('before UPDATE')
             updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
         });
 
@@ -304,11 +304,11 @@ fetch('/data/' + JSON.stringify(obj))
             obj.protein = document.getElementById('proteins').value
             fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
-                .then(abcdef => {
+                .then(updateData => {
 
-                    var duta = generateRadarData(abcdef);
-                    series.data.setAll(duta);
-                    categoryAxis.data.setAll(duta);
+                    var updateData = generateRadarData(updateData);
+                    series.data.setAll(updateData);
+                    categoryAxis.data.setAll(updateData);
 
                     am5.array.each(series.dataItems, function (dataItem) {
                         var newValue = dataItem.dataContext["value_" + 0];
@@ -367,6 +367,34 @@ fetch('/data/' + JSON.stringify(obj))
           // add events
           pieSeries.slices.template.events.on("click", function(e) {
             selectSlice(e.target);
+
+            var lipid = e.target.dataItem.dataContext.category
+            if (lipid != axisRange.get("label").get('text')) {
+                obj.lipid = lipid
+                obj.protein = document.getElementById('proteins').value
+                fetch('/data/' + JSON.stringify(obj))
+                    .then(response => response.json())
+                    .then(updateData => {
+
+                        var updateData = generateRadarData(updateData);
+                        series.data.setAll(updateData);
+                        // categoryAxis.data.setAll(updateData);
+
+                        am5.array.each(series.dataItems, function (dataItem) {
+                            var newValue = dataItem.dataContext["value_" + 0];
+                            dataItem.set("valueY", newValue);
+                            dataItem.animate({
+                                key: "valueYWorking",
+                                to: newValue,
+                                duration: 0
+                            });
+                        });
+                    });
+                series.appear(1000);
+                // chart.appear(500, 100);
+
+            }
+
           });
 
           // Create sub chart
@@ -460,59 +488,34 @@ fetch('/data/' + JSON.stringify(obj))
           // https://www.amcharts.com/docs/v5/charts/percent-charts/pie-chart/#Setting_data
           pieSeries.data.setAll([
             {
-              category: "Lithuania",
+              category: "CHOL",
               value: 500,
               subData: [
-                { category: "A", value: 200 },
-                { category: "B", value: 150 },
-                { category: "C", value: 100 },
-                { category: "D", value: 100 }
-              ]
+                { category: "CHOL", value: 200 },
+                { category: "POPE", value: 150 },
+                { category: "POPS", value: 100 }
+            ]
             },
             {
-              category: "Czechia",
-              value: 300,
-              subData: [
-                { category: "A", value: 150 }
-              ]
-            },
-            {
-              category: "Ireland",
-              value: 200,
-              subData: [
-                { category: "A", value: 110 },
-                { category: "B", value: 60 },
-                { category: "C", value: 30 }
-              ]
-            },
-            {
-              category: "Germany",
-              value: 150,
-              subData: [
-                { category: "A", value: 80 },
-                { category: "B", value: 40 },
-                { category: "C", value: 30 }
-              ]
-            },
-            {
-              category: "Australia",
-              value: 140,
-              subData: [
-                { category: "A", value: 90 },
-                { category: "B", value: 40 },
-                { category: "C", value: 10 }
-              ]
-            },
-            {
-              category: "Austria",
-              value: 120,
-              subData: [
-                { category: "A", value: 60 },
-                { category: "B", value: 30 },
-                { category: "C", value: 30 }
-              ]
-            }
-          ]);
+                category: "POPS",
+                value: 300,
+                subData: [
+                    { category: "CHOL", value: 150 },
+                    { category: "POPE", value: 50 },
+                    { category: "POPS", value: 600 }
+
+                ]
+              },
+              {
+                category: "POPE",
+                value: 300,
+                subData: [
+                    { category: "CHOL", value: 400 },
+                    { category: "POPE", value: 280 },
+                    { category: "POPS", value: 40 }
+                    ]
+              }
+              ]);
 
           function selectSlice(slice) {
             selectedSlice = slice;
