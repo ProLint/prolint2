@@ -52,8 +52,14 @@ def listener(metadata):
 
         data_loaded = True
 
-    sliced_data = data[lipid]
-    return {lipid: sliced_data}
+    sliced_data = data['Protein0'][lipid]
+    response = {
+        "data": {lipid: sliced_data},
+        "proteins": ['Protein0'],
+        "lipids": list(data['Protein0'].keys())
+    }
+    return response
+    # return {lipid: sliced_data}
 
 
 

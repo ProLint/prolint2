@@ -30,7 +30,9 @@ var obj = {
 }
 fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
-    .then(contactData => {
+    .then(responseData => {
+
+        var contactData = responseData['data']
 
         var startFrameGroup = 0;
         var endFrameGroup = 1;
@@ -156,6 +158,7 @@ fetch('/data/' + JSON.stringify(obj))
         chart.appear(500, 100);
 
         function generateRadarData(contactData) {
+            // contactData = contactData['Protein0']
             var data = [];
             var i = 0;
             for (var lipid in contactData) {
