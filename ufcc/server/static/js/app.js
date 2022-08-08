@@ -10,18 +10,6 @@
  * ---------------------------------------
  */
 
-var root = am5.Root.new("chartdiv");
-
-const theme = am5.Theme.new(root);
-theme.rule("Label").set("fontSize", 10);
-theme.rule("Grid").set("strokeOpacity", 0.06);
-
-root.setThemes([
-    am5themes_Animated.new(root),
-    theme
-]);
-
-root.fps = 60;
 
 // Fetch the data from the backend
 var obj = {
@@ -43,11 +31,25 @@ fetch('/data/' + JSON.stringify(obj))
             systemHasOneProtein = true
         }
 
+        ///////////////////////////////////////////
+        /////////////// RadarApp //////////////////
+        ///////////////////////////////////////////
+        var root = am5.Root.new("chartdiv");
+
+        const theme = am5.Theme.new(root);
+        theme.rule("Label").set("fontSize", 10);
+        theme.rule("Grid").set("strokeOpacity", 0.06);
+
+        root.setThemes([
+            am5themes_Animated.new(root),
+            theme
+        ]);
+
+        root.fps = 60;
+
         var startFrameGroup = 0;
         var endFrameGroup = 1;
         var currentFrameGroup = 1;
-
-        var div = document.getElementById("chartdiv");
 
         var colorSet = am5.ColorSet.new(root, {});
 
@@ -131,7 +133,6 @@ fetch('/data/' + JSON.stringify(obj))
 
         series.columns.template.set("strokeOpacity", 0);
 
-
         // Set up heat rules
         series.set("heatRules", [{
             target: series.columns.template,
@@ -193,7 +194,6 @@ fetch('/data/' + JSON.stringify(obj))
             return data;
         }
 
-
         function createRange(name, lipidData, index) {
             axisRange.get("label").setAll({
                 text: name
@@ -232,7 +232,6 @@ fetch('/data/' + JSON.stringify(obj))
                 }
             });
         }
-
 
         // Create controls
         var container = chart.children.push(am5.Container.new(root, {
@@ -301,6 +300,9 @@ fetch('/data/' + JSON.stringify(obj))
             }
         }
 
+        ///////////////////////////////////////////
+        /////////////// PieApp ////////////////////
+        ///////////////////////////////////////////
         var pieRoot = am5.Root.new("chartdiv2");
 
         // Set themes
@@ -426,11 +428,6 @@ fetch('/data/' + JSON.stringify(obj))
           });
 
           subSeries.data.setAll(lipids.map(lipidName => ({category: lipidName, value: 0})))
-        //   subSeries.data.setAll([
-        //     { category: "CHOL", value: 0 },
-        //     { category: "POPE", value: 0 },
-        //     { category: "POPS", value: 0 },
-        //   ]);
             subSeries.labels.template.setAll({
                 textType: "circular",
                 radius: 4
@@ -489,9 +486,6 @@ fetch('/data/' + JSON.stringify(obj))
               line1.set("points", [point10, point11]);
             }
           }
-
-
-
 
           // lines
           var line0 = pieContainer.children.push(
@@ -558,24 +552,18 @@ fetch('/data/' + JSON.stringify(obj))
             selectSlice(pieSeries.slices.getIndex(0));
           });
 
-
-
+          ///////////////////////////////////////////
+          /////////////// GanttApp //////////////////
+          ///////////////////////////////////////////
           var ganttRoot = am5.Root.new("chartdiv3");
-        //   ganttRoot.dateFormatter.setAll({
-        //     // dateFormat: "yyyy-MM-dd",
-        //     valueField: ["valueX", "openValueX"]
-        //   });
-
 
           // Set themes
-          // https://www.amcharts.com/docs/v5/concepts/themes/
           ganttRoot.setThemes([
             am5themes_Animated.new(ganttRoot)
           ]);
 
 
           // Create chart
-          // https://www.amcharts.com/docs/v5/charts/xy-chart/
           var ganttChart = ganttRoot.container.children.push(am5xy.XYChart.new(ganttRoot, {
             panX: false,
             panY: false,
@@ -592,7 +580,7 @@ fetch('/data/' + JSON.stringify(obj))
           var colors = ganttChart.get("colors");
 
           // Data
-          var data = [
+          var ganttData = [
             {
               category: "Lipid 1",
               fromDate: 0,
@@ -680,7 +668,6 @@ fetch('/data/' + JSON.stringify(obj))
           ];
 
           // Create axes
-          // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
           var ganttYAxis = ganttChart.yAxes.push(
             am5xy.CategoryAxis.new(ganttRoot, {
               categoryField: "category",
@@ -700,30 +687,12 @@ fetch('/data/' + JSON.stringify(obj))
             { category: "Lipid 5" }
           ]);
 
-        //   var ganttXAxis = ganttChart.xAxes.push(
-        //     am5xy.DateAxis.new(ganttRoot, {
-        //       baseInterval: { timeUnit: "second", count: 1 },
-        //       renderer: am5xy.AxisRendererX.new(ganttRoot, {})
-        //     })
-        //   );
-
           var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
             max: 100,
-            // extraMax: 1,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {})
         }));
 
-          // Add series
-          // https://www.amcharts.com/docs/v5/charts/xy-chart/series/
-        //   var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
-        //     xAxis: ganttXAxis,
-        //     yAxis: ganttYAxis,
-        //     openValueXField: "fromDate",
-        //     valueXField: "toDate",
-        //     categoryYField: "category",
-        //     sequencedInterpolation: true
-        //   }));
           var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
             xAxis: ganttXAxis,
             yAxis: ganttYAxis,
@@ -738,26 +707,9 @@ fetch('/data/' + JSON.stringify(obj))
             strokeOpacity: 0,
             tooltipText: "{category}"
           });
+          ganttSeries.data.setAll(ganttData);
 
-        //   ganttSeries.data.processor = am5.DataProcessor.new(ganttRoot, {
-        //     valueField: ["fromDate", "toDate"],
-        //     // dateFormat: "yyyy-MM-dd HH:mm"
-        //   });
-          ganttSeries.data.setAll(data);
-
-          // Add scrollbars
-        //   ganttChart.set("scrollbarX", am5.Scrollbar.new(ganttRoot, {
-        //     orientation: "horizontal"
-        //   }));
-
-          // Make stuff animate on load
-          // https://www.amcharts.com/docs/v5/concepts/animations/
           ganttSeries.appear();
           ganttChart.appear(1000, 100);
-
-
-
-
-
 
     });
