@@ -6,6 +6,7 @@ r"""Argument parser to use ufcc from the command-line
 :Copyright: MIT License
 """
 
+import os
 import argparse
 import ufcc._version as vers
 from ufcc import UFCC
@@ -13,10 +14,11 @@ from ufcc.interactive_sel import interactive_selection
 from time import perf_counter
 import warnings
 from fpdf import FPDF
+from ufcc.server.server import start_server
 
 # Creating the parser
-ufcc_parser = argparse.ArgumentParser(prog='ufcc', 
-                                    #   usage='%(prog)s [optional-arguments] structure_file trajectory_file', 
+ufcc_parser = argparse.ArgumentParser(prog='ufcc',
+                                    #   usage='%(prog)s [optional-arguments] structure_file trajectory_file',
                                       description='Argument parser to use the ufcc library directly from the command-line.',
                                       formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                       epilog='Have fun getting lipid-protein contacts! :)\n')
@@ -24,7 +26,7 @@ ufcc_parser = argparse.ArgumentParser(prog='ufcc',
 ufcc_parser.version = vers.get_versions()['version']
 
 # positional arguments
-ufcc_parser.add_argument('structure', action='store', type=str, help='path to the structure/topology file') 
+ufcc_parser.add_argument('structure', action='store', type=str, help='path to the structure/topology file')
 ufcc_parser.add_argument('trajectory', action='store', type=str, help='path to the trajectory file')
 ufcc_parser.add_argument('output_file', action='store', type=str, help='output pkl file with the contacts information')
 
@@ -48,7 +50,7 @@ mass_flag = 0
 mass_list = []
 warn2report = []
 with warnings.catch_warnings(record=True) as w:
-    target_system = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids) 
+    target_system = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids)
     for warn in w:
         syl = str(warn.message).split()
         if syl[:5] == ['Failed', 'to', 'guess', 'the', 'mass']:
@@ -70,7 +72,7 @@ print('\n########### Starting calculation ##########')
 t1 = perf_counter()
 if args.backend == 'serial':
     print('\n1- Getting the contacts between the groups over the frames in the trajectory:')
-    target_system.contacts.compute(cutoff=args.cutoff)    
+    target_system.contacts.compute(cutoff=args.cutoff)
     print('\n2- Getting the contacts metrics:')
     target_system.contacts.count_contacts()
     target_system.contacts.get_metrics(args.output_file)
@@ -100,6 +102,9 @@ for stat in comp_stats:
     print(stat)
 print('\n########## Thanks for using ufcc! #########\n')
 
+
+start_server()
+
 class PDF(FPDF):
     def header(self):
         # Arial bold 15
@@ -128,7 +133,7 @@ class PDF(FPDF):
         self.ln(4)
 
     def chapter_body(self, text):
-        # Read text 
+        # Read text
         txt = '\n'.join(text)
         # Times 12
         self.set_font('Times', '', 12)
