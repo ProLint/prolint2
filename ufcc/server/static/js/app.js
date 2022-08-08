@@ -594,91 +594,8 @@ fetch('/data/' + JSON.stringify(obj))
         var colors = ganttChart.get("colors");
 
         // Data
-        var ganttData = [{
-                category: "Lipid 1",
-                startFrame: 0,
-                endFrame: 10,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(0), 0)
-                }
-            },
-            {
-                category: "Lipid 1",
-                startFrame: 45,
-                endFrame: 75,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(0), 0.4)
-                }
-            },
-            {
-                category: "Lipid 1",
-                startFrame: 90,
-                endFrame: 100,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(0), 0.8)
-                }
-            },
-
-            {
-                category: "Lipid 2",
-                startFrame: 10,
-                endFrame: 35,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(2), 0)
-                }
-            },
-            {
-                category: "Lipid 2",
-                startFrame: 45,
-                endFrame: 60,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(2), 0.4)
-                }
-            },
-
-            {
-                category: "Lipid 3",
-                startFrame: 20,
-                endFrame: 35,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(4), 0)
-                }
-            },
-            {
-                category: "Lipid 3",
-                startFrame: 35,
-                endFrame: 80,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(4), 0.4)
-                }
-            },
-
-            {
-                category: "Lipid 4",
-                startFrame: 77,
-                endFrame: 88,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(6), 0)
-                }
-            },
-            {
-                category: "Lipid 4",
-                startFrame: 89,
-                endFrame: 94,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(6), 0.4)
-                }
-            },
-
-            {
-                category: "Lipid 5",
-                startFrame: 34,
-                endFrame: 88,
-                columnSettings: {
-                    fill: am5.Color.brighten(colors.getIndex(8), 0)
-                }
-            }
-        ];
+        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, fill: colorSet.getIndex(50),}))
+        console.log('ganttData', ganttData)
 
         // Create axes
         var ganttYAxis = ganttChart.yAxes.push(
@@ -699,15 +616,6 @@ fetch('/data/' + JSON.stringify(obj))
             },
             {
                 category: "Lipid 2"
-            },
-            {
-                category: "Lipid 3"
-            },
-            {
-                category: "Lipid 4"
-            },
-            {
-                category: "Lipid 5"
             }
         ]);
 
