@@ -130,8 +130,8 @@ class ParallelContacts(ParallelAnalysisBase):
 
 class Runner(object):
     """
-    Class to configure the runner for the calculations of distances. As the *parallel* routine uses 
-    the parallel computing library **Dask**, that can be setted up to run on remotes machines. The aim of 
+    Class to configure the runner for the calculations of distances. As the *parallel* routine uses
+    the parallel computing library **Dask**, that can be setted up to run on remotes machines. The aim of
     this runner class is to define the variables needed for the Dask scheduler, but so far this a very
     simple class that has the attributes below to run on a single local machine:
 
@@ -140,7 +140,7 @@ class Runner(object):
     backend : str (*serial*)
         Backend to run the contacts calculation (can be either *serial* or *parallel*).
     n_jobs : int (-1)
-        Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores. 
+        Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores.
     """
     def __init__(self):
         self.backend = 'serial'
@@ -242,7 +242,7 @@ class Contacts(object):
 
     def count_contacts(self):
         """
-        Count the number of each contact type at each frame.     
+        Count the number of each contact type at each frame.
         """
 
         if self.contacts is None:
@@ -322,7 +322,7 @@ class Contacts(object):
 
         self.counts = counts
 
-    def get_metrics(self, save_file=''):
+    def get_metrics(self, save_file='', server=False):
         if self.contacts is None or self.counts is None:
             raise ValueError("contacts or counts attributes are None: use .compute() and .count_neighbours() methods  before calling get_metrics")
 
@@ -357,14 +357,17 @@ class Contacts(object):
             contact_metrics.to_csv(save_file, index=False)
 
         self.contact_metrics = contact_metrics
-             
+
+        if server:
+            return contact_metrics
+
     def export_to_prolint(self, path='prolint_results.pkl'):
         """
         Temporal method to be able to use the analysis tools from **prolintpy**.
 
         Parameters
         ----------
-        path : file 
+        path : file
             Path to file to save the contacts information on Prolint's format. ('results_prolint.pkl')
             Prolint's results are stored as a dictionary. Contacts for each residue of each protein
             are stored using the ProLint.LPContacts class.
@@ -374,12 +377,12 @@ class Contacts(object):
         PLASMA_LIPIDS = {}
         for lip in np.unique(self.database.selected.residues.resnames):
             PLASMA_LIPIDS[lip] = [lip]
-        
+
         prolint_contacts = defaultdict(dict)
         n_residues_db = self.database.selected.residues.n_residues
         frames = self.database.selected.universe.trajectory.n_frames
         for protein in np.unique(self.query.selected.residues.macros):
-            residues = self.query.selected.residues[self.query.selected.residues.macros == protein]            
+            residues = self.query.selected.residues[self.query.selected.residues.macros == protein]
             per_residue_results = {}
             for idx in (pbar := tqdm(residues.resindices)):
                 pbar.set_description('Exporting to Prolint in a per residue basis over protein residues')
@@ -389,9 +392,11 @@ class Contacts(object):
 
         with open(path, 'wb') as f:
             pickle.dump(prolint_contacts, f)
-        
+
     def __str__(self):
         if not isinstance(self.contacts, np.ndarray):
+            # TODO: should this say that contacts needs to be initialized?
+            # one edge case here would be cases when there really are no contacts
             return "<ufcc.Contacts containing 0 contacts>"
         else:
             return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
