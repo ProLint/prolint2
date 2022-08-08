@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wheel App</title>
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+
     <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
     <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
     <script src="https://cdn.amcharts.com/lib/5/stock.js"></script>
@@ -17,25 +22,43 @@
             background-color: rgb(217, 214, 214);
         }
         #chartdiv2 {
-            height: 500px;
-            width: 700px;
+            height: 300px;
+            /* width: 600px; */
             background-color: rgb(217, 214, 214);
         }
 
         #chartdiv3 {
-            height: 500px;
-            width: 700px;
+            height: 300px;
+            /* width: 600px; */
             background-color: rgb(217, 214, 214);
-            margin-left: 700px;
-            margin-top: -500px;
+            /* margin-left: 700px; */
+            /* margin-top: -500px; */
         }
     </style>
 </head>
 <body>
-    <div style="margin-top: 10px">App Development Page!</div>
+
+<div class="container">
+    <h1>Grid</h1>
+    <div class="row">
+        <div class="col-sm-6" style="background-color:rgb(125, 125, 114);">
+        <div id="chartdiv2"></div>
+        </div>
+        <div class="col-sm-6" style="background-color:pink;">
+        <div id="chartdiv3"></div>
+        </div>
+    </div>
+    <div class="row" class="col-sm-8">
+        <div id="chartdiv"></div>
+    </div>
+    </div>
+
+
+
+    <!-- <div style="margin-top: 10px">App Development Page!</div>
     <div id="chartdiv2"></div>
     <div id="chartdiv3"></div>
-    <div id="chartdiv"></div>
+    <div id="chartdiv"></div> -->
 
     <script src="static/js/app.js"></script>
 

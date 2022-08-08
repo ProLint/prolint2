@@ -20,7 +20,6 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
-
         // console.log('responseData', responseData);
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
@@ -54,7 +53,7 @@ fetch('/data/' + JSON.stringify(obj))
         var colorSet = am5.ColorSet.new(root, {});
 
         // Params
-        var innerRadius = 20;
+        var innerRadius = 45;
 
         // Create chart
         var chart = root.container.children.push(am5radar.RadarChart.new(root, {
@@ -63,7 +62,7 @@ fetch('/data/' + JSON.stringify(obj))
             wheelX: "panX",
             wheelY: "zoomX",
             innerRadius: am5.percent(innerRadius),
-            radius: am5.percent(65),
+            radius: am5.percent(75),
             startAngle: 270 - 170,
             endAngle: 270 + 170
             // Right handed half circle:
