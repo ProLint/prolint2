@@ -178,7 +178,7 @@ fetch('/data/' + JSON.stringify(obj))
                     for (var y = startY; y < residue.length; y++) {
                         rawDataItem["value_" + (startFrameGroup + y - startY)] = residue[y];
                     }
-
+                    // rawDataItem['protein'] = "GIRK"
                     data.push(rawDataItem);
                 });
 
@@ -368,32 +368,35 @@ fetch('/data/' + JSON.stringify(obj))
           pieSeries.slices.template.events.on("click", function(e) {
             selectSlice(e.target);
 
-            // var lipid = e.target.dataItem.dataContext.category
-            // if (lipid != axisRange.get("label").get('text')) {
-            //     obj.lipid = lipid
-            //     obj.protein = document.getElementById('proteins').value
-            //     fetch('/data/' + JSON.stringify(obj))
-            //         .then(response => response.json())
-            //         .then(updateData => {
+            console.log('series', series)
 
-            //             var updateData = generateRadarData(updateData);
-            //             series.data.setAll(updateData);
-            //             // categoryAxis.data.setAll(updateData);
+            // TODO:
+            // only execute when the protein changes
+            var protein = e.target.dataItem.dataContext.category
+            var lipid = subSeries.slices.getIndex(0).dataItem.dataContext.category
 
-            //             am5.array.each(series.dataItems, function (dataItem) {
-            //                 var newValue = dataItem.dataContext["value_" + 0];
-            //                 dataItem.set("valueY", newValue);
-            //                 dataItem.animate({
-            //                     key: "valueYWorking",
-            //                     to: newValue,
-            //                     duration: 0
-            //                 });
-            //             });
-            //         });
-            //     series.appear(1000);
-            //     // chart.appear(500, 100);
+            obj.lipid = lipid
+            obj.protein = protein
+            fetch('/data/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(updateData => {
 
-            // }
+                    var updateData = generateRadarData(updateData);
+                    series.data.setAll(updateData);
+                    // categoryAxis.data.setAll(updateData);
+
+                    am5.array.each(series.dataItems, function (dataItem) {
+                        var newValue = dataItem.dataContext["value_" + 0];
+                        dataItem.set("valueY", newValue);
+                        dataItem.animate({
+                            key: "valueYWorking",
+                            to: newValue,
+                            duration: 0
+                        });
+                    });
+                });
+            series.appear(1000);
+            // chart.appear(500, 100);
 
           });
 
@@ -415,7 +418,7 @@ fetch('/data/' + JSON.stringify(obj))
             })
           );
 
-
+          // subSeries click event to link to radar chart
           subSeries.slices.template.events.on("click", function(e) {
 
             var lipid = e.target.dataItem.dataContext.category
@@ -463,11 +466,11 @@ fetch('/data/' + JSON.stringify(obj))
             updateLines();
           });
 
-          pieContainer.events.on("boundschanged", function() {
-            pieRoot.events.on("frameended", function(){
-              updateLines();
-             })
-          })
+        //   pieContainer.events.on("boundschanged", function() {
+        //     pieRoot.events.on("frameended", function(){
+        //       updateLines();
+        //      })
+        //   })
 
           function updateLines() {
             if (selectedSlice) {
@@ -496,11 +499,13 @@ fetch('/data/' + JSON.stringify(obj))
 
               line0.set("points", [point00, point01]);
               line1.set("points", [point10, point11]);
+
+            //   console.log('subseries', subSeries.slices.getIndex(0).dataItem.dataContext.category)
+
+            // return subSeries.slices.getIndex(0).dataItem.dataContext.category;
             }
+            // return false;
           }
-
-
-
 
 
 
@@ -537,9 +542,9 @@ fetch('/data/' + JSON.stringify(obj))
                 category: "Protein2",
                 value: 300,
                 subData: [
+                    { category: "POPS", value: 600 },
                     { category: "CHOL", value: 150 },
-                    { category: "POPE", value: 50 },
-                    { category: "POPS", value: 600 }
+                    { category: "POPE", value: 50 }
 
                 ]
               },
