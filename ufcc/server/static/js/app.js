@@ -558,4 +558,206 @@ fetch('/data/' + JSON.stringify(obj))
             selectSlice(pieSeries.slices.getIndex(0));
           });
 
+
+
+          var ganttRoot = am5.Root.new("chartdiv3");
+        //   ganttRoot.dateFormatter.setAll({
+        //     // dateFormat: "yyyy-MM-dd",
+        //     valueField: ["valueX", "openValueX"]
+        //   });
+
+
+          // Set themes
+          // https://www.amcharts.com/docs/v5/concepts/themes/
+          ganttRoot.setThemes([
+            am5themes_Animated.new(ganttRoot)
+          ]);
+
+
+          // Create chart
+          // https://www.amcharts.com/docs/v5/charts/xy-chart/
+          var ganttChart = ganttRoot.container.children.push(am5xy.XYChart.new(ganttRoot, {
+            panX: false,
+            panY: false,
+            wheelX: "panX",
+            wheelY: "zoomX",
+            layout: ganttRoot.verticalLayout
+          }));
+
+          var legend = ganttChart.children.push(am5.Legend.new(ganttRoot, {
+            centerX: am5.p50,
+            x: am5.p50
+          }))
+
+          var colors = ganttChart.get("colors");
+
+          // Data
+          var data = [
+            {
+              category: "John",
+              fromDate: 0,
+              toDate: 10,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(0), 0)
+              }
+            },
+            {
+              category: "John",
+              fromDate: 45,
+              toDate: 75,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(0), 0.4)
+              }
+            },
+            {
+              category: "John",
+              fromDate: 90,
+              toDate: 100,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(0), 0.8)
+              }
+            },
+
+            {
+              category: "Jane",
+              fromDate: 10,
+              toDate: 35,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(2), 0)
+              }
+            },
+            {
+              category: "Jane",
+              fromDate: 45,
+              toDate: 60,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(2), 0.4)
+              }
+            },
+
+            {
+              category: "Peter",
+              fromDate: 20,
+              toDate: 35,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(4), 0)
+              }
+            },
+            {
+              category: "Peter",
+              fromDate: 35,
+              toDate: 80,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(4), 0.4)
+              }
+            },
+
+            {
+              category: "Melania",
+              fromDate: 77,
+              toDate: 88,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(6), 0)
+              }
+            },
+            {
+              category: "Melania",
+              fromDate: 89,
+              toDate: 94,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(6), 0.4)
+              }
+            },
+
+            {
+              category: "Donald",
+              fromDate: 34,
+              toDate: 88,
+              columnSettings: {
+                fill: am5.Color.brighten(colors.getIndex(8), 0)
+              }
+            }
+          ];
+
+          // Create axes
+          // https://www.amcharts.com/docs/v5/charts/xy-chart/axes/
+          var ganttYAxis = ganttChart.yAxes.push(
+            am5xy.CategoryAxis.new(ganttRoot, {
+              categoryField: "category",
+              renderer: am5xy.AxisRendererY.new(ganttRoot, { inversed: true }),
+              tooltip: am5.Tooltip.new(ganttRoot, {
+                themeTags: ["axis"],
+                animationDuration: 200
+              })
+            })
+          );
+
+          ganttYAxis.data.setAll([
+            { category: "John" },
+            { category: "Jane" },
+            { category: "Peter" },
+            { category: "Melania" },
+            { category: "Donald" }
+          ]);
+
+        //   var ganttXAxis = ganttChart.xAxes.push(
+        //     am5xy.DateAxis.new(ganttRoot, {
+        //       baseInterval: { timeUnit: "second", count: 1 },
+        //       renderer: am5xy.AxisRendererX.new(ganttRoot, {})
+        //     })
+        //   );
+
+          var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
+            min: 0,
+            max: 100,
+            // extraMax: 1,
+            renderer: am5xy.AxisRendererX.new(ganttRoot, {})
+        }));
+
+          // Add series
+          // https://www.amcharts.com/docs/v5/charts/xy-chart/series/
+        //   var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
+        //     xAxis: ganttXAxis,
+        //     yAxis: ganttYAxis,
+        //     openValueXField: "fromDate",
+        //     valueXField: "toDate",
+        //     categoryYField: "category",
+        //     sequencedInterpolation: true
+        //   }));
+          var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
+            xAxis: ganttXAxis,
+            yAxis: ganttYAxis,
+            openValueXField: "fromDate",
+            valueXField: "toDate",
+            categoryYField: "category",
+            sequencedInterpolation: true
+          }));
+
+          ganttSeries.columns.template.setAll({
+            templateField: "columnSettings",
+            strokeOpacity: 0,
+            tooltipText: "{category}"
+          });
+
+        //   ganttSeries.data.processor = am5.DataProcessor.new(ganttRoot, {
+        //     valueField: ["fromDate", "toDate"],
+        //     // dateFormat: "yyyy-MM-dd HH:mm"
+        //   });
+          ganttSeries.data.setAll(data);
+
+          // Add scrollbars
+        //   ganttChart.set("scrollbarX", am5.Scrollbar.new(ganttRoot, {
+        //     orientation: "horizontal"
+        //   }));
+
+          // Make stuff animate on load
+          // https://www.amcharts.com/docs/v5/concepts/animations/
+          ganttSeries.appear();
+          ganttChart.appear(1000, 100);
+
+
+
+
+
+
     });
