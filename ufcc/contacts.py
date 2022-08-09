@@ -12,7 +12,7 @@ import scipy.stats
 import scipy.sparse
 from tqdm import tqdm
 import MDAnalysis as mda
-from collections import defaultdict
+from collections import defaultdict, Counter
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
@@ -54,7 +54,6 @@ class SerialContacts(AnalysisBase):
         gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
-        print (pairs.shape)
 
         # Find unique pairs of residues interacting
         # Currently we have pairs of atoms
@@ -92,6 +91,7 @@ class ProLintSerialContacts(AnalysisBase):
         self.q_resids = self.query.resindices
         self.db_resids = self.database.resindices
         self.db_resnames = self.database.resnames
+        self.dp_resnames_unique = np.unique(self.db_resnames)
 
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
@@ -101,23 +101,29 @@ class ProLintSerialContacts(AnalysisBase):
             raise ValueError("The cutoff must be greater than 0.")
 
     def _prepare(self):
-        self.contacts = {k: [] for k in self.q_resids}
+        self.contacts = {k: {v:[] for v in self.dp_resnames_unique} for k in self.q_resids}
+        self.contact_summation = {k: [] for k in self.q_resids}
 
     def _single_frame(self):
         gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
 
-        # TODO:
-        # Can this be offloaded to a custom FastNS file, that postprocesses pairs output?
         for p in pairs:
-            residue = self.q_resids[p[0]]
-            lipid = f'{self.db_resnames[p[1]]}, {self.db_resids[p[1]]}'
-            self.contacts[residue].append(lipid)
+            residue_id = self.q_resids[p[0]]
+            lipid_id = self.db_resids[p[1]]
+            lipid_name = self.db_resnames[p[1]]
+
+            self.contact_summation[residue_id].append(lipid_name)
+            self.contacts[residue_id][lipid_name].append(lipid_id)
 
     def _conclude(self):
-        from collections import Counter
-        self.contacts = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts.items()))
+        self.contact_summation = dict(map(lambda x: (x[0], Counter(x[1])), self.contact_summation.items()))
+        self.contacts = dict(map(
+            lambda x: (x[0], dict(map(
+                lambda y: (y[0], Counter(y[1])), x[1].items())
+                )), self.contacts.items()))
+
 
 class ParallelContacts(ParallelAnalysisBase):
     r"""
@@ -246,7 +252,9 @@ class Contacts(object):
             self.database.selected,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
-        if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
+        # TODO:
+        # @bis: store backend list in the project config file.
+        if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel', 'prolint_serial']:
             raise ValueError(
                 "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
             )
@@ -261,7 +269,9 @@ class Contacts(object):
             temp_instance = ParallelContacts(self.query.selected.universe, self.query.selected, self.database.selected,
                                              cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
+
         self.contacts = temp_instance.contacts
+        self.contact_summation = temp_instance.contact_summation
 
     def save(self, path='contacts.pkl'):
         """
@@ -441,6 +451,9 @@ class Contacts(object):
             pickle.dump(prolint_contacts, f)
 
     def __str__(self):
+        # TODO:
+        # @bis: This is not working with the 'prolint_serial' backend, bc
+        # it is not an isntance of ndarray.
         if not isinstance(self.contacts, np.ndarray):
             # TODO: should this say that contacts needs to be initialized?
             # one edge case here would be cases when there really are no contacts
@@ -449,6 +462,8 @@ class Contacts(object):
             return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
+        # TODO:
+        # @bis: same as above.
         if not isinstance(self.contacts, np.ndarray):
             return "<ufcc.Contacts containing 0 contacts>"
         else:
