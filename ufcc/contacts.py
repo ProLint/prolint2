@@ -79,9 +79,13 @@ class ProLintSerialContacts(AnalysisBase):
     Class to get the distance-based contacts starting from two AtomGroups
     using a *serial* approach.
 
-    It heritages from the MDAnalysis AnalysisBase class.
+    It inherits from the MDAnalysis AnalysisBase class.
     """
-
+    # TODO:
+    # @bis: The front end has the hierarch protein -> lipids -> residue
+    # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
+    # work later on. We should modify this, so we store data in the right
+    # hierarchical structure.
     def __init__(self, universe, query, database, cutoff, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
@@ -102,7 +106,7 @@ class ProLintSerialContacts(AnalysisBase):
 
     def _prepare(self):
         self.contacts = {k: {v:[] for v in self.dp_resnames_unique} for k in self.q_resids}
-        self.contact_summation = {k: [] for k in self.q_resids}
+        self.contacts_sum = {k: {v: 0 for v in self.dp_resnames_unique} for k in self.q_resids}
 
     def _single_frame(self):
         gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
@@ -121,11 +125,11 @@ class ProLintSerialContacts(AnalysisBase):
             # @bis: we may be able to get further performance improvements by
             # using the Counter object with its update methods.
             lipid_name = self.db_resnames[p[1]]
-            self.contact_summation[residue_id].append(lipid_name)
+            self.contacts_sum[residue_id][lipid_name] += 1
             self.contacts[residue_id][lipid_name].append(lipid_id)
 
     def _conclude(self):
-        self.contact_summation = dict(map(lambda x: (x[0], Counter(x[1])), self.contact_summation.items()))
+        # self.contacts_sum = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts_sum.items()))
         self.contacts = dict(map(
             lambda x: (x[0], dict(map(
                 lambda y: (y[0], Counter(y[1])), x[1].items())
@@ -278,7 +282,7 @@ class Contacts(object):
             temp_instance.run(n_jobs=self.runner.n_jobs)
 
         self.contacts = temp_instance.contacts
-        self.contact_summation = temp_instance.contact_summation
+        self.contacts_sum = temp_instance.contacts_sum
 
     def save(self, path='contacts.pkl'):
         """
@@ -424,6 +428,9 @@ class Contacts(object):
 
         if server:
             return contact_metrics
+
+    def server_payload():
+        pass
 
     def export_to_prolint(self, path='prolint_results.pkl'):
         """
