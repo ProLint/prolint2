@@ -54,6 +54,7 @@ class SerialContacts(AnalysisBase):
         gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
+        print (pairs.shape)
 
         # Find unique pairs of residues interacting
         # Currently we have pairs of atoms
@@ -74,6 +75,49 @@ class SerialContacts(AnalysisBase):
     #     # Apply normalisation and averaging to results here.
     #     self.result = np.asarray(self.result) / np.sum(self.result)
 
+class ProLintSerialContacts(AnalysisBase):
+    r"""
+    Class to get the distance-based contacts starting from two AtomGroups
+    using a *serial* approach.
+
+    It heritages from the MDAnalysis AnalysisBase class.
+    """
+
+    def __init__(self, universe, query, database, cutoff, **kwargs):
+
+        super().__init__(universe.universe.trajectory, **kwargs)
+        self.query = query
+        self.database = database
+        self.cutoff = cutoff
+        self.q_resids = self.query.resindices
+        self.db_resids = self.database.resindices
+        self.db_resnames = self.database.resnames
+
+        # Raise if selection doesn't exist
+        if len(self.query) == 0 or len(self.database) == 0:
+            raise ValueError("Invalid selection. Empty AtomGroup(s).")
+
+        if self.cutoff <= 0:
+            raise ValueError("The cutoff must be greater than 0.")
+
+    def _prepare(self):
+        self.contacts = {k: [] for k in self.q_resids}
+
+    def _single_frame(self):
+        gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
+        result = gridsearch.search(self.query.positions)
+        pairs = result.get_pairs()
+
+        # TODO:
+        # Can this be offloaded to a custom FastNS file, that postprocesses pairs output?
+        for p in pairs:
+            residue = self.q_resids[p[0]]
+            lipid = f'{self.db_resnames[p[1]]}, {self.db_resids[p[1]]}'
+            self.contacts[residue].append(lipid)
+
+    def _conclude(self):
+        from collections import Counter
+        self.contacts = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts.items()))
 
 class ParallelContacts(ParallelAnalysisBase):
     r"""
@@ -209,6 +253,9 @@ class Contacts(object):
         if self.runner.backend == 'serial':
             temp_instance = SerialContacts(self.query.selected.universe, self.query.selected, self.database.selected,
                                            cutoff)
+            temp_instance.run(verbose=True)
+        elif self.runner.backend == 'prolint_serial':
+            temp_instance = ProLintSerialContacts(self.query.selected.universe, self.query.selected, self.database.selected, cutoff)
             temp_instance.run(verbose=True)
         elif self.runner.backend == 'parallel':
             temp_instance = ParallelContacts(self.query.selected.universe, self.query.selected, self.database.selected,
