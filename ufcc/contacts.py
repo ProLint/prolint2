@@ -109,11 +109,18 @@ class ProLintSerialContacts(AnalysisBase):
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
 
+        existing_pairs = {}
         for p in pairs:
             residue_id = self.q_resids[p[0]]
             lipid_id = self.db_resids[p[1]]
-            lipid_name = self.db_resnames[p[1]]
 
+            if f'{residue_id}{lipid_id}' in existing_pairs: continue
+            existing_pairs[f'{residue_id}{lipid_id}'] = True
+
+            # TODO:
+            # @bis: we may be able to get further performance improvements by
+            # using the Counter object with its update methods.
+            lipid_name = self.db_resnames[p[1]]
             self.contact_summation[residue_id].append(lipid_name)
             self.contacts[residue_id][lipid_name].append(lipid_id)
 
