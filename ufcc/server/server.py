@@ -41,8 +41,13 @@ def listener(metadata):
 
     if lipid == "" and protein == "":
         # Starting setup:
-        lipid = BACKEND_DATA['lipids'][0]
-        protein = BACKEND_DATA['proteins'][0]
+        try:
+            lipid = BACKEND_DATA['lipids'][0]
+            protein = BACKEND_DATA['proteins'][0]
+        except:
+            BACKEND_DATA = independent_execution()
+            lipid = BACKEND_DATA['lipids'][0]
+            protein = BACKEND_DATA['proteins'][0]
 
     response = {
         "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
@@ -59,6 +64,29 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
     debug(debug_bool)
     run(reloader=reloader, host='localhost', port=port)
+
+def independent_execution():
+    with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
+        data = json.load(fp)
+
+    pie_data = [{
+        "category": "LocalGirk",
+        "value": 500,
+        "subData": [
+            { "category": "CHOL", "value": 300 },
+            { "category": "POPE", "value": 150 },
+            { "category": "POPS", "value": 50 }
+        ]
+    }]
+
+    payload = {
+        "data": data,
+        "proteins": ['LocalGirk'],
+        "lipids": list(data['LocalGirk'].keys()),
+        "pie_data": pie_data
+    }
+
+    return payload
 
 if __name__ == '__main__':
     start_server(debug_bool=True)
