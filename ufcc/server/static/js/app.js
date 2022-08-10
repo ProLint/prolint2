@@ -456,7 +456,7 @@ fetch('/data/' + JSON.stringify(obj))
               var arc = selectedSlice.get("arc");
               var radius = selectedSlice.get("radius");
 
-              if (!systemHasOneProtein) {
+              if (systemHasOneProtein) {
                 var x00 = radius * am5.math.cos(startAngle);
                 var y00 = radius * am5.math.sin(startAngle);
 

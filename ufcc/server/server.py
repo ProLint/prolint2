@@ -4,13 +4,8 @@ import json
 from bottle import route, run, template, debug, static_file, request
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
+
 BACKEND_DATA = None
-# rendered_data = {
-#     "proteins": {
-#         "name": None,
-#         "lipids": []
-#     },
-# }
 data = None
 data_loaded = False
 
@@ -38,7 +33,6 @@ def listener(metadata):
     global data_loaded
     global data
     global BACKEND_DATA
-    print ('BACKEND_DATA', BACKEND_DATA)
 
     metadata = ast.literal_eval(metadata)
 
@@ -47,67 +41,21 @@ def listener(metadata):
 
     if lipid == "" and protein == "":
         # Starting setup:
-        lipid = "CHOL"
-        protein = "GIRK"
-
-    if not data_loaded:
-
-        # class PairsHook(dict):
-        #     def __init__(self, pairs):
-        #         key = [x for x in pairs if x[0] == lipid]
-        #         super(PairsHook, self).__init__(key)
-
-        with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
-            # data = json.load(fp, object_pairs_hook=PairsHook)
-            data = json.load(fp)
-
-        data_loaded = True
-
-    sliced_data = data['Protein0'][lipid]
-
-    # Value can be system data: e.g. the ratio of the different lipids, but in that case all
-    # values for all different proteins would be the same (not necessarily a bad thing)
-    # Values can also be relative ratio of contacts with the different lipids, in which case
-    # they are specific for any protein (then again, without normalization it's unclear how
-    # useful this information is.)
-    pie_data = [{
-        "category": "Protein0",
-        "value": 500,
-        "subData": [
-            { "category": "CHOL", "value": 300 },
-            { "category": "POPE", "value": 150 },
-            { "category": "POPS", "value": 50 }
-        ]
-    },
-    # {
-    #     "category": "Protein1",
-    #     "value": 300,
-    #     "subData": [
-    #         { "category": "CHOL", "value": 100 },
-    #         { "category": "POPE", "value": 150 },
-    #         { "category": "POPS", "value": 50 }
-
-    #     ]
-    # }
-    ]
+        lipid = BACKEND_DATA['lipids'][0]
+        protein = BACKEND_DATA['proteins'][0]
 
     response = {
-        "data": {lipid: sliced_data},
-        "proteins": ['Protein0'],
-        "lipids": list(data['Protein0'].keys()),
-        "pieData": pie_data
+        "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
+        "proteins": protein,
+        "lipids": BACKEND_DATA['lipids'],
+        "pieData": BACKEND_DATA['pie_data']
     }
     return response
-    # return {lipid: sliced_data}
 
 def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
-    # import requests
     global BACKEND_DATA
     BACKEND_DATA = payload
-    # global data
-    # data = payload
-    # response = requests.request("POST", url, data=payload, headers=headers)
 
     debug(debug_bool)
     run(reloader=reloader, host='localhost', port=port)

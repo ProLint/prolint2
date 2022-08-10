@@ -443,9 +443,10 @@ class Contacts(object):
         # update code to handle multiple identical proteins
         # update code to handle multiple copies of different proteins
         resnames = self.query.selected.resnames
-        protein = 'GIRK'
-        sub_data = {k: {"category": k, "value": 0} for k in self.database_unique}
-        js = {protein : {k: [] for k in self.database_unique}}
+        protein = 'GIRK' # TODO: we'll need to update this into a list and iterate over it
+        lipids = list(self.database_unique)
+        sub_data = {k: {"category": k, "value": 0} for k in lipids} # TODO: we need to generate sub_data for each protein.
+        js = {protein : {k: [] for k in lipids}}
         for residue, contact_counter in self.contacts_sum.items():
             for lipid, contact_sum in contact_counter.items():
                 sub_data[lipid]['value'] += contact_sum
@@ -456,7 +457,32 @@ class Contacts(object):
         norm_with = sum([x['value'] for x in sub_data])
         sub_data = [{'category': d['category'], 'value': "{:.2f}".format(d['value']/norm_with)} for d  in sub_data]
 
-        return js, {protein: sub_data}
+        # return js, {protein: sub_data}
+
+        # Hardcoded
+        proteins = ['GIRK']
+        protein_counts = {'GIRK': 1}
+
+        pie_data = []
+        for protein in proteins:
+            value = protein_counts[protein] / sum(protein_counts.values())
+
+            protein_pdata = {
+                "category": protein,
+                "value": float("{:.2f}".format(value)),
+                "subData": sub_data
+            }
+            pie_data.append(protein_pdata)
+
+        # payload should include the entire data. The backend can process it then based on client requests
+        payload = {
+            "data": js,
+            "proteins": [protein],
+            "lipids": lipids,
+            "pie_data": pie_data # TODO: include protein info
+        }
+
+        return payload
 
 
     def export_to_prolint(self, path='prolint_results.pkl'):
