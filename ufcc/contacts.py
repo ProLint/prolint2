@@ -245,6 +245,13 @@ class Contacts(object):
         self.counts = None
         self.contact_metrics = None
 
+        # TODO:
+        # @bis: I really don't like how we have to back reference the trajectory here
+        # What's the best way here? Include trajectory as an initialization argument?
+        self.database_unique = np.unique(self.database.selected.resnames)
+        self.dt = self.query.selected.universe.trajectory.dt
+        self.totaltime = self.query.selected.universe.trajectory.totaltime
+
     def compute(self, cutoff=7):
         """
         Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
@@ -429,8 +436,28 @@ class Contacts(object):
         if server:
             return contact_metrics
 
-    def server_payload():
-        pass
+    def server_payload(self):
+
+        # TODO:
+        # protein name is hardcoded -> read protein name(s) dynamically
+        # update code to handle multiple identical proteins
+        # update code to handle multiple copies of different proteins
+        resnames = self.query.selected.resnames
+        protein = 'GIRK'
+        sub_data = {k: {"category": k, "value": 0} for k in self.database_unique}
+        js = {protein : {k: [] for k in self.database_unique}}
+        for residue, contact_counter in self.contacts_sum.items():
+            for lipid, contact_sum in contact_counter.items():
+                sub_data[lipid]['value'] += contact_sum
+                metric = (contact_sum * self.dt) / self.totaltime
+                js[protein][lipid].append([f'{resnames[residue]} {residue}', float("{:.2f}".format(metric))])
+
+        sub_data = list(sub_data.values())
+        norm_with = sum([x['value'] for x in sub_data])
+        sub_data = [{'category': d['category'], 'value': "{:.2f}".format(d['value']/norm_with)} for d  in sub_data]
+
+        return js, {protein: sub_data}
+
 
     def export_to_prolint(self, path='prolint_results.pkl'):
         """
