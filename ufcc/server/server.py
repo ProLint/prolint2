@@ -54,11 +54,15 @@ def listener(metadata):
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
 
+    # TODO:
+    # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
         "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
         "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
-        "pieData": BACKEND_DATA['pie_data']
+        "pieData": BACKEND_DATA['pie_data'],
+        "ganttData": BACKEND_DATA['gantt_data'],
+        "topLipids": BACKEND_DATA['top_10_lipids']
     }
     return response
 
@@ -125,6 +129,8 @@ def independent_execution():
         "proteins": ['LocalGirk'],
         "lipids": list(data['LocalGirk'].keys()),
         "pie_data": pie_data,
+        "gantt_data": gantt_data,
+        "top_10_lipids": top_10_lipids
     }
 
     return payload
