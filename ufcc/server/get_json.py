@@ -31,12 +31,10 @@ for row in csv.DictReader(csv_in):
 
     if js.get(protein):
         if js.get(protein).get(lipid):
-            # print ('TEST')
             js[protein][lipid].append(value)
         else:
             js[protein][lipid] = [value]
     else:
-        print ('TEST')
         js[protein] = {lipid: [value]}
 
 with open('girk.json', 'w') as fp:
