@@ -32,7 +32,6 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
-        console.log('response', responseData)
         // console.log('responseData', responseData);
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
@@ -106,7 +105,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
             min: 0,
-            max: 10,
+            strictMinMax: true,
             extraMax: 0.1,
             renderer: yRenderer
         }));
@@ -341,7 +340,7 @@ fetch('/data/' + JSON.stringify(obj))
           pieSeries.slices.template.events.on("click", function(e) {
             selectSlice(e.target);
 
-            console.log('series', series)
+            // console.log('series', series)
 
             // TODO:
             // only execute when the protein changes
@@ -393,7 +392,6 @@ fetch('/data/' + JSON.stringify(obj))
 
           // subSeries click event to link to radar chart
           subSeries.slices.template.events.on("click", function(e) {
-
             var lipid = e.target.dataItem.dataContext.category
             if (lipid != axisRange.get("label").get('text')) {
                 obj.lipid = lipid

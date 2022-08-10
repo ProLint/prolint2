@@ -450,7 +450,7 @@ class Contacts(object):
         for residue, contact_counter in self.contacts_sum.items():
             for lipid, contact_sum in contact_counter.items():
                 sub_data[lipid]['value'] += contact_sum
-                metric = (contact_sum * self.dt) / self.totaltime
+                metric = (contact_sum * self.dt) / self.totaltime # TODO: should we substract 1 frame here?
                 js[protein][lipid].append([f'{resnames[residue]} {residue}', float("{:.2f}".format(metric))])
 
         sub_data = list(sub_data.values())
@@ -469,7 +469,7 @@ class Contacts(object):
 
             protein_pdata = {
                 "category": protein,
-                "value": float("{:.2f}".format(value)),
+                "value": "{:.2f}".format(value),
                 "subData": sub_data
             }
             pie_data.append(protein_pdata)
