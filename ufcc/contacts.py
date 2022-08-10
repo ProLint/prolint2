@@ -474,12 +474,44 @@ class Contacts(object):
             }
             pie_data.append(protein_pdata)
 
+        # ganttApp toy data
+        gantt_data = [{
+                "category": "Lipid 1",
+                "startFrame": 0,
+                "endFrame": 10,
+            },
+            {
+                "category": "Lipid 1",
+                "startFrame": 45,
+                "endFrame": 75,
+            },
+            {
+                "category": "Lipid 1",
+                "startFrame": 90,
+                "endFrame": 100,
+            },
+
+            {
+                "category": "Lipid 2",
+                "startFrame": 10,
+                "endFrame": 35,
+            },
+            {
+                "category": "Lipid 2",
+                "startFrame": 45,
+                "endFrame": 60,
+            }
+        ]
+        top_10_lipids = ['Lipid 1', 'Lipid 2']
+
         # payload should include the entire data. The backend can process it then based on client requests
         payload = {
             "data": js,
             "proteins": [protein],
             "lipids": lipids,
-            "pie_data": pie_data # TODO: include protein info
+            "pie_data": pie_data, # TODO: include protein info
+            "gantt_data": gantt_data,
+            "top_10_lipids": top_10_lipids
         }
 
         return payload
