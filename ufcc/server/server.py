@@ -46,7 +46,7 @@ def listener(metadata):
 
     response = {
         "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
-        "proteins": protein,
+        "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
         "pieData": BACKEND_DATA['pie_data']
     }

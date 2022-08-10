@@ -32,7 +32,7 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
-
+        console.log('response', responseData)
         // console.log('responseData', responseData);
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
@@ -106,7 +106,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
             min: 0,
-            max: 4,
+            max: 10,
             extraMax: 0.1,
             renderer: yRenderer
         }));
@@ -456,7 +456,7 @@ fetch('/data/' + JSON.stringify(obj))
               var arc = selectedSlice.get("arc");
               var radius = selectedSlice.get("radius");
 
-              if (systemHasOneProtein) {
+              if (!systemHasOneProtein) {
                 var x00 = radius * am5.math.cos(startAngle);
                 var y00 = radius * am5.math.sin(startAngle);
 
