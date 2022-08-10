@@ -35,7 +35,7 @@ ufcc_parser.add_argument('output_file', action='store', type=str, help='output p
 ufcc_parser.add_argument('-v', '--version', action='version')
 ufcc_parser.add_argument('-c', '--cutoff', metavar='', type=int, help='distance cutoff to get the contacts (angstroms)', default=7, dest='cutoff')
 ufcc_parser.add_argument('-al', '--add_lipid_types', metavar='', type=list, help='additional lipid types to be included in the membrane group, supported lipid types are [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE]', default=[], dest='other_lipids')
-ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel'], default='serial', dest='backend')
+ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel', 'prolint_serial'], default='serial', dest='backend')
 ufcc_parser.add_argument('-r', '--report', metavar='', type=bool, help='report file with a summary of warnings and compute statics of your calculation', default=False, nargs='?', const=True, dest='r_bool')
 ufcc_parser.add_argument('-rn', '--report_name', metavar='', type=str, help='name for report file', default='summary_report.pdf', dest='report')
 ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of CPU cores to use with the parallel backend', default=-1, dest='n_jobs')
@@ -84,6 +84,11 @@ elif args.backend == 'parallel':
     print('\n2- Getting the contacts metrics:')
     target_system.contacts.count_contacts()
     target_system.contacts.get_metrics(args.output_file)
+elif args.backend == 'prolint_serial':
+    target_system.contacts.runner.backend = 'prolint_serial'
+    target_system.contacts.compute(cutoff=args.cutoff)
+    payload = target_system.contacts.server_payload()
+
 cal_total_time = perf_counter() - t1
 
 print('\n################### Done! ##################')
@@ -102,8 +107,10 @@ for stat in comp_stats:
     print(stat)
 print('\n########## Thanks for using ufcc! #########\n')
 
-payload = target_system.contacts.get_metrics(args.output_file, server=True)
-start_server(payload=payload)
+
+# payload = target_system.contacts.server_payload()
+if args.backend == 'prolint_serial':
+    start_server(payload=payload, reloader=False)
 
 
 class PDF(FPDF):

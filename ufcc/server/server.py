@@ -4,13 +4,8 @@ import json
 from bottle import route, run, template, debug, static_file, request
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
+
 BACKEND_DATA = None
-# rendered_data = {
-#     "proteins": {
-#         "name": None,
-#         "lipids": []
-#     },
-# }
 data = None
 data_loaded = False
 
@@ -38,7 +33,6 @@ def listener(metadata):
     global data_loaded
     global data
     global BACKEND_DATA
-    print ('BACKEND_DATA', BACKEND_DATA)
 
     metadata = ast.literal_eval(metadata)
 
@@ -47,70 +41,57 @@ def listener(metadata):
 
     if lipid == "" and protein == "":
         # Starting setup:
-        lipid = "CHOL"
-        protein = "GIRK"
+        try:
+            lipid = BACKEND_DATA['lipids'][0]
+            protein = BACKEND_DATA['proteins'][0]
+        except:
+            BACKEND_DATA = independent_execution()
+            lipid = BACKEND_DATA['lipids'][0]
+            protein = BACKEND_DATA['proteins'][0]
 
-    if not data_loaded:
+    response = {
+        "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
+        "proteins": BACKEND_DATA['proteins'],
+        "lipids": BACKEND_DATA['lipids'],
+        "pieData": BACKEND_DATA['pie_data']
+    }
+    return response
 
-        # class PairsHook(dict):
-        #     def __init__(self, pairs):
-        #         key = [x for x in pairs if x[0] == lipid]
-        #         super(PairsHook, self).__init__(key)
+def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
-        with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
-            # data = json.load(fp, object_pairs_hook=PairsHook)
-            data = json.load(fp)
+    global BACKEND_DATA
+    BACKEND_DATA = payload
 
-        data_loaded = True
+    debug(debug_bool)
+    run(reloader=reloader, host='localhost', port=port)
 
-    sliced_data = data['Protein0'][lipid]
+def independent_execution():
+    """
+    If we are not calling the server through the ufcc executable, but
+    independently, locally for testing purposes, we will load local data file
+    and serve that to the dashboard.
+    """
+    with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
+        data = json.load(fp)
 
-    # Value can be system data: e.g. the ratio of the different lipids, but in that case all
-    # values for all different proteins would be the same (not necessarily a bad thing)
-    # Values can also be relative ratio of contacts with the different lipids, in which case
-    # they are specific for any protein (then again, without normalization it's unclear how
-    # useful this information is.)
     pie_data = [{
-        "category": "Protein0",
+        "category": "LocalGirk",
         "value": 500,
         "subData": [
             { "category": "CHOL", "value": 300 },
             { "category": "POPE", "value": 150 },
             { "category": "POPS", "value": 50 }
         ]
-    },
-    # {
-    #     "category": "Protein1",
-    #     "value": 300,
-    #     "subData": [
-    #         { "category": "CHOL", "value": 100 },
-    #         { "category": "POPE", "value": 150 },
-    #         { "category": "POPS", "value": 50 }
+    }]
 
-    #     ]
-    # }
-    ]
-
-    response = {
-        "data": {lipid: sliced_data},
-        "proteins": ['Protein0'],
-        "lipids": list(data['Protein0'].keys()),
-        "pieData": pie_data
+    payload = {
+        "data": data,
+        "proteins": ['LocalGirk'],
+        "lipids": list(data['LocalGirk'].keys()),
+        "pie_data": pie_data
     }
-    return response
-    # return {lipid: sliced_data}
 
-def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
-
-    # import requests
-    global BACKEND_DATA
-    BACKEND_DATA = payload
-    # global data
-    # data = payload
-    # response = requests.request("POST", url, data=payload, headers=headers)
-
-    debug(debug_bool)
-    run(reloader=reloader, host='localhost', port=port)
+    return payload
 
 if __name__ == '__main__':
     start_server(debug_bool=True)
