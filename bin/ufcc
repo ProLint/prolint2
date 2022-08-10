@@ -102,8 +102,9 @@ for stat in comp_stats:
     print(stat)
 print('\n########## Thanks for using ufcc! #########\n')
 
+payload = target_system.contacts.get_metrics(args.output_file, server=True)
+start_server(payload=payload)
 
-start_server()
 
 class PDF(FPDF):
     def header(self):

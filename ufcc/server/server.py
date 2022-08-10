@@ -1,9 +1,10 @@
 import os
 import ast
 import json
-from bottle import route, run, template, debug, static_file
+from bottle import route, run, template, debug, static_file, request
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
+BACKEND_DATA = None
 # rendered_data = {
 #     "proteins": {
 #         "name": None,
@@ -25,11 +26,19 @@ def index():
 def app():
     return static_file('index.html', root=SERVER_PATH)
 
+@route('/ufcc')
+def ufcc():
+    import sys
+    print(request.body.getvalue().decode('utf-8'), file=sys.stdout)
+    return request.body
+
 @route('/data/:metadata')
 def listener(metadata):
 
     global data_loaded
     global data
+    global BACKEND_DATA
+    print ('BACKEND_DATA', BACKEND_DATA)
 
     metadata = ast.literal_eval(metadata)
 
@@ -91,7 +100,15 @@ def listener(metadata):
     return response
     # return {lipid: sliced_data}
 
-def start_server(debug_bool=False, reloader=True, port=8351):
+def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
+
+    # import requests
+    global BACKEND_DATA
+    BACKEND_DATA = payload
+    # global data
+    # data = payload
+    # response = requests.request("POST", url, data=payload, headers=headers)
+
     debug(debug_bool)
     run(reloader=reloader, host='localhost', port=port)
 
