@@ -10,18 +10,6 @@
  * ---------------------------------------
  */
 
-var root = am5.Root.new("chartdiv");
-
-const theme = am5.Theme.new(root);
-theme.rule("Label").set("fontSize", 10);
-theme.rule("Grid").set("strokeOpacity", 0.06);
-
-root.setThemes([
-    am5themes_Animated.new(root),
-    theme
-]);
-
-root.fps = 60;
 
 // Fetch the data from the backend
 var obj = {
@@ -42,11 +30,25 @@ fetch('/data/' + JSON.stringify(obj))
             systemHasOneProtein = true
         }
 
+        ///////////////////////////////////////////
+        /////////////// RadarApp //////////////////
+        ///////////////////////////////////////////
+        var root = am5.Root.new("chartdiv");
+
+        const theme = am5.Theme.new(root);
+        theme.rule("Label").set("fontSize", 10);
+        theme.rule("Grid").set("strokeOpacity", 0.06);
+
+        root.setThemes([
+            am5themes_Animated.new(root),
+            theme
+        ]);
+
+        root.fps = 60;
+
         var startFrameGroup = 0;
         var endFrameGroup = 1;
         var currentFrameGroup = 1;
-
-        var div = document.getElementById("chartdiv");
 
         var colorSet = am5.ColorSet.new(root, {});
 
@@ -130,7 +132,6 @@ fetch('/data/' + JSON.stringify(obj))
 
         series.columns.template.set("strokeOpacity", 0);
 
-
         // Set up heat rules
         series.set("heatRules", [{
             target: series.columns.template,
@@ -192,7 +193,6 @@ fetch('/data/' + JSON.stringify(obj))
             return data;
         }
 
-
         function createRange(name, lipidData, index) {
             axisRange.get("label").setAll({
                 text: name
@@ -231,7 +231,6 @@ fetch('/data/' + JSON.stringify(obj))
                 }
             });
         }
-
 
         // Create controls
         var container = chart.children.push(am5.Container.new(root, {
@@ -300,6 +299,9 @@ fetch('/data/' + JSON.stringify(obj))
             }
         }
 
+        ///////////////////////////////////////////
+        /////////////// PieApp ////////////////////
+        ///////////////////////////////////////////
         var pieRoot = am5.Root.new("chartdiv2");
 
         // Set themes
@@ -307,37 +309,37 @@ fetch('/data/' + JSON.stringify(obj))
 
         var pieContainer = pieRoot.container.children.push(
             am5.Container.new(pieRoot, {
-              width: am5.p100,
-              height: am5.p100,
-              layout: pieRoot.horizontalLayout
+                width: am5.p100,
+                height: am5.p100,
+                layout: pieRoot.horizontalLayout
             })
-          );
+        );
 
-          // Create main chart
-          var pieChart = pieContainer.children.push(
+        // Create main chart
+        var pieChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
-              tooltip: am5.Tooltip.new(pieRoot, {})
+                tooltip: am5.Tooltip.new(pieRoot, {})
             })
-          );
+        );
 
-          // Create series
-          var pieSeries = pieChart.series.push(
+        // Create series
+        var pieSeries = pieChart.series.push(
             am5percent.PieSeries.new(pieRoot, {
-              valueField: "value",
-              categoryField: "category",
-              alignLabels: false
+                valueField: "value",
+                categoryField: "category",
+                alignLabels: false
             })
-          );
+        );
 
-          pieSeries.labels.template.setAll({
+        pieSeries.labels.template.setAll({
             textType: "circular",
             radius: 4
-          });
-          pieSeries.ticks.template.set("visible", false);
-          pieSeries.slices.template.set("toggleKey", "none");
+        });
+        pieSeries.ticks.template.set("visible", false);
+        pieSeries.slices.template.set("toggleKey", "none");
 
-          // add events
-          pieSeries.slices.template.events.on("click", function(e) {
+        // add events
+        pieSeries.slices.template.events.on("click", function (e) {
             selectSlice(e.target);
 
             // console.log('series', series)
@@ -371,24 +373,24 @@ fetch('/data/' + JSON.stringify(obj))
             series.appear(1000);
             // chart.appear(500, 100);
 
-          });
+        });
 
-          // Create sub chart
-          var subChart = pieContainer.children.push(
+        // Create sub chart
+        var subChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
-              radius: am5.percent(50),
-              tooltip: am5.Tooltip.new(pieRoot, {})
+                radius: am5.percent(50),
+                tooltip: am5.Tooltip.new(pieRoot, {})
             })
-          );
+        );
 
-          // Create sub series
-          var subSeries = subChart.series.push(
+        // Create sub series
+        var subSeries = subChart.series.push(
             am5percent.PieSeries.new(pieRoot, {
-              valueField: "value",
-              categoryField: "category",
-              alignLabels: false
+                valueField: "value",
+                categoryField: "category",
+                alignLabels: false
             })
-          );
+        );
 
           // subSeries click event to link to radar chart
           subSeries.slices.template.events.on("click", function(e) {
@@ -421,26 +423,24 @@ fetch('/data/' + JSON.stringify(obj))
                 series.appear(1000);
                 // chart.appear(500, 100);
             }
-          });
+        });
 
-          subSeries.data.setAll(lipids.map(lipidName => ({category: lipidName, value: 0})))
-        //   subSeries.data.setAll([
-        //     { category: "CHOL", value: 0 },
-        //     { category: "POPE", value: 0 },
-        //     { category: "POPS", value: 0 },
-        //   ]);
-            subSeries.labels.template.setAll({
-                textType: "circular",
-                radius: 4
-            });
-            subSeries.ticks.template.set("visible", false);
-            subSeries.slices.template.set("toggleKey", "none");
+        subSeries.data.setAll(lipids.map(lipidName => ({
+            category: lipidName,
+            value: 0
+        })))
+        subSeries.labels.template.setAll({
+            textType: "circular",
+            radius: 4
+        });
+        subSeries.ticks.template.set("visible", false);
+        subSeries.slices.template.set("toggleKey", "none");
 
-          var selectedSlice;
+        var selectedSlice;
 
-          pieSeries.on("startAngle", function() {
+        pieSeries.on("startAngle", function () {
             updateLines();
-          });
+        });
 
         //   pieContainer.events.on("boundschanged", function() {
         //     pieRoot.events.on("frameended", function(){
@@ -448,112 +448,192 @@ fetch('/data/' + JSON.stringify(obj))
         //      })
         //   })
 
-          function updateLines() {
+        function updateLines() {
             if (selectedSlice) {
-              var startAngle = selectedSlice.get("startAngle");
-              var arc = selectedSlice.get("arc");
-              var radius = selectedSlice.get("radius");
+                var startAngle = selectedSlice.get("startAngle");
+                var arc = selectedSlice.get("arc");
+                var radius = selectedSlice.get("radius");
 
-              if (!systemHasOneProtein) {
-                var x00 = radius * am5.math.cos(startAngle);
-                var y00 = radius * am5.math.sin(startAngle);
+                if (!systemHasOneProtein) {
+                    var x00 = radius * am5.math.cos(startAngle);
+                    var y00 = radius * am5.math.sin(startAngle);
 
-                var x10 = radius * am5.math.cos(startAngle + arc);
-                var y10 = radius * am5.math.sin(startAngle + arc);
+                    var x10 = radius * am5.math.cos(startAngle + arc);
+                    var y10 = radius * am5.math.sin(startAngle + arc);
 
-              } else {
-                var x00 = radius * am5.math.sin(startAngle);
-                var y00 = radius * am5.math.cos(startAngle);
+                } else {
+                    var x00 = radius * am5.math.sin(startAngle);
+                    var y00 = radius * am5.math.cos(startAngle);
 
-                var x10 = radius * am5.math.sin(startAngle + arc);
-                var y10 = -radius * am5.math.cos(startAngle + arc);
+                    var x10 = radius * am5.math.sin(startAngle + arc);
+                    var y10 = -radius * am5.math.cos(startAngle + arc);
 
-              }
+                }
 
-              var subRadius = subSeries.slices.getIndex(0).get("radius");
-              var x01 = 0;
-              var y01 = -subRadius;
+                var subRadius = subSeries.slices.getIndex(0).get("radius");
+                var x01 = 0;
+                var y01 = -subRadius;
 
-              var x11 = 0;
-              var y11 = subRadius;
+                var x11 = 0;
+                var y11 = subRadius;
 
-              var point00 = pieSeries.toGlobal({ x: x00, y: y00 });
-              var point10 = pieSeries.toGlobal({ x: x10, y: y10 });
+                var point00 = pieSeries.toGlobal({
+                    x: x00,
+                    y: y00
+                });
+                var point10 = pieSeries.toGlobal({
+                    x: x10,
+                    y: y10
+                });
 
-              var point01 = subSeries.toGlobal({ x: x01, y: y01 });
-              var point11 = subSeries.toGlobal({ x: x11, y: y11 });
+                var point01 = subSeries.toGlobal({
+                    x: x01,
+                    y: y01
+                });
+                var point11 = subSeries.toGlobal({
+                    x: x11,
+                    y: y11
+                });
 
-              line0.set("points", [point00, point01]);
-              line1.set("points", [point10, point11]);
+                line0.set("points", [point00, point01]);
+                line1.set("points", [point10, point11]);
             }
-          }
+        }
 
-
-
-
-          // lines
-          var line0 = pieContainer.children.push(
+        // lines
+        var line0 = pieContainer.children.push(
             am5.Line.new(pieRoot, {
-              position: "absolute",
-              stroke: pieRoot.interfaceColors.get("text"),
-              strokeDasharray: [2, 2]
+                position: "absolute",
+                stroke: pieRoot.interfaceColors.get("text"),
+                strokeDasharray: [2, 2]
             })
-          );
-          var line1 = pieContainer.children.push(
+        );
+        var line1 = pieContainer.children.push(
             am5.Line.new(pieRoot, {
-              position: "absolute",
-              stroke: pieRoot.interfaceColors.get("text"),
-              strokeDasharray: [2, 2]
+                position: "absolute",
+                stroke: pieRoot.interfaceColors.get("text"),
+                strokeDasharray: [2, 2]
             })
-          );
+        );
 
-          // Set data
-          pieSeries.data.setAll(responseData['pieData']);
+        // Set data
+        pieSeries.data.setAll(responseData['pieData']);
 
-          function selectSlice(slice) {
+        function selectSlice(slice) {
             selectedSlice = slice;
             var dataItem = slice.dataItem;
             var dataContext = dataItem.dataContext;
 
             if (dataContext) {
-              var i = 0;
-              subSeries.data.each(function(dataObject) {
-                var dataObj = dataContext.subData[i];
-                if(dataObj){
-                    subSeries.data.setIndex(i, dataObj);
-                    if(!subSeries.dataItems[i].get("visible")){
-                        subSeries.dataItems[i].show();
+                var i = 0;
+                subSeries.data.each(function (dataObject) {
+                    var dataObj = dataContext.subData[i];
+                    if (dataObj) {
+                        subSeries.data.setIndex(i, dataObj);
+                        if (!subSeries.dataItems[i].get("visible")) {
+                            subSeries.dataItems[i].show();
+                        }
+                    } else {
+                        subSeries.dataItems[i].hide();
                     }
-                }
-                else{
-                    subSeries.dataItems[i].hide();
-                }
 
-                i++;
-              });
+                    i++;
+                });
             }
 
             var middleAngle = slice.get("startAngle") + slice.get("arc") / 2;
             var firstAngle = pieSeries.dataItems[0].get("slice").get("startAngle");
 
             pieSeries.animate({
-              key: "startAngle",
-              to: firstAngle - middleAngle,
-              duration: 1000,
-              easing: am5.ease.out(am5.ease.cubic)
+                key: "startAngle",
+                to: firstAngle - middleAngle,
+                duration: 1000,
+                easing: am5.ease.out(am5.ease.cubic)
             });
             pieSeries.animate({
-              key: "endAngle",
-              to: firstAngle - middleAngle + 360,
-              duration: 1000,
-              easing: am5.ease.out(am5.ease.cubic)
+                key: "endAngle",
+                to: firstAngle - middleAngle + 360,
+                duration: 1000,
+                easing: am5.ease.out(am5.ease.cubic)
             });
-          }
+        }
 
-          pieContainer.appear(1000, 10);
+        pieContainer.appear(1000, 10);
 
-          pieSeries.events.on("datavalidated", function() {
+        pieSeries.events.on("datavalidated", function () {
             selectSlice(pieSeries.slices.getIndex(0));
-          });
+        });
+
+        ///////////////////////////////////////////
+        /////////////// GanttApp //////////////////
+        ///////////////////////////////////////////
+        var ganttRoot = am5.Root.new("chartdiv3");
+
+        // Set themes
+        ganttRoot.setThemes([
+            am5themes_Animated.new(ganttRoot)
+        ]);
+
+
+        // Create chart
+        var ganttChart = ganttRoot.container.children.push(am5xy.XYChart.new(ganttRoot, {
+            panX: false,
+            panY: false,
+            wheelX: "panX",
+            wheelY: "zoomX",
+            layout: ganttRoot.verticalLayout
+        }));
+
+        var legend = ganttChart.children.push(am5.Legend.new(ganttRoot, {
+            centerX: am5.p50,
+            x: am5.p50
+        }))
+
+        var colors = ganttChart.get("colors");
+
+        // Data
+        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
+        console.log('ganttData', ganttData)
+
+        // Create axes
+        var ganttYAxis = ganttChart.yAxes.push(
+            am5xy.CategoryAxis.new(ganttRoot, {
+                categoryField: "category",
+                renderer: am5xy.AxisRendererY.new(ganttRoot, {
+                    inversed: true
+                }),
+                tooltip: am5.Tooltip.new(ganttRoot, {
+                    themeTags: ["axis"],
+                    animationDuration: 200
+                })
+            })
+        );
+
+        ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({category: v})))
+
+        var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
+            min: 0,
+            max: 100,
+            renderer: am5xy.AxisRendererX.new(ganttRoot, {})
+        }));
+
+        var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
+            xAxis: ganttXAxis,
+            yAxis: ganttYAxis,
+            openValueXField: "startFrame",
+            valueXField: "endFrame",
+            categoryYField: "category",
+            sequencedInterpolation: true
+        }));
+
+        ganttSeries.columns.template.setAll({
+            templateField: "columnSettings",
+            strokeOpacity: 0,
+            tooltipText: "{category}"
+        });
+        ganttSeries.data.setAll(ganttData);
+
+        ganttSeries.appear();
+        ganttChart.appear(1000, 100);
 
     });

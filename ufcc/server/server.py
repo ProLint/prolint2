@@ -1,6 +1,7 @@
 import os
 import ast
 import json
+
 from bottle import route, run, template, debug, static_file, request
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -34,6 +35,10 @@ def listener(metadata):
     global data
     global BACKEND_DATA
 
+    # TODO:
+    # Bottle should provide the metadata already,
+    # perhaps via the following:
+    # from bottle import response, request
     metadata = ast.literal_eval(metadata)
 
     lipid = metadata['lipid']
@@ -49,11 +54,15 @@ def listener(metadata):
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
 
+    # TODO:
+    # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
         "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
         "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
-        "pieData": BACKEND_DATA['pie_data']
+        "pieData": BACKEND_DATA['pie_data'],
+        "ganttData": BACKEND_DATA['gantt_data'],
+        "topLipids": BACKEND_DATA['top_10_lipids']
     }
     return response
 
@@ -64,6 +73,7 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
     debug(debug_bool)
     run(reloader=reloader, host='localhost', port=port)
+
 
 def independent_execution():
     """
@@ -84,11 +94,43 @@ def independent_execution():
         ]
     }]
 
+    # ganttApp data input requirement
+    gantt_data = [{
+            "category": "Lipid 1",
+            "startFrame": 0,
+            "endFrame": 10,
+        },
+        {
+            "category": "Lipid 1",
+            "startFrame": 45,
+            "endFrame": 75,
+        },
+        {
+            "category": "Lipid 1",
+            "startFrame": 90,
+            "endFrame": 100,
+        },
+
+        {
+            "category": "Lipid 2",
+            "startFrame": 10,
+            "endFrame": 35,
+        },
+        {
+            "category": "Lipid 2",
+            "startFrame": 45,
+            "endFrame": 60,
+        }
+    ]
+    top_10_lipids = ['Lipid 1', 'Lipid 2']
+
     payload = {
         "data": data,
         "proteins": ['LocalGirk'],
         "lipids": list(data['LocalGirk'].keys()),
-        "pie_data": pie_data
+        "pie_data": pie_data,
+        "gantt_data": gantt_data,
+        "top_10_lipids": top_10_lipids
     }
 
     return payload
