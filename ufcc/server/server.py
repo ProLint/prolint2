@@ -66,6 +66,11 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     run(reloader=reloader, host='localhost', port=port)
 
 def independent_execution():
+    """
+    If we are not calling the server through the ufcc executable, but
+    independently, locally for testing purposes, we will load local data file
+    and serve that to the dashboard.
+    """
     with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
         data = json.load(fp)
 
