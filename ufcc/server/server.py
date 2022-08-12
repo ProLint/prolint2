@@ -150,7 +150,7 @@ def listener(metadata):
 
     # For development, let's try to get both the frames and distance_array
     # for a particular lipid selection as an example: 2873
-    lipid_id = 2873
+    lipid_id = 2230 # 2873
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
 
     # TODO:
