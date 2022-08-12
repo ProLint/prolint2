@@ -615,7 +615,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
-            max: 100,
+            strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {})
         }));
 

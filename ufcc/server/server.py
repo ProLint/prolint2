@@ -35,7 +35,7 @@ def sort_lipids(ts):
 
     # initialize dictionary to store values:
     t = {k: {} for k in ts.database_unique}
-    g = {k: [] for k in ts.database_unique}
+    g = {}
     for ix, (residue, lipid_contacts) in enumerate(ts.contacts.contacts.items()):
         for lipid, contact_counter in lipid_contacts.items():
             top10_counter = contact_counter.most_common()
@@ -57,6 +57,48 @@ def sort_lipids(ts):
         g[lipid_id] = sort_tuple(vals)
 
     return t, g
+
+def get_frame_contact_intervals(frames, tolerance=6):
+    """
+    Get frame ranges
+    """
+    ranges_collect = []
+    range_start = 0
+    for ix, el in enumerate(frames):
+        if ix == 0:
+            range_start = el
+            continue
+
+        prev_el = frames[ix-1]
+        if not el-tolerance <= prev_el:
+            ranges_collect.append((range_start, prev_el))
+            range_start = el
+        if ix == len(frames) - 1:
+            ranges_collect.append((range_start, el))
+    return ranges_collect
+
+def get_gantt_app_data(g, lipid_id, residues_to_show=10, intervals_to_filter_out=10):
+    gantt_data = []
+    for res, _ in g[lipid_id][:residues_to_show]:
+        frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
+        frame_intervals = get_frame_contact_intervals(frame_numbers)
+        for start, end in frame_intervals:
+            if end - start < intervals_to_filter_out:
+                continue
+            gantt_data.append({
+            "category": f'{lipid_id}-{res}',
+            "startFrame": start,
+            "endFrame": end,
+            })
+
+    categories = []
+    for x in [x['category'] for x in gantt_data]:
+        if x not in categories:
+            categories.append(x)
+    # categories = [x['category'] for x in gantt_data]
+    # categories = list(set(categories))
+    return gantt_data, categories
+
 
 @route('/static/<filepath:path>')
 def server_static(filepath):
@@ -109,8 +151,9 @@ def listener(metadata):
 
 
     # For development, let's try to get both the frames and distance_array
-    # for a particular lipid-residue combination:
-
+    # for a particular lipid selection as an example: 2873
+    lipid_id = 2873
+    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
 
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
@@ -119,8 +162,10 @@ def listener(metadata):
         "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
         "pieData": BACKEND_DATA['pie_data'],
-        "ganttData": BACKEND_DATA['gantt_data'],
-        "topLipids": BACKEND_DATA['top_10_lipids'],
+        # "ganttData": BACKEND_DATA['gantt_data'],
+        "ganttData": gantt_data,
+        # "topLipids": BACKEND_DATA['top_10_lipids'],
+        "topLipids": categories,
         "globalTopLipids": BACKEND_DATA['top_lipids'],
         "lipidContactFrames": BACKEND_DATA['lipid_contact_frames']
     }
@@ -138,6 +183,10 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     t, g = sort_lipids(ts)
     payload['top_lipids'] = t
     payload['lipid_contact_frames'] = g
+
+    # out = ts.contacts.contact_frames['999,2873']
+    # print ('out', ts.contacts.contact_frames.keys())
+    # print (len(ts.contacts.contact_frames.keys()))
     # print (t)
     # print (g)
 

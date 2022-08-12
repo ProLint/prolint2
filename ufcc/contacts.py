@@ -109,6 +109,7 @@ class ProLintSerialContacts(AnalysisBase):
             raise ValueError("The cutoff must be greater than 0.")
 
     def _prepare(self):
+        print ('PREPARING contact_frames')
         self.contacts = {k: {v:[] for v in self.dp_resnames_unique} for k in self.q_resids}
         self.contacts_sum = {k: {v: 0 for v in self.dp_resnames_unique} for k in self.q_resids}
         self.contact_frames = {}
@@ -364,6 +365,7 @@ class Contacts(object):
 
         self.contacts = temp_instance.contacts
         self.contacts_sum = temp_instance.contacts_sum
+        self.contact_frames = temp_instance.contact_frames
 
     def save(self, path='contacts.pkl'):
         """
