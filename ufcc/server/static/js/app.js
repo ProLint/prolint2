@@ -640,10 +640,11 @@ fetch('/data/' + JSON.stringify(obj))
         var ganttChart = ganttRoot.container.children.push(am5xy.XYChart.new(ganttRoot, {
             panX: false,
             panY: false,
-            wheelX: "panX",
-            wheelY: "zoomX",
+            wheelX: "none",
+            wheelY: "none",
             layout: ganttRoot.verticalLayout
         }));
+        ganttChart.zoomOutButton.set("forceHidden", true);
 
         var legend = ganttChart.children.push(am5.Legend.new(ganttRoot, {
             centerX: am5.p50,
