@@ -729,8 +729,8 @@ fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(heatmapResponseData => {
                     heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
-                    hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
-                    hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                    hmYAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                    hmXAxis.data.setAll(heatmapResponseData['residueAtomsData']);
                 });
 
 
@@ -778,7 +778,7 @@ fetch('/data/' + JSON.stringify(obj))
         var hmYAxis = heatmapChart.yAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
           maxDeviation: 0,
           renderer: hmYRenderer,
-          categoryField: "ResidueAtoms"
+          categoryField: "LipidAtoms"
         }));
 
         var hmXRenderer = am5xy.AxisRendererX.new(heatmapRoot, {
@@ -791,7 +791,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var hmXAxis = heatmapChart.xAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
           renderer: hmXRenderer,
-          categoryField: "LipidAtoms"
+          categoryField: "ResidueAtoms"
         }));
 
 
@@ -803,8 +803,8 @@ fetch('/data/' + JSON.stringify(obj))
           clustered: false,
           xAxis: hmXAxis,
           yAxis: hmYAxis,
-          categoryXField: "LipidAtoms",
-          categoryYField: "ResidueAtoms",
+          categoryXField: "ResidueAtoms",
+          categoryYField: "LipidAtoms",
           valueField: "value"
         }));
 
@@ -857,8 +857,8 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         heatmapSeries.data.setAll(responseData['heatmapData']);
-        hmYAxis.data.setAll(responseData['residueAtomsData']);
-        hmXAxis.data.setAll(responseData['lipidAtomsData']);
+        hmYAxis.data.setAll(responseData['lipidAtomsData']);
+        hmXAxis.data.setAll(responseData['residueAtomsData']);
 
         // Make stuff animate on load
         // https://www.amcharts.com/docs/v5/concepts/animations/#Initial_animation
