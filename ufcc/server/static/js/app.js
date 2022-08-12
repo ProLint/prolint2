@@ -668,7 +668,8 @@ fetch('/data/' + JSON.stringify(obj))
             am5xy.CategoryAxis.new(ganttRoot, {
                 categoryField: "category",
                 renderer: am5xy.AxisRendererY.new(ganttRoot, {
-                    inversed: true
+                    inversed: true,
+                    minGridDistance: 1
                 }),
                 tooltip: am5.Tooltip.new(ganttRoot, {
                     themeTags: ["axis"],
@@ -677,10 +678,16 @@ fetch('/data/' + JSON.stringify(obj))
             })
         );
 
+        // let ganttYRenderer = ganttYAxis.get("renderer");
+        // ganttYRenderer.labels.template.setAll({
+        //   fill: am5.color(0xFF0000),
+        //   fontSize: "0.4em",
+        // });
         ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({category: v})))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
+            max: 180,
             strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {})
         }));

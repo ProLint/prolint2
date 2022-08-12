@@ -77,7 +77,7 @@ def get_frame_contact_intervals(frames, tolerance=6):
             ranges_collect.append((range_start, el))
     return ranges_collect
 
-def get_gantt_app_data(g, lipid_id, residues_to_show=10, intervals_to_filter_out=10):
+def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
     gantt_data = []
     for res, _ in g[lipid_id][:residues_to_show]:
         frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
@@ -122,8 +122,8 @@ def top_lipid_listener(metadata):
 
     metadata = ast.literal_eval(metadata)
     lipid_id = metadata['lipidID']
-    print ('lipidID: ', lipid_id)
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+    print ('cat length', len(categories))
 
     return {
         "ganttData": gantt_data,
