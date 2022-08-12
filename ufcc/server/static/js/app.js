@@ -673,7 +673,7 @@ fetch('/data/' + JSON.stringify(obj))
             am5xy.CategoryAxis.new(ganttRoot, {
                 categoryField: "category",
                 maxDeviation: 0,
-                tooltip: am5.Tooltip.new(root, { themeTags: ["axis"] }),
+                // tooltip: am5.Tooltip.new(root, { themeTags: ["axis"] }),
 
                 renderer: ganttYRenderer,
                 // tooltip: am5.Tooltip.new(ganttRoot, {
@@ -696,7 +696,12 @@ fetch('/data/' + JSON.stringify(obj))
             min: 0,
             max: 180,
             strictMinMax: true,
-            renderer: am5xy.AxisRendererX.new(ganttRoot, {})
+            renderer: am5xy.AxisRendererX.new(ganttRoot, {}),
+            tooltip: am5.Tooltip.new(ganttRoot, {
+                themeTags: ["axis"],
+                animationDuration: 200
+            })
+
         }));
 
         var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
@@ -707,8 +712,8 @@ fetch('/data/' + JSON.stringify(obj))
             categoryYField: "category",
             sequencedInterpolation: true,
             tooltip: am5.Tooltip.new(ganttRoot, {
-                // pointerOrientation: "left",
-                labelText: "{valueX}"
+                pointerOrientation: "horizontal",
+                // labelText: "{valueY}"
               })
 
         }));
