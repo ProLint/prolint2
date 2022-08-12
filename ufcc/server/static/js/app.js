@@ -707,11 +707,18 @@ fetch('/data/' + JSON.stringify(obj))
             fillOpacity: 0.5,
             tooltipText: "{category}"
         });
+
+        console.log('ganttSeries', ganttSeries)
         ganttSeries.data.setAll(ganttData);
 
         ganttSeries.appear();
         ganttChart.appear(1000, 100);
 
+        ganttSeries.columns.template.events.on("click", function(ev, d) {
+            residueID = ev.target.dataItem.dataContext.category;
+            // console.log("Clicked on a column", ev.target, d);
+            console.log('residueID', residueID)
+          });
 
 
 
