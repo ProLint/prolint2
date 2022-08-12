@@ -568,21 +568,9 @@ fetch('/data/' + JSON.stringify(obj))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //Table Constructor
+        ///////////////////////////////////////////
+        ////////////// Lipid Table ////////////////
+        ///////////////////////////////////////////
         var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
             height:"500px",
@@ -594,10 +582,6 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         table.on("rowClick", function(e, row){
-            //e - the click event object
-            //row - row component
-            // console.log('row clicked: ', e, row)
-            // console.log('Lipid ID is: ', row.getData()['lipidID'])
 
             obj = {"lipidID": row.getData()['lipidID']}
             fetch('/toplipids/' + JSON.stringify(obj))
@@ -612,25 +596,6 @@ fetch('/data/' + JSON.stringify(obj))
                 });
 
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
@@ -733,30 +698,19 @@ fetch('/data/' + JSON.stringify(obj))
                     hmXAxis.data.setAll(heatmapResponseData['residueAtomsData']);
                 });
 
-
           });
 
-
-
-
-
-
-
-
-
-
-
+        ///////////////////////////////////////////
+        ///////////// Heatmap App /////////////////
+        ///////////////////////////////////////////
         var heatmapRoot = am5.Root.new("chartdiv4");
 
         // Set themes
-        // https://www.amcharts.com/docs/v5/concepts/themes/
         heatmapRoot.setThemes([
           am5themes_Animated.new(heatmapRoot)
         ]);
 
-
         // Create chart
-        // https://www.amcharts.com/docs/v5/charts/xy-chart/
         var heatmapChart = heatmapRoot.container.children.push(am5xy.XYChart.new(heatmapRoot, {
           panX: false,
           panY: false,
@@ -794,9 +748,7 @@ fetch('/data/' + JSON.stringify(obj))
           categoryField: "ResidueAtoms"
         }));
 
-
         // Create series
-        // https://www.amcharts.com/docs/v5/charts/xy-heatmapChart/#Adding_series
         var heatmapSeries = heatmapChart.series.push(am5xy.ColumnSeries.new(heatmapRoot, {
           calculateAggregates: true,
           stroke: am5.color(0xffffff),
@@ -828,9 +780,7 @@ fetch('/data/' + JSON.stringify(obj))
           heatLegend.set("endValue", heatmapSeries.getPrivate("valueLow"));
         });
 
-
         // Set up heat rules
-        // https://www.amcharts.com/docs/v5/concepts/settings/heat-rules/
         heatmapSeries.set("heatRules", [{
           target: heatmapSeries.columns.template,
           min: am5.color(0xfffb77),
@@ -839,53 +789,19 @@ fetch('/data/' + JSON.stringify(obj))
           key: "fill"
         }]);
 
-
         // Add heat legend
-        // https://www.amcharts.com/docs/v5/concepts/legend/heat-legend/
         var heatLegend = heatmapChart.bottomAxesContainer.children.push(am5.HeatLegend.new(heatmapRoot, {
           orientation: "horizontal",
           endColor: am5.color(0xfffb77),
           startColor: am5.color(0xfe131a)
         }));
 
-
         // Set data
-        // https://www.amcharts.com/docs/v5/charts/xy-heatmapChart/#Setting_data
-        console.log('heatmapData: ', responseData['heatmapData'])
-        console.log('lipidAtomsData: ', responseData['lipidAtomsData'])
-        console.log('residueAtomsData: ', responseData['residueAtomsData'])
-
-
         heatmapSeries.data.setAll(responseData['heatmapData']);
         hmYAxis.data.setAll(responseData['lipidAtomsData']);
         hmXAxis.data.setAll(responseData['residueAtomsData']);
 
         // Make stuff animate on load
-        // https://www.amcharts.com/docs/v5/concepts/animations/#Initial_animation
         heatmapChart.appear(1000, 100);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     });

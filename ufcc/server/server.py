@@ -171,8 +171,6 @@ def listener(metadata):
     global BACKEND_DATA
     global TS
 
-    # print ('TS object: ', TS)
-
     # TODO:
     # Bottle should provide the metadata already,
     # perhaps via the following:
@@ -194,9 +192,7 @@ def listener(metadata):
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
 
-
-    # For development, let's try to get both the frames and distance_array
-    # for a particular lipid selection as an example: 2873
+    # Initiate with a lipid ID
     lipid_id = 2230 # 2873
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
 
@@ -208,7 +204,6 @@ def listener(metadata):
             "lipidID": lipid_id,
             "contactFrequency": freq
         })
-
 
     # Dev: heatmap distances
     ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, 44)
@@ -233,9 +228,7 @@ def listener(metadata):
         "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
         "pieData": BACKEND_DATA['pie_data'],
-        # "ganttData": BACKEND_DATA['gantt_data'],
         "ganttData": gantt_data,
-        # "topLipids": BACKEND_DATA['top_10_lipids'],
         "topLipids": categories,
         "globalTopLipids": BACKEND_DATA['top_lipids'],
         "lipidContactFrames": BACKEND_DATA['lipid_contact_frames'],
