@@ -116,6 +116,20 @@ def ufcc():
     print(request.body.getvalue().decode('utf-8'), file=sys.stdout)
     return request.body
 
+@route('/toplipids/:metadata')
+def top_lipid_listener(metadata):
+    global BACKEND_DATA
+
+    metadata = ast.literal_eval(metadata)
+    lipid_id = metadata['lipidID']
+    print ('lipidID: ', lipid_id)
+    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+
+    return {
+        "ganttData": gantt_data,
+        "topLipids": categories,
+    }
+
 @route('/data/:metadata')
 def listener(metadata):
 

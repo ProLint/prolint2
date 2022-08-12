@@ -21,8 +21,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(responseData => {
 
         // console.log('responseData', responseData);
-        console.log('top_lipids', responseData['globalTopLipids'])
-        console.log('lipid_contact_frames', responseData['lipidContactFrames'])
+        // console.log('top_lipids', responseData['globalTopLipids'])
+        // console.log('lipid_contact_frames', responseData['lipidContactFrames'])
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
@@ -593,7 +593,25 @@ fetch('/data/' + JSON.stringify(obj))
             // headerVisible: false,
         });
 
+        table.on("rowClick", function(e, row){
+            //e - the click event object
+            //row - row component
+            // console.log('row clicked: ', e, row)
+            // console.log('Lipid ID is: ', row.getData()['lipidID'])
 
+            obj = {"lipidID": row.getData()['lipidID']}
+            fetch('/toplipids/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(tableResponseData => {
+
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
+                    ganttSeries.data.setAll(ganttData);
+
+
+                });
+
+        });
 
 
 
@@ -643,7 +661,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Data
         ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
-        console.log('ganttData', ganttData)
+        // console.log('ganttData', ganttData)
 
         // Create axes
         var ganttYAxis = ganttChart.yAxes.push(
