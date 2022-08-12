@@ -21,6 +21,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(responseData => {
 
         // console.log('responseData', responseData);
+        console.log('top_lipids', responseData['globalTopLipids'])
+        console.log('lipid_contact_frames', responseData['lipidContactFrames'])
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
@@ -613,7 +615,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
-            max: 100,
+            strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {})
         }));
 
@@ -629,6 +631,7 @@ fetch('/data/' + JSON.stringify(obj))
         ganttSeries.columns.template.setAll({
             templateField: "columnSettings",
             strokeOpacity: 0,
+            fillOpacity: 0.5,
             tooltipText: "{category}"
         });
         ganttSeries.data.setAll(ganttData);

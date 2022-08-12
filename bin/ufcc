@@ -45,6 +45,12 @@ ufcc_parser.add_argument('-i', '--interactive', metavar='', type=bool, help='int
 # Executing the parse_args() method
 args = ufcc_parser.parse_args()
 
+print ('args', type(args), args)
+if args.backend == 'prolint_serial':
+    start_server(payload=args, reloader=False)
+    import sys
+    sys.exit()
+
 # Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
 mass_flag = 0
 mass_list = []
@@ -109,6 +115,10 @@ print('\n########## Thanks for using ufcc! #########\n')
 
 
 # payload = target_system.contacts.server_payload()
+# TODO:
+# for the backend to carry out the calculations, the payload
+# has to include file paths + uffc options. And it should be checked
+# very early on.
 if args.backend == 'prolint_serial':
     start_server(payload=payload, reloader=False)
 
