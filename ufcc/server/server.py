@@ -124,7 +124,6 @@ def top_lipid_listener(metadata):
     metadata = ast.literal_eval(metadata)
     lipid_id = metadata['lipidID']
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
-    print ('cat length', len(categories))
 
     return {
         "ganttData": gantt_data,
@@ -187,26 +186,26 @@ def listener(metadata):
             protein = BACKEND_DATA['proteins'][0]
         except:
             print ('Detached EXECUTION')
-            print ('This is currently meant for testing only.')
+            print ('This is currently meant for testing only. Not guaranteed to work!')
             BACKEND_DATA = independent_execution()
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
 
-    # Initiate with a lipid ID
-    lipid_id = 2230 # 2873
-    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
-
-    # WORKING ON: Table
     table_data = []
-    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids']['CHOL']):
+    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids'][lipid]):
         table_data.append({
             "id": ix,
             "lipidID": lipid_id,
             "contactFrequency": freq
         })
 
-    # Dev: heatmap distances
-    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, 44)
+    # Initiate ganttApp with the top lipid
+    lipid_id = BACKEND_DATA['top_lipids'][lipid][0][0]
+    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+
+    # Initiate heatmapApp with the top residue
+    residue_id = BACKEND_DATA['lipid_contact_frames'][lipid_id][0][0]
+    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, residue_id)
     ri.run(verbose=False)
 
     hm_data, la_data = [], []
