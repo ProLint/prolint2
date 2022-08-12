@@ -631,6 +631,7 @@ fetch('/data/' + JSON.stringify(obj))
         ganttSeries.columns.template.setAll({
             templateField: "columnSettings",
             strokeOpacity: 0,
+            fillOpacity: 0.5,
             tooltipText: "{category}"
         });
         ganttSeries.data.setAll(ganttData);

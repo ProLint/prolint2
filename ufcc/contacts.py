@@ -572,7 +572,7 @@ class Contacts(object):
             },
             {
                 "category": "Lipid 2",
-                "startFrame": 45,
+                "startFrame": 30,
                 "endFrame": 60,
             }
         ]
