@@ -1,3 +1,4 @@
+from collections import Counter
 import os
 import ast
 import json
@@ -11,6 +12,41 @@ SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 BACKEND_DATA = None
 data = None
 data_loaded = False
+
+def sort_lipids(ts):
+
+    def sort_tuple(tup):
+        tup.sort(key = lambda x: x[1], reverse=True)
+        return tup
+
+    # TODO:
+    # top lipid number should be put in the config.
+    contact_threshold = ts.n_frames * 0.05
+
+    # initialize dictionary to store values:
+    t = {k: {} for k in ts.database_unique}
+    g = {k: [] for k in ts.database_unique}
+    for ix, (residue, lipid_contacts) in enumerate(ts.contacts.contacts.items()):
+        for lipid, contact_counter in lipid_contacts.items():
+            top10_counter = contact_counter.most_common()
+            for (lipid_id, lipid_counter) in top10_counter:
+                # Exclude short-lived contacts
+                if lipid_counter <= contact_threshold: continue
+                if lipid_id in t[lipid]:
+                    t[lipid][lipid_id] += lipid_counter
+                    g[lipid_id].append((residue, lipid_counter))
+                else:
+                    t[lipid][lipid_id] = lipid_counter
+                    g[lipid_id] = [(residue, lipid_counter)]
+
+    for lipid, values in t.items():
+        t[lipid] = Counter(values).most_common()
+
+    # for lipid, values in g.items():
+    for lipid_id, vals in g.items():
+        g[lipid_id] = sort_tuple(vals)
+
+    return t, g
 
 @route('/static/<filepath:path>')
 def server_static(filepath):
@@ -58,6 +94,11 @@ def listener(metadata):
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
 
+
+    # For development, let's try to get both the frames and distance_array
+    # for a particular lipid-residue combination:
+
+
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
@@ -79,6 +120,9 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     ts.contacts.compute(cutoff=args.cutoff)
     payload = ts.contacts.server_payload()
 
+    t, g = sort_lipids(ts)
+    print (t['CHOL'][:10])
+    print (g[3083])
     # Make data accessible globally
     global BACKEND_DATA
     BACKEND_DATA = payload
