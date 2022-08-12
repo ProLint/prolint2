@@ -12,12 +12,13 @@ import scipy.stats
 import scipy.sparse
 from tqdm import tqdm
 import MDAnalysis as mda
-from collections import defaultdict
+from collections import defaultdict, Counter
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
 from. w2plp import LPContacts
 
+from MDAnalysis.analysis import distances
 
 class SerialContacts(AnalysisBase):
     r"""
@@ -73,6 +74,143 @@ class SerialContacts(AnalysisBase):
     #     # Called once iteration on the trajectory is finished.
     #     # Apply normalisation and averaging to results here.
     #     self.result = np.asarray(self.result) / np.sum(self.result)
+
+class ProLintSerialContacts(AnalysisBase):
+    r"""
+    Class to get the distance-based contacts starting from two AtomGroups
+    using a *serial* approach.
+
+    It inherits from the MDAnalysis AnalysisBase class.
+    """
+    # TODO:
+    # @bis: The front end has the hierarch protein -> lipids -> residue
+    # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
+    # work later on. We should modify this, so we store data in the right
+    # hierarchical structure.
+    def __init__(self, universe, query, database, cutoff, **kwargs):
+
+        super().__init__(universe.universe.trajectory, **kwargs)
+        self.query = query
+        self.database = database
+        self.cutoff = cutoff
+
+        # We need to convert to list to allow for JSON serialization
+        self.q_resids = self.query.resindices.tolist()
+        self.db_resids = self.database.resindices.tolist()
+
+        self.db_resnames = self.database.resnames
+        self.dp_resnames_unique = np.unique(self.db_resnames)
+
+        # Raise if selection doesn't exist
+        if len(self.query) == 0 or len(self.database) == 0:
+            raise ValueError("Invalid selection. Empty AtomGroup(s).")
+
+        if self.cutoff <= 0:
+            raise ValueError("The cutoff must be greater than 0.")
+
+    def _prepare(self):
+        print ('PREPARING contact_frames')
+        self.contacts = {k: {v:[] for v in self.dp_resnames_unique} for k in self.q_resids}
+        self.contacts_sum = {k: {v: 0 for v in self.dp_resnames_unique} for k in self.q_resids}
+        self.contact_frames = {}
+
+    def _single_frame(self):
+        gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
+        result = gridsearch.search(self.query.positions)
+        pairs = result.get_pairs()
+
+        existing_pairs = {}
+        for p in pairs:
+            residue_id = self.q_resids[p[0]]
+            lipid_id = self.db_resids[p[1]]
+            string = f'{residue_id},{lipid_id}'
+
+            # NOTE:
+            # We want to keep track of frames the cutoff is satisfied
+            # and also the pairs that satisfied the cutoff -> this can be used to avoid
+            # the distance array analysis necessary later.
+            # frame_pairs = (self._frame_index, p)
+            # if string in self.contact_frames:
+            #     self.contact_frames[string].append(frame_pairs)
+            # else:
+            #     self.contact_frames[string] = [frame_pairs]
+
+            if f'{residue_id}{lipid_id}' in existing_pairs: continue
+            existing_pairs[f'{residue_id}{lipid_id}'] = True
+
+            # TODO:
+            # @bis: we may be able to get further performance improvements by
+            # using the Counter object with its update methods.
+
+            # TODO:
+            # these IDs are not guaranteed to be unique:
+            # For systems containing multiple proteins
+            # For very large systems with duplicate lipid residue IDs (e.g. two instances of 1234CHOL)
+            lipid_name = self.db_resnames[p[1]]
+            self.contacts_sum[residue_id][lipid_name] += 1
+            self.contacts[residue_id][lipid_name].append(lipid_id)
+
+            # NOTE:
+            # We want to keep track of frames the cutoff is satisfied
+            # the self.contact_frames dict gets very large and may not be feasible for large systems.
+            # In general, it's not a method that's going to scale well. Given the backend we have, it
+            # makes more sense to store results in a temporary SQL database. Retrieval will be superfast,
+            # and we can do much more that way.
+            if string in self.contact_frames:
+                self.contact_frames[string].append(self._frame_index)
+            else:
+                self.contact_frames[string] = [self._frame_index]
+
+    def _conclude(self):
+        # self.contacts_sum = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts_sum.items()))
+        self.contacts = dict(map(
+            lambda x: (x[0], dict(map(
+                lambda y: (y[0], Counter(y[1])), x[1].items())
+                )), self.contacts.items()))
+
+
+class ProLintSerialDistances(AnalysisBase):
+    r"""
+    Class to get the distance-based contacts starting from two AtomGroups
+    using a *serial* approach.
+
+    It inherits from the MDAnalysis AnalysisBase class.
+    """
+    # TODO:
+    # @bis: The front end has the hierarch protein -> lipids -> residue
+    # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
+    # work later on. We should modify this, so we store data in the right
+    # hierarchical structure.
+    def __init__(self, universe, query, database, lipid_id, residue_id,  **kwargs):
+
+        super().__init__(universe.universe.trajectory, **kwargs)
+        self.query = query
+        self.database = database
+        self.lipid_atomgroup = self.database.select_atoms(f'resid {lipid_id}')
+        self.resid_atomgroup = self.query.select_atoms(f'resid {residue_id}')
+        self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
+        self.resid_atomnames = self.resid_atomgroup.names.tolist()
+
+        # Raise if selection doesn't exist
+        if len(self.query) == 0 or len(self.database) == 0:
+            raise ValueError("Invalid selection. Empty AtomGroup(s).")
+
+    def _prepare(self):
+        self.result_array = np.zeros((self.n_frames, self.lipid_atomgroup.n_atoms, self.resid_atomgroup.n_atoms))
+        # self.ls = []
+    def _single_frame(self):
+        r = distances.distance_array(
+            self.lipid_atomgroup.positions,
+            self.resid_atomgroup.positions,
+            box=self.database.universe.dimensions
+            )
+        self.result_array[self._frame_index] = r
+        # self.ls.append(r)
+
+    def _conclude(self):
+        filtered_dist_array = np.where(self.result_array < 70, self.result_array, 0)
+        self.distance_array = np.sum(filtered_dist_array, axis=0) #.tolist()
+        del self.result_array
 
 
 class ParallelContacts(ParallelAnalysisBase):
@@ -130,8 +268,8 @@ class ParallelContacts(ParallelAnalysisBase):
 
 class Runner(object):
     """
-    Class to configure the runner for the calculations of distances. As the *parallel* routine uses 
-    the parallel computing library **Dask**, that can be setted up to run on remotes machines. The aim of 
+    Class to configure the runner for the calculations of distances. As the *parallel* routine uses
+    the parallel computing library **Dask**, that can be setted up to run on remotes machines. The aim of
     this runner class is to define the variables needed for the Dask scheduler, but so far this a very
     simple class that has the attributes below to run on a single local machine:
 
@@ -140,7 +278,7 @@ class Runner(object):
     backend : str (*serial*)
         Backend to run the contacts calculation (can be either *serial* or *parallel*).
     n_jobs : int (-1)
-        Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores. 
+        Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores.
     """
     def __init__(self):
         self.backend = 'serial'
@@ -184,6 +322,13 @@ class Contacts(object):
         self.counts = None
         self.contact_metrics = None
 
+        # TODO:
+        # @bis: I really don't like how we have to back reference the trajectory here
+        # What's the best way here? Include trajectory as an initialization argument?
+        self.database_unique = np.unique(self.database.selected.resnames)
+        self.dt = self.query.selected.universe.trajectory.dt
+        self.totaltime = self.query.selected.universe.trajectory.totaltime
+
     def compute(self, cutoff=7):
         """
         Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
@@ -202,7 +347,9 @@ class Contacts(object):
             self.database.selected,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
-        if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel']:
+        # TODO:
+        # @bis: store backend list in the project config file.
+        if self.runner.backend == None or self.runner.backend not in ['serial', 'parallel', 'prolint_serial']:
             raise ValueError(
                 "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
             )
@@ -210,11 +357,17 @@ class Contacts(object):
             temp_instance = SerialContacts(self.query.selected.universe, self.query.selected, self.database.selected,
                                            cutoff)
             temp_instance.run(verbose=True)
+        elif self.runner.backend == 'prolint_serial':
+            temp_instance = ProLintSerialContacts(self.query.selected.universe, self.query.selected, self.database.selected, cutoff)
+            temp_instance.run(verbose=True)
         elif self.runner.backend == 'parallel':
             temp_instance = ParallelContacts(self.query.selected.universe, self.query.selected, self.database.selected,
                                              cutoff)
             temp_instance.run(n_jobs=self.runner.n_jobs)
+
         self.contacts = temp_instance.contacts
+        self.contacts_sum = temp_instance.contacts_sum
+        self.contact_frames = temp_instance.contact_frames
 
     def save(self, path='contacts.pkl'):
         """
@@ -242,7 +395,7 @@ class Contacts(object):
 
     def count_contacts(self):
         """
-        Count the number of each contact type at each frame.     
+        Count the number of each contact type at each frame.
         """
 
         if self.contacts is None:
@@ -322,7 +475,7 @@ class Contacts(object):
 
         self.counts = counts
 
-    def get_metrics(self, save_file=''):
+    def get_metrics(self, save_file='', server=False):
         if self.contacts is None or self.counts is None:
             raise ValueError("contacts or counts attributes are None: use .compute() and .count_neighbours() methods  before calling get_metrics")
 
@@ -357,14 +510,98 @@ class Contacts(object):
             contact_metrics.to_csv(save_file, index=False)
 
         self.contact_metrics = contact_metrics
-             
+
+        if server:
+            return contact_metrics
+
+    def server_payload(self):
+
+        # TODO:
+        # protein name is hardcoded -> read protein name(s) dynamically
+        # update code to handle multiple identical proteins
+        # update code to handle multiple copies of different proteins
+        resnames = self.query.selected.resnames
+        protein = 'GIRK' # TODO: we'll need to update this into a list and iterate over it
+        lipids = list(self.database_unique)
+        sub_data = {k: {"category": k, "value": 0} for k in lipids} # TODO: we need to generate sub_data for each protein.
+        js = {protein : {k: [] for k in lipids}}
+        for residue, contact_counter in self.contacts_sum.items():
+            for lipid, contact_sum in contact_counter.items():
+                sub_data[lipid]['value'] += contact_sum
+                metric = (contact_sum * self.dt) / self.totaltime # TODO: do we have to substract 1 frame here?
+                js[protein][lipid].append([f'{resnames[residue]} {residue}', float("{:.2f}".format(metric))])
+
+        sub_data = list(sub_data.values())
+        norm_with = sum([x['value'] for x in sub_data])
+        sub_data = [{'category': d['category'], 'value': "{:.2f}".format(d['value']/norm_with)} for d  in sub_data]
+
+        # return js, {protein: sub_data}
+
+        # Hardcoded
+        proteins = ['GIRK']
+        protein_counts = {'GIRK': 1}
+
+        pie_data = []
+        for protein in proteins:
+            value = protein_counts[protein] / sum(protein_counts.values())
+
+            protein_pdata = {
+                "category": protein,
+                "value": "{:.2f}".format(value),
+                "subData": sub_data
+            }
+            pie_data.append(protein_pdata)
+
+        # ganttApp toy data
+        gantt_data = [{
+                "category": "Lipid 1",
+                "startFrame": 0,
+                "endFrame": 10,
+            },
+            {
+                "category": "Lipid 1",
+                "startFrame": 45,
+                "endFrame": 75,
+            },
+            {
+                "category": "Lipid 1",
+                "startFrame": 90,
+                "endFrame": 100,
+            },
+
+            {
+                "category": "Lipid 2",
+                "startFrame": 10,
+                "endFrame": 35,
+            },
+            {
+                "category": "Lipid 2",
+                "startFrame": 30,
+                "endFrame": 60,
+            }
+        ]
+        top_10_lipids = ['Lipid 1', 'Lipid 2']
+
+        # payload should include the entire data. The backend can process it then based on client requests
+        payload = {
+            "data": js,
+            "proteins": [protein],
+            "lipids": lipids,
+            "pie_data": pie_data, # TODO: include protein info
+            "gantt_data": gantt_data,
+            "top_10_lipids": top_10_lipids
+        }
+
+        return payload
+
+
     def export_to_prolint(self, path='prolint_results.pkl'):
         """
         Temporal method to be able to use the analysis tools from **prolintpy**.
 
         Parameters
         ----------
-        path : file 
+        path : file
             Path to file to save the contacts information on Prolint's format. ('results_prolint.pkl')
             Prolint's results are stored as a dictionary. Contacts for each residue of each protein
             are stored using the ProLint.LPContacts class.
@@ -374,12 +611,12 @@ class Contacts(object):
         PLASMA_LIPIDS = {}
         for lip in np.unique(self.database.selected.residues.resnames):
             PLASMA_LIPIDS[lip] = [lip]
-        
+
         prolint_contacts = defaultdict(dict)
         n_residues_db = self.database.selected.residues.n_residues
         frames = self.database.selected.universe.trajectory.n_frames
         for protein in np.unique(self.query.selected.residues.macros):
-            residues = self.query.selected.residues[self.query.selected.residues.macros == protein]            
+            residues = self.query.selected.residues[self.query.selected.residues.macros == protein]
             per_residue_results = {}
             for idx in (pbar := tqdm(residues.resindices)):
                 pbar.set_description('Exporting to Prolint in a per residue basis over protein residues')
@@ -389,14 +626,21 @@ class Contacts(object):
 
         with open(path, 'wb') as f:
             pickle.dump(prolint_contacts, f)
-        
+
     def __str__(self):
+        # TODO:
+        # @bis: This is not working with the 'prolint_serial' backend, bc
+        # it is not an isntance of ndarray.
         if not isinstance(self.contacts, np.ndarray):
+            # TODO: should this say that contacts needs to be initialized?
+            # one edge case here would be cases when there really are no contacts
             return "<ufcc.Contacts containing 0 contacts>"
         else:
             return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
+        # TODO:
+        # @bis: same as above.
         if not isinstance(self.contacts, np.ndarray):
             return "<ufcc.Contacts containing 0 contacts>"
         else:
