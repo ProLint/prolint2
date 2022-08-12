@@ -89,6 +89,7 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out
             "category": f'{res}',
             "startFrame": start,
             "endFrame": end,
+            "lipid_id": lipid_id
             })
 
     categories = []
@@ -130,6 +131,38 @@ def top_lipid_listener(metadata):
         "topLipids": categories,
     }
 
+
+@route('/distance/:metadata')
+def distance_array_listener(metadata):
+    global BACKEND_DATA
+    global TS
+
+    metadata = ast.literal_eval(metadata)
+    lipid_id = metadata['lipidID']
+    residue_id = metadata['residueID']
+
+    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, residue_id)
+    ri.run(verbose=False)
+
+    hm_data, la_data = [], []
+    for lx, la in enumerate(ri.lipid_atomnames):
+        la_data.append({ "LipidAtoms": la })
+        for rx, ra in enumerate(ri.resid_atomnames):
+            v = ri.distance_array[lx, rx]
+            hm_data.append({
+            "LipidAtoms": la,
+            "ResidueAtoms": ra,
+            "value": float(v)
+            })
+    ra_data = [{"ResidueAtoms": x} for x in ri.resid_atomnames]
+
+    return {
+        "heatmapData": hm_data,
+        "lipidAtomsData": la_data,
+        "residueAtomsData": ra_data
+    }
+
+
 @route('/data/:metadata')
 def listener(metadata):
 
@@ -137,8 +170,6 @@ def listener(metadata):
     global data
     global BACKEND_DATA
     global TS
-
-    # print ('TS object: ', TS)
 
     # TODO:
     # Bottle should provide the metadata already,
@@ -161,12 +192,9 @@ def listener(metadata):
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
 
-
-    # For development, let's try to get both the frames and distance_array
-    # for a particular lipid selection as an example: 2873
+    # Initiate with a lipid ID
     lipid_id = 2230 # 2873
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
-
 
     # WORKING ON: Table
     table_data = []
@@ -177,6 +205,22 @@ def listener(metadata):
             "contactFrequency": freq
         })
 
+    # Dev: heatmap distances
+    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, 44)
+    ri.run(verbose=False)
+
+    hm_data, la_data = [], []
+    for lx, la in enumerate(ri.lipid_atomnames):
+        la_data.append({ "LipidAtoms": la })
+        for rx, ra in enumerate(ri.resid_atomnames):
+            v = ri.distance_array[lx, rx]
+            hm_data.append({
+            "LipidAtoms": la,
+            "ResidueAtoms": ra,
+            "value": float(v)
+            })
+    ra_data = [{"ResidueAtoms": x} for x in ri.resid_atomnames]
+
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
@@ -184,13 +228,14 @@ def listener(metadata):
         "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
         "pieData": BACKEND_DATA['pie_data'],
-        # "ganttData": BACKEND_DATA['gantt_data'],
         "ganttData": gantt_data,
-        # "topLipids": BACKEND_DATA['top_10_lipids'],
         "topLipids": categories,
         "globalTopLipids": BACKEND_DATA['top_lipids'],
         "lipidContactFrames": BACKEND_DATA['lipid_contact_frames'],
-        "tableData": table_data
+        "tableData": table_data,
+        "heatmapData": hm_data,
+        "lipidAtomsData": la_data,
+        "residueAtomsData": ra_data
     }
     return response
 

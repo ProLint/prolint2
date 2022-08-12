@@ -394,8 +394,8 @@ fetch('/data/' + JSON.stringify(obj))
             })
         );
 
-          // subSeries click event to link to radar chart
-          subSeries.slices.template.events.on("click", function(e) {
+        // subSeries click event to link to radar chart
+        subSeries.slices.template.events.on("click", function (e) {
             var lipid = e.target.dataItem.dataContext.category
             if (lipid != axisRange.get("label").get('text')) {
                 obj.lipid = lipid
@@ -568,69 +568,50 @@ fetch('/data/' + JSON.stringify(obj))
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //Table Constructor
+        ///////////////////////////////////////////
+        ////////////// Lipid Table ////////////////
+        ///////////////////////////////////////////
         var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
-            height:"500px",
-            columns:[
-                {title:"Lipid ID", field:"lipidID", width:120},
-                {title:"Total Contacts", field:"contactFrequency", width:120},
+            height: "500px",
+            columns: [{
+                    title: "Lipid ID",
+                    field: "lipidID",
+                    width: 120
+                },
+                {
+                    title: "Total Contacts",
+                    field: "contactFrequency",
+                    width: 120
+                },
             ],
             // headerVisible: false,
         });
 
-        table.on("rowClick", function(e, row){
-            //e - the click event object
-            //row - row component
-            // console.log('row clicked: ', e, row)
-            // console.log('Lipid ID is: ', row.getData()['lipidID'])
+        table.on("rowClick", function (e, row) {
 
-            obj = {"lipidID": row.getData()['lipidID']}
+            obj = {
+                "lipidID": row.getData()['lipidID']
+            }
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
 
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
-                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
+                        ...lp,
+                        columnSettings: {
+                            fill: colorSet.getIndex(ix * 3)
+                        }
+                    }))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
+                        category: v
+                    })))
                     ganttSeries.data.setAll(ganttData);
 
 
                 });
 
         });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
@@ -660,8 +641,12 @@ fetch('/data/' + JSON.stringify(obj))
         var colors = ganttChart.get("colors");
 
         // Data
-        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
-        // console.log('ganttData', ganttData)
+        ganttData = responseData['ganttData'].map((lp, ix) => ({
+            ...lp,
+            columnSettings: {
+                fill: colorSet.getIndex(ix * 3)
+            }
+        }))
 
         // Create axes
         var ganttYAxis = ganttChart.yAxes.push(
@@ -683,7 +668,9 @@ fetch('/data/' + JSON.stringify(obj))
         //   fill: am5.color(0xFF0000),
         //   fontSize: "0.4em",
         // });
-        ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({category: v})))
+        ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({
+            category: v
+        })))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
@@ -707,9 +694,133 @@ fetch('/data/' + JSON.stringify(obj))
             fillOpacity: 0.5,
             tooltipText: "{category}"
         });
+
         ganttSeries.data.setAll(ganttData);
 
         ganttSeries.appear();
         ganttChart.appear(1000, 100);
+
+        ganttSeries.columns.template.events.on("click", function (e, d) {
+            residueID = e.target.dataItem.dataContext.category;
+
+            ctx = e.target.dataItem.dataContext;
+
+            obj = {
+                "lipidID": ctx.lipid_id,
+                "residueID": ctx.category
+            }
+            fetch('/distance/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(heatmapResponseData => {
+                    heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
+                    hmYAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                    hmXAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                });
+
+        });
+
+        ///////////////////////////////////////////
+        ///////////// Heatmap App /////////////////
+        ///////////////////////////////////////////
+        var heatmapRoot = am5.Root.new("chartdiv4");
+
+        // Set themes
+        heatmapRoot.setThemes([
+            am5themes_Animated.new(heatmapRoot)
+        ]);
+
+        // Create chart
+        var heatmapChart = heatmapRoot.container.children.push(am5xy.XYChart.new(heatmapRoot, {
+            panX: false,
+            panY: false,
+            wheelX: "none",
+            wheelY: "none",
+            layout: heatmapRoot.verticalLayout
+        }));
+
+
+        // Create axes and their renderers
+        var hmYRenderer = am5xy.AxisRendererY.new(heatmapRoot, {
+            visible: false,
+            minGridDistance: 20,
+            inversed: true
+        });
+
+        hmYRenderer.grid.template.set("visible", false);
+
+        var hmYAxis = heatmapChart.yAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
+            maxDeviation: 0,
+            renderer: hmYRenderer,
+            categoryField: "LipidAtoms"
+        }));
+
+        var hmXRenderer = am5xy.AxisRendererX.new(heatmapRoot, {
+            visible: false,
+            minGridDistance: 30,
+            opposite: true
+        });
+
+        hmXRenderer.grid.template.set("visible", false);
+
+        var hmXAxis = heatmapChart.xAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
+            renderer: hmXRenderer,
+            categoryField: "ResidueAtoms"
+        }));
+
+        // Create series
+        var heatmapSeries = heatmapChart.series.push(am5xy.ColumnSeries.new(heatmapRoot, {
+            calculateAggregates: true,
+            stroke: am5.color(0xffffff),
+            clustered: false,
+            xAxis: hmXAxis,
+            yAxis: hmYAxis,
+            categoryXField: "ResidueAtoms",
+            categoryYField: "LipidAtoms",
+            valueField: "value"
+        }));
+
+        heatmapSeries.columns.template.setAll({
+            tooltipText: "{value}",
+            strokeOpacity: 1,
+            strokeWidth: 2,
+            width: am5.percent(100),
+            height: am5.percent(100)
+        });
+
+        heatmapSeries.columns.template.events.on("pointerover", function (event) {
+            var di = event.target.dataItem;
+            if (di) {
+                heatLegend.showValue(di.get("value", 0));
+            }
+        });
+
+        heatmapSeries.events.on("datavalidated", function () {
+            heatLegend.set("startValue", heatmapSeries.getPrivate("valueHigh"));
+            heatLegend.set("endValue", heatmapSeries.getPrivate("valueLow"));
+        });
+
+        // Set up heat rules
+        heatmapSeries.set("heatRules", [{
+            target: heatmapSeries.columns.template,
+            min: am5.color(0xfffb77),
+            max: am5.color(0xfe131a),
+            dataField: "value",
+            key: "fill"
+        }]);
+
+        // Add heat legend
+        var heatLegend = heatmapChart.bottomAxesContainer.children.push(am5.HeatLegend.new(heatmapRoot, {
+            orientation: "horizontal",
+            endColor: am5.color(0xfffb77),
+            startColor: am5.color(0xfe131a)
+        }));
+
+        // Set data
+        heatmapSeries.data.setAll(responseData['heatmapData']);
+        hmYAxis.data.setAll(responseData['lipidAtomsData']);
+        hmXAxis.data.setAll(responseData['residueAtomsData']);
+
+        // Make stuff animate on load
+        heatmapChart.appear(1000, 100);
 
     });
