@@ -21,8 +21,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(responseData => {
 
         // console.log('responseData', responseData);
-        console.log('top_lipids', responseData['globalTopLipids'])
-        console.log('lipid_contact_frames', responseData['lipidContactFrames'])
+        // console.log('top_lipids', responseData['globalTopLipids'])
+        // console.log('lipid_contact_frames', responseData['lipidContactFrames'])
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
@@ -566,6 +566,72 @@ fetch('/data/' + JSON.stringify(obj))
             selectSlice(pieSeries.slices.getIndex(0));
         });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //Table Constructor
+        var table = new Tabulator("#lipid-table", {
+            data: responseData['tableData'],
+            height:"500px",
+            columns:[
+                {title:"Lipid ID", field:"lipidID", width:120},
+                {title:"Total Contacts", field:"contactFrequency", width:120},
+            ],
+            // headerVisible: false,
+        });
+
+        table.on("rowClick", function(e, row){
+            //e - the click event object
+            //row - row component
+            // console.log('row clicked: ', e, row)
+            // console.log('Lipid ID is: ', row.getData()['lipidID'])
+
+            obj = {"lipidID": row.getData()['lipidID']}
+            fetch('/toplipids/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(tableResponseData => {
+
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
+                    ganttSeries.data.setAll(ganttData);
+
+
+                });
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
         ///////////////////////////////////////////
@@ -595,14 +661,15 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Data
         ganttData = responseData['ganttData'].map((lp, ix) => ({...lp, columnSettings: {fill: colorSet.getIndex(ix * 3)}}))
-        console.log('ganttData', ganttData)
+        // console.log('ganttData', ganttData)
 
         // Create axes
         var ganttYAxis = ganttChart.yAxes.push(
             am5xy.CategoryAxis.new(ganttRoot, {
                 categoryField: "category",
                 renderer: am5xy.AxisRendererY.new(ganttRoot, {
-                    inversed: true
+                    inversed: true,
+                    minGridDistance: 1
                 }),
                 tooltip: am5.Tooltip.new(ganttRoot, {
                     themeTags: ["axis"],
@@ -611,10 +678,16 @@ fetch('/data/' + JSON.stringify(obj))
             })
         );
 
+        // let ganttYRenderer = ganttYAxis.get("renderer");
+        // ganttYRenderer.labels.template.setAll({
+        //   fill: am5.color(0xFF0000),
+        //   fontSize: "0.4em",
+        // });
         ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({category: v})))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
+            max: 180,
             strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {})
         }));

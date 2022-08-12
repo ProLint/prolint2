@@ -77,7 +77,7 @@ def get_frame_contact_intervals(frames, tolerance=6):
             ranges_collect.append((range_start, el))
     return ranges_collect
 
-def get_gantt_app_data(g, lipid_id, residues_to_show=10, intervals_to_filter_out=10):
+def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
     gantt_data = []
     for res, _ in g[lipid_id][:residues_to_show]:
         frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
@@ -116,6 +116,20 @@ def ufcc():
     print(request.body.getvalue().decode('utf-8'), file=sys.stdout)
     return request.body
 
+@route('/toplipids/:metadata')
+def top_lipid_listener(metadata):
+    global BACKEND_DATA
+
+    metadata = ast.literal_eval(metadata)
+    lipid_id = metadata['lipidID']
+    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+    print ('cat length', len(categories))
+
+    return {
+        "ganttData": gantt_data,
+        "topLipids": categories,
+    }
+
 @route('/data/:metadata')
 def listener(metadata):
 
@@ -150,8 +164,18 @@ def listener(metadata):
 
     # For development, let's try to get both the frames and distance_array
     # for a particular lipid selection as an example: 2873
-    lipid_id = 2873
+    lipid_id = 2230 # 2873
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+
+
+    # WORKING ON: Table
+    table_data = []
+    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids']['CHOL']):
+        table_data.append({
+            "id": ix,
+            "lipidID": lipid_id,
+            "contactFrequency": freq
+        })
 
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
@@ -165,7 +189,8 @@ def listener(metadata):
         # "topLipids": BACKEND_DATA['top_10_lipids'],
         "topLipids": categories,
         "globalTopLipids": BACKEND_DATA['top_lipids'],
-        "lipidContactFrames": BACKEND_DATA['lipid_contact_frames']
+        "lipidContactFrames": BACKEND_DATA['lipid_contact_frames'],
+        "tableData": table_data
     }
     return response
 
