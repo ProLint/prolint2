@@ -109,7 +109,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var modGridCategoryAxis = categoryAxis.get("renderer");
         modGridCategoryAxis.grid.template.setAll({
-          strokeDasharray: [2, 2]
+            strokeDasharray: [2, 2]
         });
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
@@ -588,13 +588,13 @@ fetch('/data/' + JSON.stringify(obj))
                     title: "Lipid ID",
                     field: "lipidID",
                     width: 70,
-                    hozAlign:"center"
+                    hozAlign: "center"
                 },
                 {
                     title: "Total Contacts",
                     field: "contactFrequency",
                     width: 70,
-                    hozAlign:"center"
+                    hozAlign: "center"
                 },
             ],
             headerVisible: false,
@@ -610,16 +610,13 @@ fetch('/data/' + JSON.stringify(obj))
                 .then(tableResponseData => {
 
                     ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
-                        ...lp,
-                        columnSettings: {
-                            fill: colorSet.getIndex(ix * 3)
-                        }
+                        ...lp
                     }))
                     ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
                         category: v
                     })))
                     ganttSeries.data.setAll(ganttData);
-
+                    sortCategoryAxis()
 
                 });
 
@@ -660,34 +657,25 @@ fetch('/data/' + JSON.stringify(obj))
         //         fill: colorSet.getIndex(ix * 3)
         //     }
         // }))
-        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp}))
+        ganttData = responseData['ganttData'].map((lp, ix) => ({
+            ...lp
+        }))
 
         var ganttYRenderer = am5xy.AxisRendererY.new(ganttRoot, {
             minGridDistance: 1,
             inversed: true,
 
-          });
+        });
 
         // Create axes
         var ganttYAxis = ganttChart.yAxes.push(
             am5xy.CategoryAxis.new(ganttRoot, {
                 categoryField: "category",
                 maxDeviation: 0,
-                // tooltip: am5.Tooltip.new(root, { themeTags: ["axis"] }),
-
                 renderer: ganttYRenderer,
-                // tooltip: am5.Tooltip.new(ganttRoot, {
-                //     themeTags: ["axis"],
-                //     animationDuration: 200
-                // })
             })
         );
 
-        // let ganttYRenderer = ganttYAxis.get("renderer");
-        // ganttYRenderer.labels.template.setAll({
-        //   fill: am5.color(0xFF0000),
-        //   fontSize: "0.4em",
-        // });
         ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({
             category: v,
         })))
@@ -714,7 +702,7 @@ fetch('/data/' + JSON.stringify(obj))
             tooltip: am5.Tooltip.new(ganttRoot, {
                 pointerOrientation: "horizontal",
                 // labelText: "{valueY}"
-              })
+            })
 
         }));
 
@@ -733,25 +721,78 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         // Make each column to be of a different color
-        ganttSeries.columns.template.adapters.add("fill", function(fill, target) {
+        ganttSeries.columns.template.adapters.add("fill", function (fill, target) {
             return ganttChart.get("colors").getIndex(ganttSeries.columns.indexOf(target));
-          });
+        });
 
-          ganttSeries.columns.template.adapters.add("stroke", function(stroke, target) {
+        ganttSeries.columns.template.adapters.add("stroke", function (stroke, target) {
             return ganttChart.get("colors").getIndex(ganttSeries.columns.indexOf(target));
-          });
+        });
 
         ganttSeries.data.setAll(ganttData);
+        sortCategoryAxis();
 
         csor = ganttChart.set("cursor", am5xy.XYCursor.new(ganttRoot, {
             behavior: "none",
             xAxis: ganttXAxis,
             yAxis: ganttYAxis
-          }));
+        }));
 
         // csor.lineY.set("visible", true);
         csor.lineX.set("opacity", 0.5);
         csor.lineY.set("opacity", 0.5);
+
+
+        // Get series item by category
+        function getSeriesItem(category) {
+            for (var i = 0; i < ganttSeries.dataItems.length; i++) {
+                var dataItem = ganttSeries.dataItems[i];
+                if (dataItem.get("categoryY") == category) {
+                    return dataItem;
+                }
+            }
+        }
+
+        // Axis sorting
+        function sortCategoryAxis() {
+            console.log('sort')
+            // Sort by value
+            ganttSeries.dataItems.sort(function (x, y) {
+                // return x.get("valueX") - y.get("valueX"); // descending
+                return y.get("valueY") - x.get("valueX"); // ascending
+            })
+
+            // Go through each axis item
+            am5.array.each(ganttYAxis.dataItems, function (dataItem) {
+                // get corresponding series item
+                var seriesDataItem = getSeriesItem(dataItem.get("category"));
+
+                if (seriesDataItem) {
+                    // get index of series data item
+                    var index = ganttSeries.dataItems.indexOf(seriesDataItem);
+                    // calculate delta position
+                    var deltaPosition = (index - dataItem.get("index", 0)) / ganttSeries.dataItems.length;
+                    // set index to be the same as series data item index
+                    dataItem.set("index", index);
+                    // set deltaPosition instanlty
+                    dataItem.set("deltaPosition", -deltaPosition);
+                    // animate delta position to 0
+                    dataItem.animate({
+                        key: "deltaPosition",
+                        to: 0,
+                        duration: 500,
+                        easing: am5.ease.out(am5.ease.cubic)
+                    })
+                }
+            });
+
+            // Sort axis items by index.
+            // This changes the order instantly, but as deltaPosition is set,
+            // they keep in the same places and then animate to true positions.
+            ganttYAxis.dataItems.sort(function (x, y) {
+                return x.get("index") - y.get("index");
+            });
+        }
 
         ganttSeries.appear();
         ganttChart.appear(1000, 100);
