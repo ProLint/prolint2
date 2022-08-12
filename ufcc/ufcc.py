@@ -89,9 +89,10 @@ class UFCC(object):
     """
 
     def __init__(self, structure, trajectory, add_lipid_types=[]):
-        # TODO
+        # TODO:
         # @bis: use a variable for this query: self.atoms.select_atoms(protein_sel)
-        # We need to also store useful system information
+        # We need to also store useful system information (see below)
+        # TODO: maybe keep a reference to the universe object (=> ufcc.u)?
 
         # wrapping some basic MDAnalysis groups
         md = mda.Universe(structure, trajectory)

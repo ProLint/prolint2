@@ -124,6 +124,11 @@ class ProLintSerialContacts(AnalysisBase):
             # TODO:
             # @bis: we may be able to get further performance improvements by
             # using the Counter object with its update methods.
+
+            # TODO:
+            # these IDs are not guaranteed to be unique:
+            # For systems containing multiple proteins
+            # For very large systems with duplicate lipid residue IDs (e.g. two instances of 1234CHOL)
             lipid_name = self.db_resnames[p[1]]
             self.contacts_sum[residue_id][lipid_name] += 1
             self.contacts[residue_id][lipid_name].append(lipid_id)
