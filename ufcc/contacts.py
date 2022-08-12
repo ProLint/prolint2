@@ -107,6 +107,7 @@ class ProLintSerialContacts(AnalysisBase):
     def _prepare(self):
         self.contacts = {k: {v:[] for v in self.dp_resnames_unique} for k in self.q_resids}
         self.contacts_sum = {k: {v: 0 for v in self.dp_resnames_unique} for k in self.q_resids}
+        self.contact_frames = {}
 
     def _single_frame(self):
         gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
@@ -117,6 +118,17 @@ class ProLintSerialContacts(AnalysisBase):
         for p in pairs:
             residue_id = self.q_resids[p[0]]
             lipid_id = self.db_resids[p[1]]
+            string = f'{residue_id},{lipid_id}'
+
+            # NOTE:
+            # We want to keep track of frames the cutoff is satisfied
+            # and also the pairs that satisfied the cutoff -> this can be used to avoid
+            # the distance array analysis necessary later.
+            # frame_pairs = (self._frame_index, p)
+            # if string in self.contact_frames:
+            #     self.contact_frames[string].append(frame_pairs)
+            # else:
+            #     self.contact_frames[string] = [frame_pairs]
 
             if f'{residue_id}{lipid_id}' in existing_pairs: continue
             existing_pairs[f'{residue_id}{lipid_id}'] = True
@@ -132,6 +144,17 @@ class ProLintSerialContacts(AnalysisBase):
             lipid_name = self.db_resnames[p[1]]
             self.contacts_sum[residue_id][lipid_name] += 1
             self.contacts[residue_id][lipid_name].append(lipid_id)
+
+            # NOTE:
+            # We want to keep track of frames the cutoff is satisfied
+            # the self.contact_frames dict gets very large and may not be feasible for large systems.
+            # In general, it's not a method that's going to scale well. Given the backend we have, it
+            # makes more sense to store results in a temporary SQL database. Retrieval will be superfast,
+            # and we can do much more that way.
+            if string in self.contact_frames:
+                self.contact_frames[string].append(self._frame_index)
+            else:
+                self.contact_frames[string] = [self._frame_index]
 
     def _conclude(self):
         # self.contacts_sum = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts_sum.items()))
