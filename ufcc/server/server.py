@@ -4,6 +4,8 @@ import json
 
 from bottle import route, run, template, debug, static_file, request
 
+from ufcc.ufcc import UFCC
+
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
 BACKEND_DATA = None
@@ -50,6 +52,8 @@ def listener(metadata):
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
         except:
+            print ('Detached EXECUTION')
+            print ('This is currently meant for testing only.')
             BACKEND_DATA = independent_execution()
             lipid = BACKEND_DATA['lipids'][0]
             protein = BACKEND_DATA['proteins'][0]
@@ -68,6 +72,14 @@ def listener(metadata):
 
 def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
+    # UFCC calls:
+    args = payload
+    ts = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids)
+    ts.contacts.runner.backend = 'prolint_serial'
+    ts.contacts.compute(cutoff=args.cutoff)
+    payload = ts.contacts.server_payload()
+
+    # Make data accessible globally
     global BACKEND_DATA
     BACKEND_DATA = payload
 
