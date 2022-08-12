@@ -188,6 +188,8 @@ class ProLintSerialDistances(AnalysisBase):
         self.database = database
         self.lipid_atomgroup = self.database.select_atoms(f'resid {lipid_id}')
         self.resid_atomgroup = self.query.select_atoms(f'resid {residue_id}')
+        self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
+        self.resid_atomnames = self.resid_atomgroup.names.tolist()
 
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
@@ -207,7 +209,7 @@ class ProLintSerialDistances(AnalysisBase):
 
     def _conclude(self):
         filtered_dist_array = np.where(self.result_array < 70, self.result_array, 0)
-        self.distance_array = np.sum(filtered_dist_array, axis=0).tolist()
+        self.distance_array = np.sum(filtered_dist_array, axis=0) #.tolist()
         del self.result_array
 
 

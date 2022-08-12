@@ -712,4 +712,157 @@ fetch('/data/' + JSON.stringify(obj))
         ganttSeries.appear();
         ganttChart.appear(1000, 100);
 
+
+
+
+
+
+
+
+
+
+
+
+        var heatmapRoot = am5.Root.new("chartdiv4");
+
+        // Set themes
+        // https://www.amcharts.com/docs/v5/concepts/themes/
+        heatmapRoot.setThemes([
+          am5themes_Animated.new(heatmapRoot)
+        ]);
+
+
+        // Create chart
+        // https://www.amcharts.com/docs/v5/charts/xy-chart/
+        var heatmapChart = heatmapRoot.container.children.push(am5xy.XYChart.new(heatmapRoot, {
+          panX: false,
+          panY: false,
+          wheelX: "none",
+          wheelY: "none",
+          layout: heatmapRoot.verticalLayout
+        }));
+
+
+        // Create axes and their renderers
+        var hmYRenderer = am5xy.AxisRendererY.new(heatmapRoot, {
+          visible: false,
+          minGridDistance: 20,
+          inversed: true
+        });
+
+        hmYRenderer.grid.template.set("visible", false);
+
+        var hmYAxis = heatmapChart.yAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
+          maxDeviation: 0,
+          renderer: hmYRenderer,
+          categoryField: "ResidueAtoms"
+        }));
+
+        var hmXRenderer = am5xy.AxisRendererX.new(heatmapRoot, {
+          visible: false,
+          minGridDistance: 30,
+          opposite:true
+        });
+
+        hmXRenderer.grid.template.set("visible", false);
+
+        var hmXAxis = heatmapChart.xAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
+          renderer: hmXRenderer,
+          categoryField: "LipidAtoms"
+        }));
+
+
+        // Create series
+        // https://www.amcharts.com/docs/v5/charts/xy-heatmapChart/#Adding_series
+        var heatmapSeries = heatmapChart.series.push(am5xy.ColumnSeries.new(heatmapRoot, {
+          calculateAggregates: true,
+          stroke: am5.color(0xffffff),
+          clustered: false,
+          xAxis: hmXAxis,
+          yAxis: hmYAxis,
+          categoryXField: "LipidAtoms",
+          categoryYField: "ResidueAtoms",
+          valueField: "value"
+        }));
+
+        heatmapSeries.columns.template.setAll({
+          tooltipText: "{value}",
+          strokeOpacity: 1,
+          strokeWidth: 2,
+          width: am5.percent(100),
+          height: am5.percent(100)
+        });
+
+        heatmapSeries.columns.template.events.on("pointerover", function(event) {
+          var di = event.target.dataItem;
+          if (di) {
+            heatLegend.showValue(di.get("value", 0));
+          }
+        });
+
+        heatmapSeries.events.on("datavalidated", function() {
+          heatLegend.set("startValue", heatmapSeries.getPrivate("valueHigh"));
+          heatLegend.set("endValue", heatmapSeries.getPrivate("valueLow"));
+        });
+
+
+        // Set up heat rules
+        // https://www.amcharts.com/docs/v5/concepts/settings/heat-rules/
+        heatmapSeries.set("heatRules", [{
+          target: heatmapSeries.columns.template,
+          min: am5.color(0xfffb77),
+          max: am5.color(0xfe131a),
+          dataField: "value",
+          key: "fill"
+        }]);
+
+
+        // Add heat legend
+        // https://www.amcharts.com/docs/v5/concepts/legend/heat-legend/
+        var heatLegend = heatmapChart.bottomAxesContainer.children.push(am5.HeatLegend.new(heatmapRoot, {
+          orientation: "horizontal",
+          endColor: am5.color(0xfffb77),
+          startColor: am5.color(0xfe131a)
+        }));
+
+
+        // Set data
+        // https://www.amcharts.com/docs/v5/charts/xy-heatmapChart/#Setting_data
+        console.log('heatmapData: ', responseData['heatmapData'])
+        console.log('lipidAtomsData: ', responseData['lipidAtomsData'])
+        console.log('residueAtomsData: ', responseData['residueAtomsData'])
+
+
+        heatmapSeries.data.setAll(responseData['heatmapData']);
+        hmYAxis.data.setAll(responseData['residueAtomsData']);
+        hmXAxis.data.setAll(responseData['lipidAtomsData']);
+
+        // Make stuff animate on load
+        // https://www.amcharts.com/docs/v5/concepts/animations/#Initial_animation
+        heatmapChart.appear(1000, 100);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     });

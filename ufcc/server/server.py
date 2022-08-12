@@ -167,7 +167,6 @@ def listener(metadata):
     lipid_id = 2230 # 2873
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
 
-
     # WORKING ON: Table
     table_data = []
     for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids']['CHOL']):
@@ -176,6 +175,32 @@ def listener(metadata):
             "lipidID": lipid_id,
             "contactFrequency": freq
         })
+
+
+    # Dev: heatmap distances
+    # hm_data = [{
+    #       "LipidAtoms": "1am",
+    #       "ResidueAtoms": "Sunday",
+    #       "value": 2520
+    # }]
+    # residue_atoms = [
+    #       { "ResidueAtoms": "Sunday" },
+    #     ]
+    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, 44)
+    ri.run(verbose=False)
+    # ri.distance_array
+
+    hm_data, la_data = [], []
+    for lx, la in enumerate(ri.lipid_atomnames):
+        la_data.append({ "LipidAtoms": la })
+        for rx, ra in enumerate(ri.resid_atomnames):
+            v = ri.distance_array[lx, rx]
+            hm_data.append({
+            "LipidAtoms": la,
+            "ResidueAtoms": ra,
+            "value": float(v)
+            })
+    ra_data = [{"ResidueAtoms": x} for x in ri.resid_atomnames]
 
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
@@ -190,7 +215,10 @@ def listener(metadata):
         "topLipids": categories,
         "globalTopLipids": BACKEND_DATA['top_lipids'],
         "lipidContactFrames": BACKEND_DATA['lipid_contact_frames'],
-        "tableData": table_data
+        "tableData": table_data,
+        "heatmapData": hm_data,
+        "lipidAtomsData": la_data,
+        "residueAtomsData": ra_data
     }
     return response
 
