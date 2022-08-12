@@ -4,6 +4,7 @@ import ast
 import json
 
 from bottle import route, run, template, debug, static_file, request
+from ufcc.contacts import ProLintSerialDistances
 
 from ufcc.ufcc import UFCC
 
@@ -123,6 +124,11 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     t, g = sort_lipids(ts)
     print (t['CHOL'][:10])
     print (g[3083])
+
+    ri = ProLintSerialDistances(ts.query.selected.universe, ts.query.selected, ts.database.selected, 2873, 53)
+    ri.run(verbose=False)
+    print (ri.distance_array)
+
     # Make data accessible globally
     global BACKEND_DATA
     BACKEND_DATA = payload

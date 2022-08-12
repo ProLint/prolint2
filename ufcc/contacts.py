@@ -18,6 +18,7 @@ from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
 from. w2plp import LPContacts
 
+from MDAnalysis.analysis import distances
 
 class SerialContacts(AnalysisBase):
     r"""
@@ -162,6 +163,48 @@ class ProLintSerialContacts(AnalysisBase):
             lambda x: (x[0], dict(map(
                 lambda y: (y[0], Counter(y[1])), x[1].items())
                 )), self.contacts.items()))
+
+
+class ProLintSerialDistances(AnalysisBase):
+    r"""
+    Class to get the distance-based contacts starting from two AtomGroups
+    using a *serial* approach.
+
+    It inherits from the MDAnalysis AnalysisBase class.
+    """
+    # TODO:
+    # @bis: The front end has the hierarch protein -> lipids -> residue
+    # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
+    # work later on. We should modify this, so we store data in the right
+    # hierarchical structure.
+    def __init__(self, universe, query, database, lipid_id, residue_id,  **kwargs):
+
+        super().__init__(universe.universe.trajectory, **kwargs)
+        self.query = query
+        self.database = database
+        self.lipid_atomgroup = self.database.select_atoms(f'resid {lipid_id}')
+        self.resid_atomgroup = self.query.select_atoms(f'resid {residue_id}')
+
+        # Raise if selection doesn't exist
+        if len(self.query) == 0 or len(self.database) == 0:
+            raise ValueError("Invalid selection. Empty AtomGroup(s).")
+
+    def _prepare(self):
+        self.result_array = np.zeros((self.n_frames, self.lipid_atomgroup.n_atoms, self.resid_atomgroup.n_atoms))
+        # self.ls = []
+    def _single_frame(self):
+        r = distances.distance_array(
+            self.lipid_atomgroup.positions,
+            self.resid_atomgroup.positions,
+            box=self.database.universe.dimensions
+            )
+        self.result_array[self._frame_index] = r
+        # self.ls.append(r)
+
+    def _conclude(self):
+        filtered_dist_array = np.where(self.result_array < 70, self.result_array, 0)
+        self.distance_array = np.sum(filtered_dist_array, axis=0).tolist()
+        del self.result_array
 
 
 class ParallelContacts(ParallelAnalysisBase):
