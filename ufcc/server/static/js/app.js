@@ -20,9 +20,6 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
-        // console.log('responseData', responseData);
-        // console.log('top_lipids', responseData['globalTopLipids'])
-        // console.log('lipid_contact_frames', responseData['lipidContactFrames'])
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
@@ -291,7 +288,6 @@ fetch('/data/' + JSON.stringify(obj))
         slider.events.on("rangechanged", function () {
             // val = Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup));
             // val = slider.get("start", 0) //* (endFrameGroup - startFrameGroup)
-            // console.log('before UPDATE')
             updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
         });
 
@@ -353,8 +349,6 @@ fetch('/data/' + JSON.stringify(obj))
         // add events
         pieSeries.slices.template.events.on("click", function (e) {
             selectSlice(e.target);
-
-            // console.log('series', series)
 
             // TODO:
             // only execute when the protein changes
@@ -755,7 +749,6 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Axis sorting
         function sortCategoryAxis() {
-            console.log('sort')
             // Sort by value
             ganttSeries.dataItems.sort(function (x, y) {
                 // return x.get("valueX") - y.get("valueX"); // descending
