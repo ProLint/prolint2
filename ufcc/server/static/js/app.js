@@ -716,7 +716,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         ganttSeries.columns.template.events.on("click", function(ev, d) {
             residueID = ev.target.dataItem.dataContext.category;
-            // console.log("Clicked on a column", ev.target, d);
+            console.log("Clicked on a column", ev.target, d);
             console.log('residueID', residueID)
           });
 

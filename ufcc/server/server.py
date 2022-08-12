@@ -89,6 +89,7 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out
             "category": f'{res}',
             "startFrame": start,
             "endFrame": end,
+            "lipid_id": lipid_id
             })
 
     categories = []
@@ -178,17 +179,8 @@ def listener(metadata):
 
 
     # Dev: heatmap distances
-    # hm_data = [{
-    #       "LipidAtoms": "1am",
-    #       "ResidueAtoms": "Sunday",
-    #       "value": 2520
-    # }]
-    # residue_atoms = [
-    #       { "ResidueAtoms": "Sunday" },
-    #     ]
     ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, 44)
     ri.run(verbose=False)
-    # ri.distance_array
 
     hm_data, la_data = [], []
     for lx, la in enumerate(ri.lipid_atomnames):
