@@ -86,7 +86,7 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=10, intervals_to_filter_out
             if end - start < intervals_to_filter_out:
                 continue
             gantt_data.append({
-            "category": f'{lipid_id}-{res}',
+            "category": f'{res}',
             "startFrame": start,
             "endFrame": end,
             })
@@ -95,8 +95,6 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=10, intervals_to_filter_out
     for x in [x['category'] for x in gantt_data]:
         if x not in categories:
             categories.append(x)
-    # categories = [x['category'] for x in gantt_data]
-    # categories = list(set(categories))
     return gantt_data, categories
 
 
@@ -183,16 +181,6 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     t, g = sort_lipids(ts)
     payload['top_lipids'] = t
     payload['lipid_contact_frames'] = g
-
-    # out = ts.contacts.contact_frames['999,2873']
-    # print ('out', ts.contacts.contact_frames.keys())
-    # print (len(ts.contacts.contact_frames.keys()))
-    # print (t)
-    # print (g)
-
-    # ri = ProLintSerialDistances(ts.query.selected.universe, ts.query.selected, ts.database.selected, 2873, 53)
-    # ri.run(verbose=False)
-    # print (ri.distance_array)
 
     # Make data accessible globally
     global BACKEND_DATA
