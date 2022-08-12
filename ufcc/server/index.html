@@ -1,4 +1,5 @@
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -26,6 +27,7 @@
             height: 800px;
             background-color: rgb(217, 214, 214);
         }
+
         #chartdiv2 {
             height: 250px;
             /* width: 600px; */
@@ -36,47 +38,51 @@
             height: 300px;
             background-color: rgb(217, 214, 214);
         }
+
         #lipid-table {
             height: 300px;
 
         }
+
         #chartdiv4 {
             height: 300px;
         }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>ProLint Dashboard</h1>
-    <div class="row">
-        <div class="col-sm-6" style="background-color:rgb(142, 244, 255);">
-            <div id="chartdiv2"></div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-sm-2" style="background-color:rgb(142, 244, 255);">
+    <div class="container">
+        <h1>ProLint Dashboard</h1>
         <div class="row">
-            <p class="col-sm-4" style="margin-left: 1.3em;">LipidID</p>
-            <p class="col-sm-4">Contacts</p>
+            <div class="col-sm-6" style="background-color:rgb(142, 244, 255);">
+                <div id="chartdiv2"></div>
+            </div>
         </div>
-            <div id="lipid-table"></div>
+
+        <div class="row">
+            <div class="col-sm-2" style="background-color:rgb(142, 244, 255);">
+                <div class="row">
+                    <p class="col-sm-4" style="margin-left: 1.3em; ">LipidID</p>
+                    <p class="col-sm-4">Contacts</p>
+                </div>
+                <div id="lipid-table"></div>
+            </div>
+            <div class="col-sm-5" style="background-color: rgb(216, 151, 244);">
+                <div id="chartdiv3"></div>
+            </div>
+            <div class="col-sm-5" style="background-color: rgb(216, 151, 244);">
+                <div id="chartdiv4"></div>
+            </div>
         </div>
-        <div class="col-sm-4" style="background-color: rgb(216, 151, 244);">
-            <div id="chartdiv3"></div>
+        <div class="row" class="col-sm-8" style="background-color: rgb(244, 151, 170);">
+            <div id="chartdiv"></div>
         </div>
-        <div class="col-sm-6" style="background-color: rgb(216, 151, 244);">
-            <div id="chartdiv4"></div>
-        </div>
-    </div>
-    <div class="row" class="col-sm-8" style="background-color: rgb(244, 151, 170);">
-        <div id="chartdiv"></div>
-    </div>
     </div>
 
 
     <script src="static/js/app.js"></script>
 
 </body>
+
 </html>

@@ -107,12 +107,22 @@ fetch('/data/' + JSON.stringify(obj))
             renderer: xRenderer
         }));
 
+        var modGridCategoryAxis = categoryAxis.get("renderer");
+        modGridCategoryAxis.grid.template.setAll({
+          strokeDasharray: [2, 2]
+        });
+
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
             min: 0,
             strictMinMax: true,
             extraMax: 0.1,
             renderer: yRenderer
         }));
+
+        var modGridValueAxis = valueAxis.get("renderer");
+        modGridValueAxis.grid.template.setAll({
+            strokeDasharray: [2, 2]
+        });
 
         // Pie chart label
         var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
