@@ -573,7 +573,7 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
-            height: "300px",
+            height: "270px",
             columns: [{
                     title: "Lipid ID",
                     field: "lipidID",
