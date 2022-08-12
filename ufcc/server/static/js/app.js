@@ -566,6 +566,54 @@ fetch('/data/' + JSON.stringify(obj))
             selectSlice(pieSeries.slices.getIndex(0));
         });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        //Table Constructor
+        var table = new Tabulator("#lipid-table", {
+            data: responseData['tableData'],
+            height:"500px",
+            columns:[
+                {title:"Lipid ID", field:"lipidID", width:120},
+                {title:"Total Contacts", field:"contactFrequency", width:120},
+            ],
+            // headerVisible: false,
+        });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
         ///////////////////////////////////////////

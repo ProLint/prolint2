@@ -153,6 +153,16 @@ def listener(metadata):
     lipid_id = 2230 # 2873
     gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
 
+
+    # WORKING ON: Table
+    table_data = []
+    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids']['CHOL']):
+        table_data.append({
+            "id": ix,
+            "lipidID": lipid_id,
+            "contactFrequency": freq
+        })
+
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
@@ -165,7 +175,8 @@ def listener(metadata):
         # "topLipids": BACKEND_DATA['top_10_lipids'],
         "topLipids": categories,
         "globalTopLipids": BACKEND_DATA['top_lipids'],
-        "lipidContactFrames": BACKEND_DATA['lipid_contact_frames']
+        "lipidContactFrames": BACKEND_DATA['lipid_contact_frames'],
+        "tableData": table_data
     }
     return response
 
