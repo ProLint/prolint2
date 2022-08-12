@@ -715,8 +715,8 @@ fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(heatmapResponseData => {
                     heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
-                    hmYAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
-                    hmXAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                    hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                    hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                 });
 
         });
@@ -753,7 +753,7 @@ fetch('/data/' + JSON.stringify(obj))
         var hmYAxis = heatmapChart.yAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
             maxDeviation: 0,
             renderer: hmYRenderer,
-            categoryField: "LipidAtoms"
+            categoryField: "ResidueAtoms"
         }));
 
         var hmXRenderer = am5xy.AxisRendererX.new(heatmapRoot, {
@@ -766,7 +766,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var hmXAxis = heatmapChart.xAxes.push(am5xy.CategoryAxis.new(heatmapRoot, {
             renderer: hmXRenderer,
-            categoryField: "ResidueAtoms"
+            categoryField: "LipidAtoms"
         }));
 
         // Create series
@@ -776,8 +776,8 @@ fetch('/data/' + JSON.stringify(obj))
             clustered: false,
             xAxis: hmXAxis,
             yAxis: hmYAxis,
-            categoryXField: "ResidueAtoms",
-            categoryYField: "LipidAtoms",
+            categoryXField: "LipidAtoms",
+            categoryYField: "ResidueAtoms",
             valueField: "value"
         }));
 
@@ -819,8 +819,8 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Set data
         heatmapSeries.data.setAll(responseData['heatmapData']);
-        hmYAxis.data.setAll(responseData['lipidAtomsData']);
-        hmXAxis.data.setAll(responseData['residueAtomsData']);
+        hmYAxis.data.setAll(responseData['residueAtomsData']);
+        hmXAxis.data.setAll(responseData['lipidAtomsData']);
 
         // Make stuff animate on load
         heatmapChart.appear(1000, 100);
