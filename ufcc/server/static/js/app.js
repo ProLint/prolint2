@@ -651,28 +651,35 @@ fetch('/data/' + JSON.stringify(obj))
             x: am5.p50
         }))
 
-        var colors = ganttChart.get("colors");
+        // var colors = ganttChart.get("colors");
 
         // Data
-        ganttData = responseData['ganttData'].map((lp, ix) => ({
-            ...lp,
-            columnSettings: {
-                fill: colorSet.getIndex(ix * 3)
-            }
-        }))
+        // ganttData = responseData['ganttData'].map((lp, ix) => ({
+        //     ...lp,
+        //     columnSettings: {
+        //         fill: colorSet.getIndex(ix * 3)
+        //     }
+        // }))
+        ganttData = responseData['ganttData'].map((lp, ix) => ({...lp}))
+
+        var ganttYRenderer = am5xy.AxisRendererY.new(ganttRoot, {
+            minGridDistance: 1,
+            inversed: true,
+
+          });
 
         // Create axes
         var ganttYAxis = ganttChart.yAxes.push(
             am5xy.CategoryAxis.new(ganttRoot, {
                 categoryField: "category",
-                renderer: am5xy.AxisRendererY.new(ganttRoot, {
-                    inversed: true,
-                    minGridDistance: 1
-                }),
-                tooltip: am5.Tooltip.new(ganttRoot, {
-                    themeTags: ["axis"],
-                    animationDuration: 200
-                })
+                maxDeviation: 0,
+                tooltip: am5.Tooltip.new(root, { themeTags: ["axis"] }),
+
+                renderer: ganttYRenderer,
+                // tooltip: am5.Tooltip.new(ganttRoot, {
+                //     themeTags: ["axis"],
+                //     animationDuration: 200
+                // })
             })
         );
 
@@ -682,7 +689,7 @@ fetch('/data/' + JSON.stringify(obj))
         //   fontSize: "0.4em",
         // });
         ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({
-            category: v
+            category: v,
         })))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
@@ -698,17 +705,48 @@ fetch('/data/' + JSON.stringify(obj))
             openValueXField: "startFrame",
             valueXField: "endFrame",
             categoryYField: "category",
-            sequencedInterpolation: true
+            sequencedInterpolation: true,
+            tooltip: am5.Tooltip.new(ganttRoot, {
+                // pointerOrientation: "left",
+                labelText: "{valueX}"
+              })
+
         }));
 
+
         ganttSeries.columns.template.setAll({
-            templateField: "columnSettings",
+            // templateField: "columnSettings",
             strokeOpacity: 0,
             fillOpacity: 0.8,
-            tooltipText: "{category}"
+            tooltipText: "{category}",
+            // Rounded corners for bars
+            cornerRadiusTR: 5,
+            cornerRadiusBR: 5,
+            cornerRadiusTL: 5,
+            cornerRadiusBL: 5,
+
         });
 
+        // Make each column to be of a different color
+        ganttSeries.columns.template.adapters.add("fill", function(fill, target) {
+            return ganttChart.get("colors").getIndex(ganttSeries.columns.indexOf(target));
+          });
+
+          ganttSeries.columns.template.adapters.add("stroke", function(stroke, target) {
+            return ganttChart.get("colors").getIndex(ganttSeries.columns.indexOf(target));
+          });
+
         ganttSeries.data.setAll(ganttData);
+
+        csor = ganttChart.set("cursor", am5xy.XYCursor.new(ganttRoot, {
+            behavior: "none",
+            xAxis: ganttXAxis,
+            yAxis: ganttYAxis
+          }));
+
+        // csor.lineY.set("visible", true);
+        csor.lineX.set("opacity", 0.5);
+        csor.lineY.set("opacity", 0.5);
 
         ganttSeries.appear();
         ganttChart.appear(1000, 100);
