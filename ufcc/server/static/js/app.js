@@ -21,6 +21,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(responseData => {
 
         // console.log('responseData', responseData);
+        console.log('top_lipids', responseData['globalTopLipids'])
+        console.log('lipid_contact_frames', responseData['lipidContactFrames'])
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];

@@ -93,8 +93,11 @@ class ProLintSerialContacts(AnalysisBase):
         self.query = query
         self.database = database
         self.cutoff = cutoff
-        self.q_resids = self.query.resindices
-        self.db_resids = self.database.resindices
+
+        # We need to convert to list to allow for JSON serialization
+        self.q_resids = self.query.resindices.tolist()
+        self.db_resids = self.database.resindices.tolist()
+
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 

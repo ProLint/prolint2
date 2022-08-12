@@ -11,11 +11,20 @@ from ufcc.ufcc import UFCC
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
 BACKEND_DATA = None
+TS = None
 data = None
 data_loaded = False
 
 def sort_lipids(ts):
+    """
+    Sort lipid contacts according to their contact frequency, all the while keeping track
+    of residue IDs, and number of contacts with each residue.
 
+    Returns:
+        t (dict): Stores lipid IDs and their contact frequency, sorted in descending order
+        g (dict): For each lipid ID, stores the residues in contact and the corresponding
+                  frequency.
+    """
     def sort_tuple(tup):
         tup.sort(key = lambda x: x[1], reverse=True)
         return tup
@@ -73,6 +82,9 @@ def listener(metadata):
     global data_loaded
     global data
     global BACKEND_DATA
+    global TS
+
+    # print ('TS object: ', TS)
 
     # TODO:
     # Bottle should provide the metadata already,
@@ -108,7 +120,9 @@ def listener(metadata):
         "lipids": BACKEND_DATA['lipids'],
         "pieData": BACKEND_DATA['pie_data'],
         "ganttData": BACKEND_DATA['gantt_data'],
-        "topLipids": BACKEND_DATA['top_10_lipids']
+        "topLipids": BACKEND_DATA['top_10_lipids'],
+        "globalTopLipids": BACKEND_DATA['top_lipids'],
+        "lipidContactFrames": BACKEND_DATA['lipid_contact_frames']
     }
     return response
 
@@ -122,16 +136,20 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     payload = ts.contacts.server_payload()
 
     t, g = sort_lipids(ts)
-    print (t['CHOL'][:10])
-    print (g[3083])
+    payload['top_lipids'] = t
+    payload['lipid_contact_frames'] = g
+    # print (t)
+    # print (g)
 
-    ri = ProLintSerialDistances(ts.query.selected.universe, ts.query.selected, ts.database.selected, 2873, 53)
-    ri.run(verbose=False)
-    print (ri.distance_array)
+    # ri = ProLintSerialDistances(ts.query.selected.universe, ts.query.selected, ts.database.selected, 2873, 53)
+    # ri.run(verbose=False)
+    # print (ri.distance_array)
 
     # Make data accessible globally
     global BACKEND_DATA
+    global TS
     BACKEND_DATA = payload
+    TS = ts
 
     debug(debug_bool)
     run(reloader=reloader, host='localhost', port=port)
