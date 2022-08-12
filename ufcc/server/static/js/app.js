@@ -714,10 +714,26 @@ fetch('/data/' + JSON.stringify(obj))
         ganttSeries.appear();
         ganttChart.appear(1000, 100);
 
-        ganttSeries.columns.template.events.on("click", function(ev, d) {
-            residueID = ev.target.dataItem.dataContext.category;
-            console.log("Clicked on a column", ev.target, d);
+        ganttSeries.columns.template.events.on("click", function(e, d) {
+            residueID = e.target.dataItem.dataContext.category;
+            console.log("Clicked on a column", e.target, d);
             console.log('residueID', residueID)
+
+            ctx = e.target.dataItem.dataContext;
+
+            obj = {
+                "lipidID": ctx.lipid_id,
+                "residueID": ctx.category
+            }
+            fetch('/distance/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(heatmapResponseData => {
+                    heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
+                    hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                    hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                });
+
+
           });
 
 

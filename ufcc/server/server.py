@@ -131,6 +131,38 @@ def top_lipid_listener(metadata):
         "topLipids": categories,
     }
 
+
+@route('/distance/:metadata')
+def distance_array_listener(metadata):
+    global BACKEND_DATA
+    global TS
+
+    metadata = ast.literal_eval(metadata)
+    lipid_id = metadata['lipidID']
+    residue_id = metadata['residueID']
+
+    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, residue_id)
+    ri.run(verbose=False)
+
+    hm_data, la_data = [], []
+    for lx, la in enumerate(ri.lipid_atomnames):
+        la_data.append({ "LipidAtoms": la })
+        for rx, ra in enumerate(ri.resid_atomnames):
+            v = ri.distance_array[lx, rx]
+            hm_data.append({
+            "LipidAtoms": la,
+            "ResidueAtoms": ra,
+            "value": float(v)
+            })
+    ra_data = [{"ResidueAtoms": x} for x in ri.resid_atomnames]
+
+    return {
+        "heatmapData": hm_data,
+        "lipidAtomsData": la_data,
+        "residueAtomsData": ra_data
+    }
+
+
 @route('/data/:metadata')
 def listener(metadata):
 
