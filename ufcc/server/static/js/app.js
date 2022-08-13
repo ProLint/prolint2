@@ -58,8 +58,8 @@ fetch('/data/' + JSON.stringify(obj))
         var chart = root.container.children.push(am5radar.RadarChart.new(root, {
             panX: false,
             panY: false,
-            wheelX: "panX",
-            wheelY: "zoomX",
+            wheelX: "none",
+            wheelY: "none",
             innerRadius: am5.percent(innerRadius),
             radius: am5.percent(85),
             startAngle: 270 - 170,
