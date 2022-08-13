@@ -425,7 +425,6 @@ fetch('/data/' + JSON.stringify(obj))
 
           var currentSlice;
           subSeries.slices.template.on("active", function(active, slice) {
-            console.log('!!', active, slice)
             if (currentSlice && currentSlice != slice && active) {
               currentSlice.set("active", false)
             }
@@ -533,6 +532,7 @@ fetch('/data/' + JSON.stringify(obj))
         // Pre-select first slice
         subSeries.events.on("datavalidated", function() {
             subSeries.slices.getIndex(0).set("active", true);
+            console.log('subSeries.slices.getIndex(0)', subSeries.slices.getIndex(0))
         });
         //   pieContainer.events.on("boundschanged", function() {
         //     pieRoot.events.on("frameended", function(){

@@ -138,9 +138,16 @@ def distance_array_listener(metadata):
 
     metadata = ast.literal_eval(metadata)
     lipid_id = metadata['lipidID']
-    residue_id = metadata['residueID']
+    residue_id = int(metadata['residueID'])
 
-    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, residue_id)
+    ri = ProLintSerialDistances(
+        TS.query.selected.universe,
+        TS.query.selected,
+        TS.database.selected,
+        lipid_id,
+        residue_id,
+        TS.contacts.contact_frames[f'{residue_id},{lipid_id}']
+        )
     ri.run(verbose=False)
 
     hm_data, la_data = [], []
@@ -224,7 +231,14 @@ def listener(metadata):
 
     # Initiate heatmapApp with the top residue
     residue_id = BACKEND_DATA['lipid_contact_frames'][lipid_id][0][0]
-    ri = ProLintSerialDistances(TS.query.selected.universe, TS.query.selected, TS.database.selected, lipid_id, residue_id)
+    ri = ProLintSerialDistances(
+        TS.query.selected.universe,
+        TS.query.selected,
+        TS.database.selected,
+        lipid_id,
+        residue_id,
+        TS.contacts.contact_frames[f'{residue_id},{lipid_id}']
+    )
     ri.run(verbose=False)
 
     hm_data, la_data = [], []
