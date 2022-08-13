@@ -85,15 +85,16 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         xRenderer.labels.template.setAll({
-            radius: 10,
+            radius: 5,
             textType: "radial",
             centerY: am5.p50
         });
 
+        // Metric axis
         var yRenderer = am5radar.AxisRendererRadial.new(root, {
             axisAngle: 90
         });
-
+        // Metric axis labels
         yRenderer.labels.template.setAll({
             centerX: am5.p50
         });
@@ -108,6 +109,45 @@ fetch('/data/' + JSON.stringify(obj))
         modGridCategoryAxis.grid.template.setAll({
             strokeDasharray: [2, 2]
         });
+
+        // We need to get mouse selection events to form a selection
+        // which we'll pass to the 3D viewer.
+        viewerResidueSelection = {
+            "start": undefined,
+            "end": undefined,
+        }
+        cursor.events.on("selectstarted", function(ev) {
+            var x = ev.target.getPrivate("positionX");
+            var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+            viewerResidueSelection["start"] = residue_id
+          });
+
+        cursor.events.on("selectended", function(ev) {
+            var x = ev.target.getPrivate("positionX");
+            var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+            viewerResidueSelection["end"] = residue_id
+
+            var selectSections = [{
+                start_residue_number: parseInt(viewerResidueSelection["start"]),
+                end_residue_number: parseInt(viewerResidueSelection["end"]),
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill',
+                focus: true,
+                // sideChain: true
+                }
+              ]
+              viewerInstance.visual.select({
+                data: selectSections,
+                // nonSelectedColor: {r:255,g:255,b:255}
+            })
+
+        });
+
+        chart.zoomOutButton.events.on('click', function(ev) {
+            viewerInstance.visual.clearSelection()
+            viewerInstance.visual.reset({ camera: true })
+          })
+
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
             min: 0,
@@ -920,12 +960,6 @@ fetch('/data/' + JSON.stringify(obj))
                     hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                 });
-
-            // viewerInstance.visual.highlight({
-            //     data: [{ start_residue_number: parseInt(ctx.category), end_residue_number: parseInt(ctx.category) }],
-            //     color:{r:255,g:255,b:0},
-            //     focus: false
-            // })
 
             var selectSections = [{
                 residue_number: parseInt(ctx.category),
