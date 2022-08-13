@@ -346,6 +346,15 @@ fetch('/data/' + JSON.stringify(obj))
         pieSeries.ticks.template.set("visible", false);
         pieSeries.slices.template.set("toggleKey", "none");
 
+        var cols = pieSeries.get("colors")
+        pieSeries.get("colors").set("colors", [
+            am5.color(0x095256),
+            am5.color(0x087f8c),
+            am5.color(0x5aaa95),
+            am5.color(0x86a873),
+            am5.color(0xbb9f06)
+          ]);
+
         // add events
         pieSeries.slices.template.events.on("click", function (e) {
             selectSlice(e.target);
@@ -512,10 +521,19 @@ fetch('/data/' + JSON.stringify(obj))
             }
         });
 
+        subSeries.get("colors").set("colors", [
+            am5.color(0x095256),
+            am5.color(0x087f8c),
+            am5.color(0x5aaa95),
+            am5.color(0x86a873),
+            am5.color(0xbb9f06)
+          ]);
+
         subSeries.data.setAll(lipids.map(lipidName => ({
             category: lipidName,
             value: 0
         })))
+
         // subSeries.labels.template.setAll({
         //     textType: "circular",
         //     radius: 4
