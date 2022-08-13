@@ -97,7 +97,6 @@ class ProLintSerialContacts(AnalysisBase):
         # We need to convert to list to allow for JSON serialization
         self.q_resids = self.query.resindices.tolist()
         self.db_resids = self.database.resindices.tolist()
-
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 
@@ -125,6 +124,8 @@ class ProLintSerialContacts(AnalysisBase):
             lipid_id = self.db_resids[p[1]]
             string = f'{residue_id},{lipid_id}'
 
+            # if self._frame_index == 0 and residue_id < 200:
+            #     print (p[0], p[1], residue_id, lipid_id)
             # NOTE:
             # We want to keep track of frames the cutoff is satisfied
             # and also the pairs that satisfied the cutoff -> this can be used to avoid
@@ -181,13 +182,14 @@ class ProLintSerialDistances(AnalysisBase):
     # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
     # work later on. We should modify this, so we store data in the right
     # hierarchical structure.
-    def __init__(self, universe, query, database, lipid_id, residue_id,  **kwargs):
+    def __init__(self, universe, query, database, lipid_id, residue_id, frame_filter,  **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
         self.query = query
         self.database = database
-        self.lipid_atomgroup = self.database.select_atoms(f'resid {lipid_id}')
-        self.resid_atomgroup = self.query.select_atoms(f'resid {residue_id}')
+        self.frame_filter = frame_filter
+        self.lipid_atomgroup = self.database.select_atoms(f'resid {lipid_id+1}')
+        self.resid_atomgroup = self.query.select_atoms(f'resid {residue_id+1}')
         self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
         self.resid_atomnames = self.resid_atomgroup.names.tolist()
 
@@ -197,19 +199,18 @@ class ProLintSerialDistances(AnalysisBase):
 
     def _prepare(self):
         self.result_array = np.zeros((self.n_frames, self.lipid_atomgroup.n_atoms, self.resid_atomgroup.n_atoms))
-        # self.ls = []
+
     def _single_frame(self):
-        r = distances.distance_array(
-            self.lipid_atomgroup.positions,
-            self.resid_atomgroup.positions,
-            box=self.database.universe.dimensions
-            )
-        self.result_array[self._frame_index] = r
-        # self.ls.append(r)
+        if self._frame_index in self.frame_filter:
+            r = distances.distance_array(
+                self.lipid_atomgroup.positions,
+                self.resid_atomgroup.positions,
+                box=self.database.universe.dimensions
+                )
+            self.result_array[self._frame_index] = r
 
     def _conclude(self):
-        filtered_dist_array = np.where(self.result_array < 70, self.result_array, 0)
-        self.distance_array = np.sum(filtered_dist_array, axis=0) #.tolist()
+        self.distance_array = np.mean(self.result_array, axis=0)
         del self.result_array
 
 
