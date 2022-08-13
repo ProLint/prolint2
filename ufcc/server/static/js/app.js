@@ -430,9 +430,25 @@ fetch('/data/' + JSON.stringify(obj))
                 // update table data
                 fetch('/tabledata/' + JSON.stringify(obj))
                 .then(response => response.json())
-                .then(tableResponseData => {
-                    // console.log('tableResponseData["tableData"]', tableResponseData['tableData'])
-                    table.replaceData(tableResponseData['tableData']);
+                .then(pieChartResponseData => {
+                    table.replaceData(pieChartResponseData['tableData']);
+                    lipid_id = pieChartResponseData['tableData'][0]['lipidID']
+
+                    obj = {"lipidID": lipid_id
+                    }
+                    fetch('/toplipids/' + JSON.stringify(obj))
+                        .then(response => response.json())
+                        .then(tableResponseData => {
+
+                            ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                            ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
+                                category: v
+                            })))
+                            ganttSeries.data.setAll(ganttData);
+                            sortCategoryAxis()
+
+                        });
+
                 });
 
                 series.appear(1000);
