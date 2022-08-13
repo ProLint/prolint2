@@ -385,6 +385,7 @@ fetch('/data/' + JSON.stringify(obj))
         var subChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
                 radius: am5.percent(50),
+                innerRadius: am5.percent(50),
                 tooltip: am5.Tooltip.new(pieRoot, {})
             })
         );
@@ -397,6 +398,31 @@ fetch('/data/' + JSON.stringify(obj))
                 alignLabels: false
             })
         );
+        var sliceTemplate = subSeries.slices.template;
+        sliceTemplate.setAll({
+          draggable: true,
+          cornerRadius: 5
+        });
+
+        sliceTemplate.events.on("pointerup", function (e) {
+            var slice = e.target;
+
+            subSeries.hideTooltip();
+            slice.animate({
+                key: "x",
+                to: 0,
+                duration: 500,
+                easing: am5.ease.out(am5.ease.cubic)
+            });
+            slice.animate({
+                key: "y",
+                to: 0,
+                duration: 500,
+                easing: am5.ease.out(am5.ease.cubic)
+            });
+          });
+
+
 
         // subSeries click event to link to radar chart
         subSeries.slices.template.events.on("click", function (e) {
@@ -470,20 +496,7 @@ fetch('/data/' + JSON.stringify(obj))
                                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                                 });
 
-
                             });
-                        console.log('lipid_id', lipid_id)
-                        // obj = {
-                        //     "lipidID": lipid_id,
-                        //     "residueID": ctx.category
-                        // }
-                        // fetch('/distance/' + JSON.stringify(obj))
-                        //     .then(response => response.json())
-                        //     .then(heatmapResponseData => {
-                        //         heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
-                        //         hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
-                        //         hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
-                        //     });
 
                 });
 
