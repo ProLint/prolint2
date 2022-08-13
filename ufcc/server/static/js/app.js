@@ -921,11 +921,24 @@ fetch('/data/' + JSON.stringify(obj))
                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                 });
 
-            viewerInstance.visual.highlight({
-                data: [{ start_residue_number: parseInt(ctx.category), end_residue_number: parseInt(ctx.category) }],
-                color:{r:255,g:255,b:0},
-                focus: false
+            // viewerInstance.visual.highlight({
+            //     data: [{ start_residue_number: parseInt(ctx.category), end_residue_number: parseInt(ctx.category) }],
+            //     color:{r:255,g:255,b:0},
+            //     focus: false
+            // })
+
+            var selectSections = [{
+                residue_number: parseInt(ctx.category),
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill'
+                // sideChain: true
+                }
+              ]
+              viewerInstance.visual.select({
+                data: selectSections,
+                // nonSelectedColor: {r:255,g:255,b:255}
             })
+
         });
 
         ///////////////////////////////////////////
