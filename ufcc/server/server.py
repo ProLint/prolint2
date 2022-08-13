@@ -161,6 +161,25 @@ def distance_array_listener(metadata):
         "residueAtomsData": ra_data
     }
 
+@route('/tabledata/:metadata')
+def table_listener(metadata):
+    global BACKEND_DATA
+
+    metadata = ast.literal_eval(metadata)
+    lipid = metadata['lipid']
+
+    table_data = []
+    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids'][lipid]):
+        table_data.append({
+            "id": ix,
+            "lipidID": lipid_id,
+            "contactFrequency": freq
+        })
+
+    return {
+        "tableData": table_data,
+        }
+
 
 @route('/data/:metadata')
 def listener(metadata):

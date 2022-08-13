@@ -376,8 +376,8 @@ fetch('/data/' + JSON.stringify(obj))
                         });
                     });
                 });
+
             series.appear(1000);
-            // chart.appear(500, 100);
 
         });
 
@@ -426,8 +426,16 @@ fetch('/data/' + JSON.stringify(obj))
                             });
                         });
                     });
+
+                // update table data
+                fetch('/tabledata/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(tableResponseData => {
+                    // console.log('tableResponseData["tableData"]', tableResponseData['tableData'])
+                    table.replaceData(tableResponseData['tableData']);
+                });
+
                 series.appear(1000);
-                // chart.appear(500, 100);
             }
         });
 
