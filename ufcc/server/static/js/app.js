@@ -400,18 +400,26 @@ fetch('/data/' + JSON.stringify(obj))
 
         // subSeries click event to link to radar chart
         subSeries.slices.template.events.on("click", function (e) {
+
+            // NOTE:
+            // Along with the protein pieChart (not yet fully implemented),
+            // this is the main entry point to the entire dashboard. Once a slice
+            // is clicked, we need to update all apps of the dashboard. Below
+            // we update the circular, table, gantt, and heatmap apps.
             var lipid = e.target.dataItem.dataContext.category
             if (lipid != axisRange.get("label").get('text')) {
                 obj.lipid = lipid
                 // TODO:
                 // get correct protein
+                // Update Circular App Data
                 obj.protein = "GIRK"
                 fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(responseData => {
 
-                        updateData = responseData['data']
-
+                        updateData = responseData['data'];
+                        var lipid_id = undefined;
+                        var residue_id = undefined;
                         var updateData = generateRadarData(updateData);
                         series.data.setAll(updateData);
                         // categoryAxis.data.setAll(updateData);
@@ -427,27 +435,55 @@ fetch('/data/' + JSON.stringify(obj))
                         });
                     });
 
-                // update table data
-                fetch('/tabledata/' + JSON.stringify(obj))
-                .then(response => response.json())
-                .then(pieChartResponseData => {
-                    table.replaceData(pieChartResponseData['tableData']);
-                    lipid_id = pieChartResponseData['tableData'][0]['lipidID']
+                    // Update Table Data
+                    fetch('/tabledata/' + JSON.stringify(obj))
+                    .then(response => response.json())
+                    .then(pieChartResponseData => {
+                        table.replaceData(pieChartResponseData['tableData']);
+                        lipid_id = pieChartResponseData['tableData'][0]['lipidID']
 
-                    obj = {"lipidID": lipid_id
-                    }
-                    fetch('/toplipids/' + JSON.stringify(obj))
-                        .then(response => response.json())
-                        .then(tableResponseData => {
+                        // Update Gantt App Data
+                        obj = {
+                            "lipidID": lipid_id
+                        }
+                        fetch('/toplipids/' + JSON.stringify(obj))
+                            .then(response => response.json())
+                            .then(tableResponseData => {
 
-                            ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
-                            ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
-                                category: v
-                            })))
-                            ganttSeries.data.setAll(ganttData);
-                            sortCategoryAxis()
+                                ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                                ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
+                                    category: v
+                                })))
+                                ganttSeries.data.setAll(ganttData);
+                                sortCategoryAxis()
 
-                        });
+                            // Update Heatmap App Data
+                            obj = {
+                                "lipidID": lipid_id,
+                                "residueID": ganttData[0]['category']
+                            }
+                            fetch('/distance/' + JSON.stringify(obj))
+                                .then(response => response.json())
+                                .then(heatmapResponseData => {
+                                    heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
+                                    hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                                    hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                                });
+
+
+                            });
+                        console.log('lipid_id', lipid_id)
+                        // obj = {
+                        //     "lipidID": lipid_id,
+                        //     "residueID": ctx.category
+                        // }
+                        // fetch('/distance/' + JSON.stringify(obj))
+                        //     .then(response => response.json())
+                        //     .then(heatmapResponseData => {
+                        //         heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
+                        //         hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                        //         hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                        //     });
 
                 });
 
