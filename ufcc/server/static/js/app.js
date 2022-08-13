@@ -988,8 +988,8 @@ fetch('/data/' + JSON.stringify(obj))
         // Set up heat rules
         heatmapSeries.set("heatRules", [{
             target: heatmapSeries.columns.template,
-            min: am5.color(0xfffb77),
-            max: am5.color(0xfe131a),
+            min: am5.color("#E74C3C"),
+            max: am5.color("#FDEDEC"),
             dataField: "value",
             key: "fill"
         }]);
@@ -997,8 +997,8 @@ fetch('/data/' + JSON.stringify(obj))
         // Add heat legend
         var heatLegend = heatmapChart.bottomAxesContainer.children.push(am5.HeatLegend.new(heatmapRoot, {
             orientation: "horizontal",
-            endColor: am5.color(0xfffb77),
-            startColor: am5.color(0xfe131a)
+            startColor: am5.color("#FDEDEC"),
+            endColor: am5.color("#E74C3C"),
         }));
 
         // Set data
