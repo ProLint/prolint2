@@ -1,15 +1,14 @@
+<!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wheel App</title>
 
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
 
     <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
     <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
@@ -18,9 +17,13 @@
     <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
     <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
 
-    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator_simple.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator_simple.min.css" rel="stylesheet" />
     <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Molstar CSS & JS -->
+    <link rel="stylesheet" type="text/css" href="https://www.ebi.ac.uk/pdbe/pdb-component-library/css/pdbe-molstar-3.0.0.css">
+    <script type="text/javascript" src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdbe-molstar-plugin-3.0.0.js"></script>
 
     <style>
         #chartdiv {
@@ -47,6 +50,32 @@
         #chartdiv4 {
             height: 300px;
         }
+
+      .msp-plugin ::-webkit-scrollbar-thumb {
+          background-color: #474748 !important;
+      }
+      .viewerSection {
+        padding-top: 40px;
+      }
+      .controlsSection {
+        width: 100px;
+        height: 100px;
+        float: left;
+        padding: 40px 0 0 0;
+        margin-right: 30px;
+      }
+      .controlBox {
+        border: 1px solid lightgray;
+        padding: 10px;
+        margin-bottom: 20px;
+      }
+      #myViewer{
+        float:left;
+        width:450px;
+        height: 600px;
+        position:relative;
+      }
+
     </style>
 </head>
 
@@ -75,13 +104,38 @@
                 <div id="chartdiv4"></div>
             </div>
         </div>
-        <div class="row" class="col-sm-8" style="background-color: rgb(244, 151, 170);">
-            <div id="chartdiv"></div>
+        <div class="row">
+        <div id="chartdiv" class="col-sm-7" style="background-color: rgb(244, 151, 170);">
+            <!-- <div id="chartdiv"></div> -->
+        </div>
+        <div id="myViewer" class="col-sm-4">
+        </div>
         </div>
     </div>
 
-
     <script src="static/js/app.js"></script>
+    <!-- <script src="static/js/mol.js"></script> -->
+
+    <script>
+        var viewerInstance = new PDBeMolstarPlugin();
+
+    obj = {"abc": 1}
+    var options = {
+        customData: { url: '/pdb/' + JSON.stringify(obj), format: 'pdb', binary:false },
+        hideControls: true
+        }
+
+        //Get element from HTML/Template to place the viewer
+        var viewerContainer = document.getElementById('myViewer');
+
+        //Call render method to display the 3D view
+        viewerInstance.render(viewerContainer, options);
+
+
+    </script>
+
+    <script src="static/js/mol.js"></script>
+
 
 </body>
 
