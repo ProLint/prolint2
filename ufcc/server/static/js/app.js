@@ -401,7 +401,8 @@ fetch('/data/' + JSON.stringify(obj))
         var sliceTemplate = subSeries.slices.template;
         sliceTemplate.setAll({
           draggable: true,
-          cornerRadius: 5
+          cornerRadius: 5,
+          cursorOverStyle: "pointer",
         });
 
         sliceTemplate.events.on("pointerup", function (e) {
@@ -422,7 +423,14 @@ fetch('/data/' + JSON.stringify(obj))
             });
           });
 
-
+          var currentSlice;
+          subSeries.slices.template.on("active", function(active, slice) {
+            console.log('!!')
+            if (currentSlice && currentSlice != slice && active) {
+              currentSlice.set("active", false)
+            }
+            currentSlice = slice;
+          });
 
         // subSeries click event to link to radar chart
         subSeries.slices.template.events.on("click", function (e) {
@@ -508,12 +516,12 @@ fetch('/data/' + JSON.stringify(obj))
             category: lipidName,
             value: 0
         })))
-        subSeries.labels.template.setAll({
-            textType: "circular",
-            radius: 4
-        });
-        subSeries.ticks.template.set("visible", false);
-        subSeries.slices.template.set("toggleKey", "none");
+        // subSeries.labels.template.setAll({
+        //     textType: "circular",
+        //     radius: 4
+        // });
+        // subSeries.ticks.template.set("visible", false);
+        // subSeries.slices.template.set("toggleKey", "none");
 
         var selectedSlice;
 
