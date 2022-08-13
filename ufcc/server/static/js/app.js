@@ -474,6 +474,7 @@ fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(pieChartResponseData => {
                         table.replaceData(pieChartResponseData['tableData']);
+                        table.selectRow(0);
                         lipid_id = pieChartResponseData['tableData'][0]['lipidID']
 
                         // Update Gantt App Data
@@ -659,6 +660,8 @@ fetch('/data/' + JSON.stringify(obj))
         var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
             height: "270px",
+            selectable: 1,
+            selectablePersistence:false,
             columns: [{
                     title: "Lipid ID",
                     field: "lipidID",
@@ -676,26 +679,34 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         table.on("rowClick", function (e, row) {
-
-            obj = {
-                "lipidID": row.getData()['lipidID']
-            }
+            obj = {"lipidID": row.getData()['lipidID']}
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
-
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
-                        ...lp
-                    }))
-                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
-                        category: v
-                    })))
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
-
                 });
 
         });
+
+        // Should work for touch displays.
+        table.on("rowTap", function(e, row){
+            obj = {"lipidID": row.getData()['lipidID']}
+            fetch('/toplipids/' + JSON.stringify(obj))
+                .then(response => response.json())
+                .then(tableResponseData => {
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
+                    ganttSeries.data.setAll(ganttData);
+                    sortCategoryAxis()
+                });
+        });
+
+        table.on("tableBuilt", function(e, row) {
+            table.selectRow(0);
+        })
 
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
