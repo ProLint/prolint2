@@ -127,9 +127,15 @@ fetch('/data/' + JSON.stringify(obj))
             var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
             viewerResidueSelection["end"] = residue_id
 
+            const residueRange = [
+                parseInt(viewerResidueSelection["start"]),
+                parseInt(viewerResidueSelection["end"])
+            ];
+            residueRange.sort((a, b) => a - b);
+
             var selectSections = [{
-                start_residue_number: parseInt(viewerResidueSelection["start"]),
-                end_residue_number: parseInt(viewerResidueSelection["end"]),
+                start_residue_number: residueRange[0],
+                end_residue_number: residueRange[1],
                 color:{r:255,g:0,b:255},
                 representation: 'spacefill',
                 focus: true,
