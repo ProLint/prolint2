@@ -921,6 +921,11 @@ fetch('/data/' + JSON.stringify(obj))
                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                 });
 
+            viewerInstance.visual.highlight({
+                data: [{ start_residue_number: parseInt(ctx.category), end_residue_number: parseInt(ctx.category) }],
+                color:{r:255,g:255,b:0},
+                focus: false
+            })
         });
 
         ///////////////////////////////////////////
