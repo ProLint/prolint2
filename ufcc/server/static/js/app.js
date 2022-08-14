@@ -377,6 +377,7 @@ fetch('/data/' + JSON.stringify(obj))
         // Create main chart
         var pieChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
+                innerRadius: am5.percent(80),
                 tooltip: am5.Tooltip.new(pieRoot, {})
             })
         );
