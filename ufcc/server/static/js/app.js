@@ -69,12 +69,11 @@ fetch('/data/' + JSON.stringify(obj))
             // endAngle: 90
         }));
 
-
         // Add cursor
         var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
             behavior: "zoomX",
             radius: am5.percent(innerRadius),
-            innerRadius: -25
+            innerRadius: -15
         }));
         cursor.lineY.set("visible", true);
         cursor.lineY.set("opacity", 0.5);
@@ -139,12 +138,10 @@ fetch('/data/' + JSON.stringify(obj))
                 color:{r:255,g:0,b:255},
                 representation: 'spacefill',
                 focus: true,
-                // sideChain: true
                 }
               ]
               viewerInstance.visual.select({
                 data: selectSections,
-                // nonSelectedColor: {r:255,g:255,b:255}
             })
 
         });
@@ -154,6 +151,15 @@ fetch('/data/' + JSON.stringify(obj))
             viewerInstance.visual.reset({ camera: true })
           })
 
+        // Will hightlight hovered residue on the structure viewer.
+        // I'm not sure if it is worth it the performance overhead.
+        // cursor.events.on("cursormoved", function(ev)
+        //     var x = ev.target.getPrivate("positionX");
+        //     var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+        //     viewerInstance.visual.select({
+        //         data: [{residue_number: residue_id, color: {r:255,g:0,b:255}}],
+        //     })
+        // })
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
             min: 0,
@@ -243,7 +249,6 @@ fetch('/data/' + JSON.stringify(obj))
 
                 createRange(lipid, lipidData, i);
                 i++;
-
             }
             return data;
         }
@@ -262,7 +267,7 @@ fetch('/data/' + JSON.stringify(obj))
             fill.setAll({
                 toggleKey: "active",
                 cursorOverStyle: "pointer",
-                fill: colorSet.getIndex(index * 3),
+                fill: am5.color(0x095256),
                 // fill: colorSet.getIndex(3),
                 visible: true,
                 innerRadius: -15
@@ -521,6 +526,14 @@ fetch('/data/' + JSON.stringify(obj))
                                 duration: 0
                             });
                         });
+
+                        am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                            if (dataItem.dataContext.category == lipid) {
+                                col = subSeries.get("colors").getIndex(ix)
+                                axisRange.get("axisFill").set("fill", col)
+                            }
+                        })
+
                     });
 
                     // Update Table Data
@@ -528,7 +541,6 @@ fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(pieChartResponseData => {
                         table.replaceData(pieChartResponseData['tableData']);
-                        table.selectRow(0);
                         lipid_id = pieChartResponseData['tableData'][0]['lipidID']
 
                         // Update Gantt App Data
@@ -596,13 +608,12 @@ fetch('/data/' + JSON.stringify(obj))
         // Pre-select first slice
         subSeries.events.on("datavalidated", function() {
             subSeries.slices.getIndex(0).set("active", true);
-            console.log('subSeries.slices.getIndex(0)', subSeries.slices.getIndex(0))
         });
-        //   pieContainer.events.on("boundschanged", function() {
-        //     pieRoot.events.on("frameended", function(){
-        //       updateLines();
-        //      })
-        //   })
+          pieContainer.events.on("boundschanged", function() {
+            pieRoot.events.on("frameended", function(){
+              updateLines();
+             })
+          })
 
         function updateLines() {
             if (selectedSlice) {
