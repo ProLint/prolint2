@@ -984,10 +984,20 @@ fetch('/data/' + JSON.stringify(obj))
                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                 });
 
+            var cols = ganttChart.get('colors');
+            var residueColor = am5.color("#E74C3C");
+            am5.array.each(ganttSeries.dataItems, function (dataItem, ix) {
+                if (dataItem.dataContext.category == residueID) {
+                    residueColor = ganttChart.get('colors').getIndex(ix)
+                }
+            });
+
+
             var selectSections = [{
                 residue_number: parseInt(ctx.category),
-                color:{r:255,g:0,b:255},
-                representation: 'spacefill'
+                // color:{r:255,g:0,b:255},
+                representation: 'spacefill',
+                representationColor: residueColor,
                 }
               ]
               viewerInstance.visual.select({
@@ -995,7 +1005,7 @@ fetch('/data/' + JSON.stringify(obj))
             })
         });
 
-        ganttSeries.columns.template.events.on("pointerover", function(e, d) {
+        ganttSeries.columns.template.events.on("pointerover", function(e) {
             residueID = e.target.dataItem.dataContext.category;
             ctx = e.target.dataItem.dataContext;
 
