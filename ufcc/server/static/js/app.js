@@ -751,10 +751,29 @@ fetch('/data/' + JSON.stringify(obj))
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, besi: 'green'}))
                     ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
+
+                // On LipidID selection, show interacting residue on the 3D viewer.
+                var selectSections = []
+                for (let ix = 0; ix < ganttData.length; ix++) {
+                    const residueID = ganttData[ix].category;
+                    const residueColor = ganttChart.get('colors').getIndex(ix)
+
+                    selectSections.push({
+                        residue_number: parseInt(residueID),
+                        sideChain: true,
+                        representation: 'spacefill',
+                        representationColor: residueColor
+                    })
+                }
+
+                viewerInstance.visual.select({
+                    data: selectSections,
+                })
+
                 });
 
         });
@@ -804,7 +823,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         // var colors = ganttChart.get("colors");
 
-        // Data
+        // This is kept as placeholder for setting custom color themes.
         // ganttData = responseData['ganttData'].map((lp, ix) => ({
         //     ...lp,
         //     columnSettings: {
@@ -818,7 +837,6 @@ fetch('/data/' + JSON.stringify(obj))
         var ganttYRenderer = am5xy.AxisRendererY.new(ganttRoot, {
             minGridDistance: 1,
             inversed: true,
-
         });
 
         // Create axes
@@ -860,10 +878,10 @@ fetch('/data/' + JSON.stringify(obj))
 
         }));
 
-
         ganttSeries.columns.template.setAll({
             // templateField: "columnSettings",
             strokeOpacity: 0,
+            interactive: true,
             fillOpacity: 0.8,
             tooltipText: "{category}",
             // Rounded corners for bars
@@ -895,7 +913,6 @@ fetch('/data/' + JSON.stringify(obj))
         // csor.lineY.set("visible", true);
         csor.lineX.set("opacity", 0.5);
         csor.lineY.set("opacity", 0.5);
-
 
         // Get series item by category
         function getSeriesItem(category) {
@@ -971,15 +988,27 @@ fetch('/data/' + JSON.stringify(obj))
                 residue_number: parseInt(ctx.category),
                 color:{r:255,g:0,b:255},
                 representation: 'spacefill'
-                // sideChain: true
                 }
               ]
               viewerInstance.visual.select({
                 data: selectSections,
-                // nonSelectedColor: {r:255,g:255,b:255}
             })
-
         });
+
+        ganttSeries.columns.template.events.on("pointerover", function(e, d) {
+            residueID = e.target.dataItem.dataContext.category;
+            ctx = e.target.dataItem.dataContext;
+
+            var selectSections = [{
+                residue_number: parseInt(ctx.category),
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill'
+                }
+              ]
+              viewerInstance.visual.highlight({
+                data: selectSections,
+            })
+        })
 
         ///////////////////////////////////////////
         ///////////// Heatmap App /////////////////
