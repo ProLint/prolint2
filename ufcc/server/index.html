@@ -26,6 +26,9 @@
     <script type="text/javascript" src="https://www.ebi.ac.uk/pdbe/pdb-component-library/js/pdbe-molstar-plugin-3.0.0.js"></script>
 
     <style>
+        .container {
+            width: 1400px;
+        }
         #chartdiv {
             height: 800px;
             background-color: rgb(217, 214, 214);
@@ -44,6 +47,7 @@
 
         #lipid-table {
             height: 300px;
+            background-color: rgb(217, 214, 214);
 
         }
 
@@ -91,10 +95,6 @@
 
         <div class="row">
             <div class="col-sm-2" style="background-color:rgb(217, 214, 214);">
-                <div class="row">
-                    <p class="col-sm-4" style="margin-left: 1.3em; ">LipidID</p>
-                    <p class="col-sm-4">Contacts</p>
-                </div>
                 <div id="lipid-table"></div>
             </div>
             <div class="col-sm-5" style="background-color: rgb(217, 214, 214);">

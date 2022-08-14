@@ -739,23 +739,25 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
-            height: "270px",
+            height: "300px",
+            layout:"fitDataTable",
             selectable: 1,
             selectablePersistence:false,
             columns: [{
-                    title: "Lipid ID",
+                    title: "ID",
                     field: "lipidID",
                     width: 70,
-                    hozAlign: "center"
+                    hozAlign: "center",
+                    frozen:true
                 },
                 {
-                    title: "Total Contacts",
+                    title: "Freq.",
                     field: "contactFrequency",
                     width: 70,
                     hozAlign: "center"
                 },
             ],
-            headerVisible: false,
+            headerVisible: true,
         });
 
         table.on("rowClick", function (e, row) {
