@@ -193,6 +193,25 @@ fetch('/data/' + JSON.stringify(obj))
 
         series.columns.template.set("strokeOpacity", 0);
 
+        // Will hightlight hovered residue on the structure viewer.
+        // I'm not sure if it is worth it the performance overhead.
+        // Here hovering is done over columns (bars), so the performance hit
+        // is lower, but still something to consider later.
+        series.columns.template.events.on("pointerover", function(ev) {
+            var residueID = ev.target.dataItem.dataContext.residue.split(' ')[1];
+            residueID = parseInt(residueID)
+
+            var selectSections = [{
+                residue_number: residueID,
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill'
+                }
+            ]
+            viewerInstance.visual.highlight({
+                data: selectSections,
+            })
+        })
+
         // Set up heat rules
         series.set("heatRules", [{
             target: series.columns.template,
@@ -407,6 +426,10 @@ fetch('/data/' + JSON.stringify(obj))
             am5.color(0xbb9f06)
           ]);
 
+          pieSeries.labels.template.setAll({
+            text: "{category}"
+        });
+
         // add events
         pieSeries.slices.template.events.on("click", function (e) {
             selectSlice(e.target);
@@ -588,6 +611,10 @@ fetch('/data/' + JSON.stringify(obj))
             am5.color(0xbb9f06)
           ]);
 
+        subSeries.labels.template.setAll({
+            text: "{category}"
+          });
+
         subSeries.data.setAll(lipids.map(lipidName => ({
             category: lipidName,
             value: 0
@@ -737,7 +764,7 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         ////////////// Lipid Table ////////////////
         ///////////////////////////////////////////
-        var table = new Tabulator("#lipid-table", {
+            var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
             height: "300px",
             layout:"fitColumns",
