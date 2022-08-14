@@ -791,9 +791,9 @@ fetch('/data/' + JSON.stringify(obj))
                 });
         });
 
-        table.on("tableBuilt", function(e, row) {
-            table.selectRow(0);
-        })
+        // table.on("tableBuilt", function(e, row) {
+        //     table.selectRow(0);
+        // })
 
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
@@ -991,7 +991,6 @@ fetch('/data/' + JSON.stringify(obj))
                     residueColor = ganttChart.get('colors').getIndex(ix)
                 }
             });
-
 
             var selectSections = [{
                 residue_number: parseInt(ctx.category),
