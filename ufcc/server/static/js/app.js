@@ -122,6 +122,8 @@ fetch('/data/' + JSON.stringify(obj))
           });
 
         cursor.events.on("selectended", function(ev) {
+            // console.log('series', series)
+            // console.log(series.columns.template.get("fill"))
             var x = ev.target.getPrivate("positionX");
             var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
             viewerResidueSelection["end"] = residue_id
@@ -132,6 +134,18 @@ fetch('/data/' + JSON.stringify(obj))
             ];
             residueRange.sort((a, b) => a - b);
 
+            // Only ok for very small selections.
+            // Very slow otherwise.
+            // selSec = []
+            // for (let ix = residueRange[0]; ix < residueRange[1]; ix++) {
+            //     columnColor = series.columns.values[ix].get("fill")
+            //     selSec.push({
+            //         residue_number: ix,
+            //         representation: 'spacefill',
+            //         representationColor: columnColor,
+            //     })
+            // }
+
             var selectSections = [{
                 start_residue_number: residueRange[0],
                 end_residue_number: residueRange[1],
@@ -141,7 +155,7 @@ fetch('/data/' + JSON.stringify(obj))
                 }
               ]
               viewerInstance.visual.select({
-                data: selectSections,
+                data: selectSections, // selSec is very slow
             })
 
         });
@@ -815,7 +829,7 @@ fetch('/data/' + JSON.stringify(obj))
                 viewerInstance.visual.select({
                     data: selectSections,
                 })
-
+                console.log('viewerInstance', viewerInstance)
                 });
 
         });
