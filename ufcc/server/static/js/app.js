@@ -265,7 +265,7 @@ fetch('/data/' + JSON.stringify(obj))
                 fill: colorSet.getIndex(index * 3),
                 // fill: colorSet.getIndex(3),
                 visible: true,
-                innerRadius: -25
+                innerRadius: -15
             });
             axisRange.get("grid").set("visible", false);
 
@@ -274,7 +274,7 @@ fetch('/data/' + JSON.stringify(obj))
                 fill: am5.color(0xffffff),
                 textType: "circular",
                 visible: true,
-                radius: -16
+                radius: -12
             });
 
             fill.events.on("click", function (event) {
