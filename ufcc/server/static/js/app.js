@@ -112,6 +112,18 @@ fetch('/data/' + JSON.stringify(obj))
             strokeDasharray: [2, 2]
         });
 
+        var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+            min: 0,
+            strictMinMax: true,
+            extraMax: 0.1,
+            renderer: yRenderer
+        }));
+
+        var modGridValueAxis = valueAxis.get("renderer");
+        modGridValueAxis.grid.template.setAll({
+            strokeDasharray: [2, 2]
+        });
+
         // We need to get mouse selection events to form a selection
         // which we'll pass to the 3D viewer.
         viewerResidueSelection = {
@@ -125,8 +137,6 @@ fetch('/data/' + JSON.stringify(obj))
           });
 
         cursor.events.on("selectended", function(ev) {
-            // console.log('series', series)
-            // console.log(series.columns.template.get("fill"))
             var x = ev.target.getPrivate("positionX");
             var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
             viewerResidueSelection["end"] = residue_id
@@ -168,28 +178,6 @@ fetch('/data/' + JSON.stringify(obj))
             viewerInstance.visual.reset({ camera: true })
           })
 
-        // Will hightlight hovered residue on the structure viewer.
-        // I'm not sure if it is worth it the performance overhead.
-        // cursor.events.on("cursormoved", function(ev)
-        //     var x = ev.target.getPrivate("positionX");
-        //     var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
-        //     viewerInstance.visual.select({
-        //         data: [{residue_number: residue_id, color: {r:255,g:0,b:255}}],
-        //     })
-        // })
-
-        var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
-            min: 0,
-            strictMinMax: true,
-            extraMax: 0.1,
-            renderer: yRenderer
-        }));
-
-        var modGridValueAxis = valueAxis.get("renderer");
-        modGridValueAxis.grid.template.setAll({
-            strokeDasharray: [2, 2]
-        });
-
         // Pie chart label
         var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
             above: true
@@ -208,26 +196,28 @@ fetch('/data/' + JSON.stringify(obj))
             })
         }));
 
-        series.columns.template.set("strokeOpacity", 0);
+        series.on("tooltipDataItem", function(tooltipDataItem){
+            radarSeriesLegend.showValue(tooltipDataItem.get("valueY"))
 
-        // Will hightlight hovered residue on the structure viewer.
-        // I'm not sure if it is worth it the performance overhead.
-        // Here hovering is done over columns (bars), so the performance hit
-        // is lower, but still something to consider later.
-        series.columns.template.events.on("pointerover", function(ev) {
-            var residueID = ev.target.dataItem.dataContext.residue.split(' ')[1];
+            residueID = tooltipDataItem.dataContext.residue.split(' ')[1]
             residueID = parseInt(residueID)
 
             var selectSections = [{
                 residue_number: residueID,
                 color:{r:255,g:0,b:255},
-                representation: 'spacefill'
                 }
             ]
             viewerInstance.visual.highlight({
                 data: selectSections,
             })
-        })
+          })
+
+        series.columns.template.set("strokeOpacity", 0);
+
+        series.events.on("datavalidated", function () {
+            radarSeriesLegend.set("endValue", series.getPrivate("valueYHigh"));
+            radarSeriesLegend.set("startValue", series.getPrivate("valueYLow"));
+        });
 
         // Set up heat rules
         series.set("heatRules", [{
@@ -235,8 +225,24 @@ fetch('/data/' + JSON.stringify(obj))
             key: "fill",
             min: am5.color(0x673AB7),
             max: am5.color(0xF44336),
-            dataField: "valueY"
+            dataField: "valueY",
+            key: "fill"
         }]);
+
+        var radarSeriesLegend = chart.bottomAxesContainer.children.push(am5.HeatLegend.new(root, {
+            orientation: "horizontal",
+            startColor: am5.color(0x673AB7),
+            endColor: am5.color(0xF44336),
+            width: 160,
+            x: am5.percent(37.5),
+            // puts the legen inside the plot
+            // position: "absolute",
+            // x: am5.percent(37.5),
+            // centerY: am5.percent(1350),
+            opacity: 1,
+            startText: "",
+            endText: "",
+        }));
 
         function createRange(name, lipidData, index) {
             axisRange.get("label").setAll({
@@ -1122,8 +1128,6 @@ fetch('/data/' + JSON.stringify(obj))
         // Add heat legend
         var heatLegend = heatmapChart.bottomAxesContainer.children.push(am5.HeatLegend.new(heatmapRoot, {
             orientation: "horizontal",
-            // x: 50,
-            // position: "absolute",
             startColor: am5.color("#FDEDEC"),
             endColor: am5.color("#E74C3C"),
         }));
