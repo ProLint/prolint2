@@ -6,12 +6,15 @@ import json
 from bottle import route, run, template, debug, static_file, request
 from ufcc.contacts import ProLintSerialDistances
 
+import MDAnalysis as mda
 from ufcc.ufcc import UFCC
+from io import StringIO
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
 BACKEND_DATA = None
 TS = None
+ARGS = None
 data = None
 data_loaded = False
 
@@ -187,6 +190,17 @@ def table_listener(metadata):
         "tableData": table_data,
         }
 
+@route('/pdb/:metadata')
+def blob(metadata):
+
+    global ARGS
+    u = mda.Universe(ARGS.structure, ARGS.trajectory)
+    protein = u.select_atoms("protein")
+    pstream = mda.lib.util.NamedStream(StringIO(), 'dummy.pdb')
+    with mda.Writer(pstream, format='PDB') as w:
+        w.write(protein)
+
+    return pstream.read()
 
 @route('/data/:metadata')
 def listener(metadata):
@@ -273,8 +287,10 @@ def listener(metadata):
 
 def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
+    global ARGS
     # UFCC calls:
     args = payload
+    ARGS = args
     ts = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids)
     ts.contacts.runner.backend = 'prolint_serial'
     ts.contacts.compute(cutoff=args.cutoff)

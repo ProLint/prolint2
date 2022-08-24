@@ -69,12 +69,11 @@ fetch('/data/' + JSON.stringify(obj))
             // endAngle: 90
         }));
 
-
         // Add cursor
         var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
             behavior: "zoomX",
             radius: am5.percent(innerRadius),
-            innerRadius: -25
+            innerRadius: -15
         }));
         cursor.lineY.set("visible", true);
         cursor.lineY.set("opacity", 0.5);
@@ -85,15 +84,16 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         xRenderer.labels.template.setAll({
-            radius: 10,
+            radius: 5,
             textType: "radial",
             centerY: am5.p50
         });
 
+        // Metric axis
         var yRenderer = am5radar.AxisRendererRadial.new(root, {
             axisAngle: 90
         });
-
+        // Metric axis labels
         yRenderer.labels.template.setAll({
             centerX: am5.p50
         });
@@ -108,6 +108,72 @@ fetch('/data/' + JSON.stringify(obj))
         modGridCategoryAxis.grid.template.setAll({
             strokeDasharray: [2, 2]
         });
+
+        // We need to get mouse selection events to form a selection
+        // which we'll pass to the 3D viewer.
+        viewerResidueSelection = {
+            "start": undefined,
+            "end": undefined,
+        }
+        cursor.events.on("selectstarted", function(ev) {
+            var x = ev.target.getPrivate("positionX");
+            var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+            viewerResidueSelection["start"] = residue_id
+          });
+
+        cursor.events.on("selectended", function(ev) {
+            // console.log('series', series)
+            // console.log(series.columns.template.get("fill"))
+            var x = ev.target.getPrivate("positionX");
+            var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+            viewerResidueSelection["end"] = residue_id
+
+            const residueRange = [
+                parseInt(viewerResidueSelection["start"]),
+                parseInt(viewerResidueSelection["end"])
+            ];
+            residueRange.sort((a, b) => a - b);
+
+            // Only ok for very small selections.
+            // Very slow otherwise.
+            // selSec = []
+            // for (let ix = residueRange[0]; ix < residueRange[1]; ix++) {
+            //     columnColor = series.columns.values[ix].get("fill")
+            //     selSec.push({
+            //         residue_number: ix,
+            //         representation: 'spacefill',
+            //         representationColor: columnColor,
+            //     })
+            // }
+
+            var selectSections = [{
+                start_residue_number: residueRange[0],
+                end_residue_number: residueRange[1],
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill',
+                focus: true,
+                }
+              ]
+              viewerInstance.visual.select({
+                data: selectSections, // selSec is very slow
+            })
+
+        });
+
+        chart.zoomOutButton.events.on('click', function(ev) {
+            viewerInstance.visual.clearSelection()
+            viewerInstance.visual.reset({ camera: true })
+          })
+
+        // Will hightlight hovered residue on the structure viewer.
+        // I'm not sure if it is worth it the performance overhead.
+        // cursor.events.on("cursormoved", function(ev)
+        //     var x = ev.target.getPrivate("positionX");
+        //     var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+        //     viewerInstance.visual.select({
+        //         data: [{residue_number: residue_id, color: {r:255,g:0,b:255}}],
+        //     })
+        // })
 
         var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
             min: 0,
@@ -140,6 +206,25 @@ fetch('/data/' + JSON.stringify(obj))
         }));
 
         series.columns.template.set("strokeOpacity", 0);
+
+        // Will hightlight hovered residue on the structure viewer.
+        // I'm not sure if it is worth it the performance overhead.
+        // Here hovering is done over columns (bars), so the performance hit
+        // is lower, but still something to consider later.
+        series.columns.template.events.on("pointerover", function(ev) {
+            var residueID = ev.target.dataItem.dataContext.residue.split(' ')[1];
+            residueID = parseInt(residueID)
+
+            var selectSections = [{
+                residue_number: residueID,
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill'
+                }
+            ]
+            viewerInstance.visual.highlight({
+                data: selectSections,
+            })
+        })
 
         // Set up heat rules
         series.set("heatRules", [{
@@ -197,7 +282,6 @@ fetch('/data/' + JSON.stringify(obj))
 
                 createRange(lipid, lipidData, i);
                 i++;
-
             }
             return data;
         }
@@ -216,10 +300,10 @@ fetch('/data/' + JSON.stringify(obj))
             fill.setAll({
                 toggleKey: "active",
                 cursorOverStyle: "pointer",
-                fill: colorSet.getIndex(index * 3),
+                fill: am5.color(0x095256),
                 // fill: colorSet.getIndex(3),
                 visible: true,
-                innerRadius: -25
+                innerRadius: -15
             });
             axisRange.get("grid").set("visible", false);
 
@@ -228,7 +312,7 @@ fetch('/data/' + JSON.stringify(obj))
                 fill: am5.color(0xffffff),
                 textType: "circular",
                 visible: true,
-                radius: -16
+                radius: -12
             });
 
             fill.events.on("click", function (event) {
@@ -326,6 +410,7 @@ fetch('/data/' + JSON.stringify(obj))
         // Create main chart
         var pieChart = pieContainer.children.push(
             am5percent.PieChart.new(pieRoot, {
+                innerRadius: am5.percent(80),
                 tooltip: am5.Tooltip.new(pieRoot, {})
             })
         );
@@ -354,6 +439,10 @@ fetch('/data/' + JSON.stringify(obj))
             am5.color(0x86a873),
             am5.color(0xbb9f06)
           ]);
+
+          pieSeries.labels.template.setAll({
+            text: "{category}"
+        });
 
         // add events
         pieSeries.slices.template.events.on("click", function (e) {
@@ -475,6 +564,14 @@ fetch('/data/' + JSON.stringify(obj))
                                 duration: 0
                             });
                         });
+
+                        am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                            if (dataItem.dataContext.category == lipid) {
+                                col = subSeries.get("colors").getIndex(ix)
+                                axisRange.get("axisFill").set("fill", col)
+                            }
+                        })
+
                     });
 
                     // Update Table Data
@@ -482,7 +579,6 @@ fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(pieChartResponseData => {
                         table.replaceData(pieChartResponseData['tableData']);
-                        table.selectRow(0);
                         lipid_id = pieChartResponseData['tableData'][0]['lipidID']
 
                         // Update Gantt App Data
@@ -529,6 +625,10 @@ fetch('/data/' + JSON.stringify(obj))
             am5.color(0xbb9f06)
           ]);
 
+        subSeries.labels.template.setAll({
+            text: "{category}"
+          });
+
         subSeries.data.setAll(lipids.map(lipidName => ({
             category: lipidName,
             value: 0
@@ -550,13 +650,12 @@ fetch('/data/' + JSON.stringify(obj))
         // Pre-select first slice
         subSeries.events.on("datavalidated", function() {
             subSeries.slices.getIndex(0).set("active", true);
-            console.log('subSeries.slices.getIndex(0)', subSeries.slices.getIndex(0))
         });
-        //   pieContainer.events.on("boundschanged", function() {
-        //     pieRoot.events.on("frameended", function(){
-        //       updateLines();
-        //      })
-        //   })
+          pieContainer.events.on("boundschanged", function() {
+            pieRoot.events.on("frameended", function(){
+              updateLines();
+             })
+          })
 
         function updateLines() {
             if (selectedSlice) {
@@ -679,25 +778,28 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         ////////////// Lipid Table ////////////////
         ///////////////////////////////////////////
-        var table = new Tabulator("#lipid-table", {
+            var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
-            height: "270px",
+            height: "300px",
+            layout:"fitColumns",
             selectable: 1,
             selectablePersistence:false,
             columns: [{
-                    title: "Lipid ID",
+                    title: "ID",
                     field: "lipidID",
-                    width: 70,
-                    hozAlign: "center"
+                    // width: 100,
+                    hozAlign: "center",
+                    frozen:true,
+                    headerFilter:"input"
                 },
                 {
-                    title: "Total Contacts",
+                    title: "Freq.",
                     field: "contactFrequency",
-                    width: 70,
-                    hozAlign: "center"
+                    // width: 120,
+                    hozAlign: "center",
                 },
             ],
-            headerVisible: false,
+            headerVisible: true,
         });
 
         table.on("rowClick", function (e, row) {
@@ -705,10 +807,29 @@ fetch('/data/' + JSON.stringify(obj))
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, besi: 'green'}))
                     ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
+
+                // On LipidID selection, show interacting residue on the 3D viewer.
+                var selectSections = []
+                for (let ix = 0; ix < ganttData.length; ix++) {
+                    const residueID = ganttData[ix].category;
+                    const residueColor = ganttChart.get('colors').getIndex(ix)
+
+                    selectSections.push({
+                        residue_number: parseInt(residueID),
+                        sideChain: true,
+                        representation: 'spacefill',
+                        representationColor: residueColor
+                    })
+                }
+
+                viewerInstance.visual.select({
+                    data: selectSections,
+                })
+                console.log('viewerInstance', viewerInstance)
                 });
 
         });
@@ -726,9 +847,9 @@ fetch('/data/' + JSON.stringify(obj))
                 });
         });
 
-        table.on("tableBuilt", function(e, row) {
-            table.selectRow(0);
-        })
+        // table.on("tableBuilt", function(e, row) {
+        //     table.selectRow(0);
+        // })
 
         ///////////////////////////////////////////
         /////////////// GanttApp //////////////////
@@ -758,7 +879,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         // var colors = ganttChart.get("colors");
 
-        // Data
+        // This is kept as placeholder for setting custom color themes.
         // ganttData = responseData['ganttData'].map((lp, ix) => ({
         //     ...lp,
         //     columnSettings: {
@@ -772,7 +893,6 @@ fetch('/data/' + JSON.stringify(obj))
         var ganttYRenderer = am5xy.AxisRendererY.new(ganttRoot, {
             minGridDistance: 1,
             inversed: true,
-
         });
 
         // Create axes
@@ -790,7 +910,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
-            max: 180,
+            // max: 180,
             strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {}),
             tooltip: am5.Tooltip.new(ganttRoot, {
@@ -814,10 +934,10 @@ fetch('/data/' + JSON.stringify(obj))
 
         }));
 
-
         ganttSeries.columns.template.setAll({
             // templateField: "columnSettings",
             strokeOpacity: 0,
+            interactive: true,
             fillOpacity: 0.8,
             tooltipText: "{category}",
             // Rounded corners for bars
@@ -849,7 +969,6 @@ fetch('/data/' + JSON.stringify(obj))
         // csor.lineY.set("visible", true);
         csor.lineX.set("opacity", 0.5);
         csor.lineY.set("opacity", 0.5);
-
 
         // Get series item by category
         function getSeriesItem(category) {
@@ -921,7 +1040,40 @@ fetch('/data/' + JSON.stringify(obj))
                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
                 });
 
+            var cols = ganttChart.get('colors');
+            var residueColor = am5.color("#E74C3C");
+            am5.array.each(ganttSeries.dataItems, function (dataItem, ix) {
+                if (dataItem.dataContext.category == residueID) {
+                    residueColor = ganttChart.get('colors').getIndex(ix)
+                }
+            });
+
+            var selectSections = [{
+                residue_number: parseInt(ctx.category),
+                // color:{r:255,g:0,b:255},
+                representation: 'spacefill',
+                representationColor: residueColor,
+                }
+              ]
+              viewerInstance.visual.select({
+                data: selectSections,
+            })
         });
+
+        ganttSeries.columns.template.events.on("pointerover", function(e) {
+            residueID = e.target.dataItem.dataContext.category;
+            ctx = e.target.dataItem.dataContext;
+
+            var selectSections = [{
+                residue_number: parseInt(ctx.category),
+                color:{r:255,g:0,b:255},
+                representation: 'spacefill'
+                }
+              ]
+              viewerInstance.visual.highlight({
+                data: selectSections,
+            })
+        })
 
         ///////////////////////////////////////////
         ///////////// Heatmap App /////////////////
