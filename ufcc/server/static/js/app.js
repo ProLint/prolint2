@@ -235,59 +235,6 @@ fetch('/data/' + JSON.stringify(obj))
             dataField: "valueY"
         }]);
 
-        // Add scrollbars
-        // chart.set("scrollbarX", am5.Scrollbar.new(root, {
-        //     orientation: "horizontal"
-        // }));
-        // chart.set("scrollbarY", am5.Scrollbar.new(root, {
-        //     orientation: "vertical"
-        // }));
-
-        // Add frameGroup label
-        // var frameGroupLabel = chart.radarContainer.children.push(am5.Label.new(root, {
-        //     fontSize: "2em",
-        //     text: currentFrameGroup.toString(),
-        //     centerX: am5.p50,
-        //     centerY: am5.p50,
-        //     fill: am5.color(0x673AB7)
-        // }));
-
-        // Generate and set data
-        // var data = generateRadarData(contactData);
-        // series.data.setAll(data);
-        // categoryAxis.data.setAll(data);
-
-        // series.appear(500);
-        // chart.appear(500, 100);
-
-        // function generateRadarData(contactData) {
-        //     console.log('contactData', contactData)
-        //     // contactData = contactData['Protein0']
-        //     var data = [];
-        //     var i = 0;
-        //     for (var lipid in contactData) {
-        //         var lipidData = contactData[lipid];
-
-        //         lipidData.forEach(function (residue) {
-        //             var rawDataItem = {
-        //                 "residue": residue[0],
-        //                 "value": residue[1]
-        //             }
-
-        //             var startY = 1
-        //             for (var y = startY; y < residue.length; y++) {
-        //                 rawDataItem["value_" + (startFrameGroup + y - startY)] = residue[y];
-        //             }
-        //             // rawDataItem['protein'] = "GIRK"
-        //             data.push(rawDataItem);
-        //         });
-
-        //         createRange(lipid, lipidData, i);
-        //         i++;
-        //     }
-        //     return data;
-        // }
-
         function createRange(name, lipidData, index) {
             axisRange.get("label").setAll({
                 text: name
@@ -327,76 +274,6 @@ fetch('/data/' + JSON.stringify(obj))
             });
         }
 
-        // Create controls
-        // var container = chart.children.push(am5.Container.new(root, {
-        //     y: am5.percent(95),
-        //     centerX: am5.p50,
-        //     x: am5.p50,
-        //     width: am5.percent(40),
-        //     layout: root.horizontalLayout
-        // }));
-
-        // var playButton = container.children.push(am5.Button.new(root, {
-        //     themeTags: ["play"],
-        //     visible: true,
-        //     centerY: am5.p50,
-        //     marginRight: 15,
-        //     icon: am5.Graphics.new(root, {
-        //         themeTags: ["icon"]
-        //     })
-        // }));
-
-        // playButton.events.on("click", function () {
-        //     if (playButton.get("active")) {
-        //         slider.set("start", slider.get("start") + 0.0001);
-        //     } else {
-        //         slider.animate({
-        //             key: "start",
-        //             to: 1,
-        //             duration: 15000 * (1 - slider.get("start"))
-        //         });
-        //     }
-        // })
-
-        // var slider = container.children.push(am5.Slider.new(root, {
-        //     orientation: "horizontal",
-        //     visible: true,
-        //     start: 0.0,
-        //     centerY: am5.p50
-        // }));
-
-        // slider.on("start", function (start) {
-        //     if (start === 1) {
-        //         playButton.set("active", false);
-        //     }
-        // });
-
-        // slider.events.on("rangechanged", function () {
-        //     // val = Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup));
-        //     // val = slider.get("start", 0) //* (endFrameGroup - startFrameGroup)
-        //     updateRadarData(startFrameGroup + Math.round(slider.get("start", 0) * (endFrameGroup - startFrameGroup)));
-        // });
-
-        // function updateRadarData(frameGroup) {
-
-        //     if (currentFrameGroup != frameGroup) {
-        //         currentFrameGroup = frameGroup;
-        //         // frameGroupLabel.set("text", currentFrameGroup.toString());
-        //         am5.array.each(series.dataItems, function (dataItem) {
-        //             var newValue = dataItem.dataContext["value_" + frameGroup];
-        //             dataItem.set("valueY", newValue);
-        //             dataItem.animate({
-        //                 key: "valueYWorking",
-        //                 to: newValue,
-        //                 duration: 500
-        //             });
-        //         });
-        //     }
-        // }
-        // updateRadarData(0)
-
-        // var data = generateRadarData(contactData);
-        // var data = contactData;
         series.data.setAll(contactData);
         categoryAxis.data.setAll(contactData);
         createRange(lipids[0], contactData, 0);
