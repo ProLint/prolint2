@@ -654,22 +654,33 @@ fetch('/data/' + JSON.stringify(obj))
             data: responseData['tableData'],
             height: "300px",
             layout:"fitColumns",
+            // autoResize:false,
+            resizableRows:false,
             selectable: 1,
             selectablePersistence:false,
-            columns: [{
-                    title: "ID",
+            columns: [
+                {
+                    title:"Lipid <br>Contact Frequencies",
+                    columns: [
+                {
+                    title: "id",
                     field: "lipidID",
                     // width: 100,
                     hozAlign: "center",
-                    frozen:true,
-                    headerFilter:"input"
+                    // frozen:true,
+                    headerSort:false,
+                    resizable:false,
+                    // headerFilter:"input"
                 },
                 {
-                    title: "Freq.",
+                    title: "f",
                     field: "contactFrequency",
                     // width: 120,
                     hozAlign: "center",
-                },
+                    headerSort:false,
+                    resizable:false,
+                },]
+            }
             ],
             headerVisible: true,
         });
@@ -700,8 +711,7 @@ fetch('/data/' + JSON.stringify(obj))
 
                 viewerInstance.visual.select({
                     data: selectSections,
-                })
-                console.log('viewerInstance', viewerInstance)
+                    })
                 });
 
         });
