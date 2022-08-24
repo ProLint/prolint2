@@ -4,7 +4,7 @@ Unit tests for the ufcc package.
 
 # Import package, test suite, and other packages as needed
 import sys
-
+import os
 import pytest
 
 import pandas as pd
@@ -29,7 +29,7 @@ def test_serial_backend():
     target_system.contacts.runner.backend = 'serial'
     target_system.contacts.compute()
     target_system.contacts.count_contacts()
-    ref = pd.read_pickle('counted_contacts.pkl')
+    ref = pd.read_pickle(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'counted_contacts.pkl'))
     assert_frame_equal(target_system.contacts.counts, ref)
 
 # def test_parallel_backend():
