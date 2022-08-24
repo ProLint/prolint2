@@ -754,6 +754,16 @@ fetch('/data/' + JSON.stringify(obj))
         }));
         ganttChart.zoomOutButton.set("forceHidden", true);
 
+        ganttChart.children.unshift(am5.Label.new(ganttRoot, {
+            text: "Lipid Contact Durations",
+            x: am5.p50,
+            centerX: am5.p50,
+            centerY: am5.percent(25),
+            position: "absolute",
+            fontWeight: "500",
+            fontStyle: "oblique",
+        }));
+
         var legend = ganttChart.children.push(am5.Legend.new(ganttRoot, {
             centerX: am5.p50,
             x: am5.p50
@@ -785,6 +795,15 @@ fetch('/data/' + JSON.stringify(obj))
                 renderer: ganttYRenderer,
             })
         );
+        ganttYAxis.children.moveValue(am5.Label.new(ganttRoot, {
+            text: "Residue IDs",
+            rotation: -90,
+            position: "absolute",
+            // x: am5.p50,
+            y: am5.percent(70),
+            centerY: am5.percent(70),
+            fontWeight: "500",
+          }), 0);
 
         ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({
             category: v,
@@ -799,8 +818,16 @@ fetch('/data/' + JSON.stringify(obj))
                 themeTags: ["axis"],
                 animationDuration: 200
             })
-
         }));
+        ganttXAxis.children.moveValue(am5.Label.new(ganttRoot, {
+            text: "trajectory frames",
+            position: "absolute",
+            x: am5.p50,
+            y: am5.p50,
+            centerX: am5.p50,
+            fontWeight: "500",
+            // fontStyle: "oblique",
+          }), ganttXAxis.children.length - 1);
 
         var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
             xAxis: ganttXAxis,
