@@ -270,7 +270,7 @@ def listener(metadata):
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
-        "data": {lipid: BACKEND_DATA["data"][protein][lipid]},
+        "data": BACKEND_DATA["data"][protein][lipid],
         "proteins": BACKEND_DATA['proteins'],
         "lipids": BACKEND_DATA['lipids'],
         "pieData": BACKEND_DATA['pie_data'],
