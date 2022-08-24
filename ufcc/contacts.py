@@ -531,7 +531,7 @@ class Contacts(object):
                 sub_data[lipid]['value'] += contact_sum
                 metric = (contact_sum * self.dt) / self.totaltime # TODO: do we have to substract 1 frame here?
                 js[protein][lipid].append({
-                    "residue": f'{resnames[residue]} {residue}',
+                    "residue": f'{resnames[residue]} {residue+1}',
                     "value": float("{:.2f}".format(metric)),
                     })
 
@@ -541,6 +541,7 @@ class Contacts(object):
 
         # return js, {protein: sub_data}
 
+        # TODO:
         # Hardcoded
         proteins = ['GIRK']
         protein_counts = {'GIRK': 1}
