@@ -261,7 +261,8 @@ fetch('/data/' + JSON.stringify(obj))
                 fill: am5.color(0x095256),
                 // fill: colorSet.getIndex(3),
                 visible: true,
-                innerRadius: -15
+                innerRadius: -15,
+                cornerRadius: 15,
             });
             axisRange.get("grid").set("visible", false);
 
