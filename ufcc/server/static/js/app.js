@@ -24,6 +24,9 @@ fetch('/data/' + JSON.stringify(obj))
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
 
+        var startResidueID = responseData['tableData'][0].lipidID;
+        var startLipidID = responseData['topLipids'][0]
+
         var systemHasOneProtein = false;
         if (proteins.length == 1) {
             systemHasOneProtein = true
@@ -691,6 +694,7 @@ fetch('/data/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
                     ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, besi: 'green'}))
+                    console.log('ganttData', ganttData)
                     ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
@@ -944,6 +948,11 @@ fetch('/data/' + JSON.stringify(obj))
             fetch('/distance/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(heatmapResponseData => {
+
+                    // Update title
+                    var text = `ResidueID: ${ctx.category} and LipidID: ${ctx.lipid_id} Interactions`
+                    am5.registry.entitiesById["besiTest"].set("text", text)
+
                     heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
                     hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
@@ -1003,6 +1012,16 @@ fetch('/data/' + JSON.stringify(obj))
             layout: heatmapRoot.verticalLayout
         }));
 
+        heatmapChart.children.unshift(am5.Label.new(heatmapRoot, {
+            text: `ResidueID: ${startResidueID} and LipidID: ${startLipidID} Interactions`,
+            id: "besiTest",
+            x: am5.p50,
+            centerX: am5.percent(40),
+            centerY: am5.percent(25),
+            position: "absolute",
+            fontWeight: "500",
+            fontStyle: "oblique",
+        }));
 
         // Create axes and their renderers
         var hmYRenderer = am5xy.AxisRendererY.new(heatmapRoot, {
@@ -1018,6 +1037,17 @@ fetch('/data/' + JSON.stringify(obj))
             renderer: hmYRenderer,
             categoryField: "ResidueAtoms"
         }));
+        hmYAxis.children.moveValue(am5.Label.new(heatmapRoot, {
+            text: "Residue atoms",
+            rotation: -90,
+            position: "absolute",
+            y: am5.percent(80),
+            // x: am5.percent(0),
+            centerX: am5.percent(10),
+            centerY: am5.percent(75),
+            fontWeight: "500",
+            // fontStyle: "oblique",
+          }), 0);
 
         var hmXRenderer = am5xy.AxisRendererX.new(heatmapRoot, {
             visible: false,
@@ -1031,6 +1061,22 @@ fetch('/data/' + JSON.stringify(obj))
             renderer: hmXRenderer,
             categoryField: "LipidAtoms"
         }));
+        hmXAxis.children.moveValue(am5.Label.new(heatmapRoot, {
+            text: "Lipid atoms",
+            position: "absolute",
+            // top x label :
+            // x: am5.percent(50),
+            // centerX: am5.percent(50),
+            // centerY: am5.percent(70),
+
+            // bottom x label
+            x: am5.percent(50),
+            y: am5.percent(1025),
+            centerX: am5.percent(50),
+
+            fontWeight: "500",
+            // fontStyle: "oblique",
+          }), hmXAxis.children.length - 1);
 
         // Create series
         var heatmapSeries = heatmapChart.series.push(am5xy.ColumnSeries.new(heatmapRoot, {
@@ -1076,6 +1122,8 @@ fetch('/data/' + JSON.stringify(obj))
         // Add heat legend
         var heatLegend = heatmapChart.bottomAxesContainer.children.push(am5.HeatLegend.new(heatmapRoot, {
             orientation: "horizontal",
+            // x: 50,
+            // position: "absolute",
             startColor: am5.color("#FDEDEC"),
             endColor: am5.color("#E74C3C"),
         }));
