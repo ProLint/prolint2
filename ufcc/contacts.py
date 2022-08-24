@@ -5,6 +5,7 @@ r"""Contacts base classes --- :mod:`ufcc.contacts`
 :Copyright: MIT License
 """
 
+import os
 import pickle
 import numpy as np
 import pandas as pd
@@ -17,6 +18,11 @@ from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
 from. w2plp import LPContacts
+import configparser
+
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'default.ini'))
+parameters_config = config['Parameters']
 
 
 class SerialContacts(AnalysisBase):
@@ -143,8 +149,8 @@ class Runner(object):
         Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores. 
     """
     def __init__(self):
-        self.backend = 'serial'
-        self.n_jobs = -1
+        self.backend = parameters_config['backend']
+        self.n_jobs = int(parameters_config['n_jobs'])
         # TODO
         # add funcionalities to run analysis on HPC machines
 
@@ -184,7 +190,7 @@ class Contacts(object):
         self.counts = None
         self.contact_metrics = None
 
-    def compute(self, cutoff=7):
+    def compute(self, cutoff=int(parameters_config['cutoff'])):  
         """
         Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
 

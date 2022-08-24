@@ -17,3 +17,5 @@ del get_versions, versions
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 def get_data():
     return os.path.join(_ROOT, 'data')
+def get_config():
+    return os.path.join(_ROOT, 'default.ini')

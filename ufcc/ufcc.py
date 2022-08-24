@@ -5,11 +5,16 @@ r"""UFCC base classes --- :mod:`ufcc.ufcc`
 :Copyright: MIT License
 """
 
+import os
 import numpy as np
 import MDAnalysis as mda
 from MDAnalysis.core.topologyattrs import ResidueStringAttr
 from .contacts import Contacts
+import configparser
 
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'default.ini'))
+parameters_config = config['Parameters']
 
 class MacrosClass(ResidueStringAttr):
     """
@@ -95,7 +100,7 @@ class UFCC(object):
         self.atoms.universe.add_TopologyAttr('macros')
 
         # adding the macros to the membrane residues
-        lipid_types = ['POPC', 'DPPC', 'DOPC', 'CHOL', 'CHL1', 'POPS', 'POPE']
+        lipid_types = parameters_config['lipid_types'].split(', ')
         lipid_types = lipid_types + add_lipid_types
         not_protein_restypes = np.unique(self.atoms.select_atoms('not protein').residues.resnames)
         membrane_restypes = []
