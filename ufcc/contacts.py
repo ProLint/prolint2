@@ -20,7 +20,7 @@ from .parallel import ParallelAnalysisBase
 from. w2plp import LPContacts
 import configparser
 
-config = configparser.ConfigParser()
+config = configparser.ConfigParser(allow_no_value=True)
 config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'default.ini'))
 parameters_config = config['Parameters']
 

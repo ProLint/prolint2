@@ -12,7 +12,7 @@ from MDAnalysis.core.topologyattrs import ResidueStringAttr
 from .contacts import Contacts
 import configparser
 
-config = configparser.ConfigParser()
+config = configparser.ConfigParser(allow_no_value=True)
 config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'default.ini'))
 parameters_config = config['Parameters']
 
