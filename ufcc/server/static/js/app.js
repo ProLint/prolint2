@@ -864,7 +864,7 @@ fetch('/data/' + JSON.stringify(obj))
             sequencedInterpolation: true,
             tooltip: am5.Tooltip.new(ganttRoot, {
                 pointerOrientation: "horizontal",
-                // labelText: "{valueY}"
+                labelText: "{category}"
             })
 
         }));

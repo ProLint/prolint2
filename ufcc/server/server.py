@@ -1,4 +1,5 @@
 from collections import Counter
+import enum
 import os
 import ast
 import json
@@ -89,16 +90,17 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out
             if end - start < intervals_to_filter_out:
                 continue
             gantt_data.append({
-            "category": f'{res}',
+            # "category": f'{res}',
+            "category": res,
             "startFrame": start,
             "endFrame": end,
             "lipid_id": lipid_id
             })
 
     categories = []
-    for x in [x['category'] for x in gantt_data]:
-        if x not in categories:
-            categories.append(x)
+    for y in [x['category'] for x in gantt_data]:
+        if y not in categories:
+            categories.append(y)
     return gantt_data, categories
 
 
@@ -126,8 +128,13 @@ def top_lipid_listener(metadata):
 
     metadata = ast.literal_eval(metadata)
     lipid_id = metadata['lipidID']
-    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
 
+    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+    # This will sort the residues
+    # sorted_gantt_data = sorted(gantt_data, key=lambda d: d['category'])
+
+    # ags = TS.query.selected.select_atoms(f'resid {" ".join([str(x) for x in categories])}')
+    # labeled_categories = [[int(x.resid), x.resname] for x in ags]
     return {
         "ganttData": gantt_data,
         "topLipids": categories,
