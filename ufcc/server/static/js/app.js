@@ -24,8 +24,8 @@ fetch('/data/' + JSON.stringify(obj))
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
 
-        var startResidueID = responseData['tableData'][0].lipidID;
-        var startLipidID = responseData['topLipids'][0]
+        var startLipidID = responseData['tableData'][0].lipidID;
+        var startResidueID = responseData['topLipids'][0]
 
         var systemHasOneProtein = false;
         if (proteins.length == 1) {
@@ -1140,5 +1140,21 @@ fetch('/data/' + JSON.stringify(obj))
 
         // Make stuff animate on load
         heatmapChart.appear(1000, 100);
+
+
+        ///////////////////////////////////////////
+        ////////////// Hide Logos /////////////////
+        ///////////////////////////////////////////
+        am5.array.each(am5.registry.rootElements, function(rootElement) {
+            rootElement.events.on("framestarted", function () {
+                rootChildren = rootElement.tooltipContainer.allChildren()
+                for (let ix = 0; ix < rootChildren.length; ix++) {
+                    el = rootChildren[ix];
+                    if (el._settings.tooltipText == "Created using amCharts 5") {
+                        el.set('visible', false)
+                    }
+                }
+            });
+          });
 
     });
