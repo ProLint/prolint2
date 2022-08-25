@@ -240,9 +240,24 @@ fetch('/data/' + JSON.stringify(obj))
             // x: am5.percent(37.5),
             // centerY: am5.percent(1350),
             opacity: 1,
-            startText: "",
-            endText: "",
+            // startText: "",
+            // endText: "",
         }));
+        radarSeriesLegend.startLabel.setAll({
+            fontSize: 12,
+            fill: radarSeriesLegend.get("startColor"),
+            isMeasured: false,
+            paddingLeft: -10,
+            paddingTop: -1,
+          });
+          radarSeriesLegend.endLabel.setAll({
+            fontSize: 12,
+            fill: radarSeriesLegend.get("endColor"),
+            isMeasured: false,
+            x: am5.percent(75),
+            paddingTop: -1,
+          });
+
 
         function createRange(name, lipidData, index) {
             axisRange.get("label").setAll({
