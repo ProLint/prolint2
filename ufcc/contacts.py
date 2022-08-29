@@ -530,7 +530,10 @@ class Contacts(object):
             for lipid, contact_sum in contact_counter.items():
                 sub_data[lipid]['value'] += contact_sum
                 metric = (contact_sum * self.dt) / self.totaltime # TODO: do we have to substract 1 frame here?
-                js[protein][lipid].append([f'{resnames[residue]} {residue}', float("{:.2f}".format(metric))])
+                js[protein][lipid].append({
+                    "residue": f'{resnames[residue]} {residue+1}',
+                    "value": float("{:.2f}".format(metric)),
+                    })
 
         sub_data = list(sub_data.values())
         norm_with = sum([x['value'] for x in sub_data])
@@ -538,6 +541,7 @@ class Contacts(object):
 
         # return js, {protein: sub_data}
 
+        # TODO:
         # Hardcoded
         proteins = ['GIRK']
         protein_counts = {'GIRK': 1}
