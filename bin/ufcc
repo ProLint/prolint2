@@ -165,6 +165,8 @@ if args.backend == "serial":
     )
     target_system.contacts.compute(cutoff=args.cutoff)
     print("\n2- Getting the contacts metrics:")
+    target_system.contacts.count_contacts()
+    target_system.contacts.get_metrics(args.output_file)
     payload = target_system.contacts.server_payload()
 elif args.backend == "parallel":
     try:
