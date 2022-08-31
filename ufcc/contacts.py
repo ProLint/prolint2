@@ -12,11 +12,10 @@ import scipy.stats
 import scipy.sparse
 from tqdm import tqdm
 import MDAnalysis as mda
-from collections import defaultdict, Counter
+from collections import Counter
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from .parallel import ParallelAnalysisBase
-from .w2plp import LPContacts
 
 from MDAnalysis.analysis import distances
 
@@ -128,7 +127,7 @@ class SerialContacts(AnalysisBase):
         )
 
 
-class ProLintSerialDistances(AnalysisBase):
+class SerialDistances(AnalysisBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups
     using a *serial* approach.
@@ -665,51 +664,6 @@ class Contacts(object):
         }
 
         return payload
-
-    def export_to_prolint(self, path="prolint_results.pkl"):
-        """
-        Temporal method to be able to use the analysis tools from **prolintpy**.
-
-        Parameters
-        ----------
-        path : file
-            Path to file to save the contacts information on Prolint's format. ('results_prolint.pkl')
-            Prolint's results are stored as a dictionary. Contacts for each residue of each protein
-            are stored using the ProLint.LPContacts class.
-        """
-        timestep = self.query.selected.universe.trajectory.dt
-
-        PLASMA_LIPIDS = {}
-        for lip in np.unique(self.database.selected.residues.resnames):
-            PLASMA_LIPIDS[lip] = [lip]
-
-        prolint_contacts = defaultdict(dict)
-        n_residues_db = self.database.selected.residues.n_residues
-        frames = self.database.selected.universe.trajectory.n_frames
-        for protein in np.unique(self.query.selected.residues.macros):
-            residues = self.query.selected.residues[
-                self.query.selected.residues.macros == protein
-            ]
-            per_residue_results = {}
-            for idx in (pbar := tqdm(residues.resindices)):
-                pbar.set_description(
-                    "Exporting to Prolint in a per residue basis over protein residues"
-                )
-                per_residue_results[idx + 1] = LPContacts(
-                    self.contacts,
-                    self.counts,
-                    n_residues_db,
-                    frames,
-                    PLASMA_LIPIDS,
-                    self.database,
-                    timestep,
-                    residue=idx,
-                )
-
-            prolint_contacts[protein][0] = per_residue_results
-
-        with open(path, "wb") as f:
-            pickle.dump(prolint_contacts, f)
 
     def __str__(self):
         # TODO:
