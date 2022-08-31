@@ -53,7 +53,6 @@ class SerialContacts(AnalysisBase):
             raise ValueError("The cutoff must be greater than 0.")
 
     def _prepare(self):
-        print("PREPARING contact_frames")
         self.contacts = {
             k: {v: [] for v in self.dp_resnames_unique} for k in self.q_resids
         }
@@ -577,7 +576,7 @@ class Contacts(object):
         protein = (
             "GIRK"  # TODO: we'll need to update this into a list and iterate over it
         )
-        lipids = list(self.database_unique)
+        lipids = list(np.unique(self.database.selected.resnames))
         sub_data = {
             k: {"category": k, "value": 0} for k in lipids
         }  # TODO: we need to generate sub_data for each protein.
