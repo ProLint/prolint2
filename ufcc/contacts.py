@@ -26,78 +26,6 @@ class SerialContacts(AnalysisBase):
     Class to get the distance-based contacts starting from two AtomGroups
     using a *serial* approach.
 
-    It heritages from the MDAnalysis AnalysisBase class.
-    """
-
-    def __init__(self, universe, query, database, cutoff, **kwargs):
-
-        super().__init__(universe.universe.trajectory, **kwargs)
-        self.query = query
-        self.database = database
-        self.cutoff = cutoff
-
-        # to allow for non-sequential resindices
-        self._sorted_protein_resindices = (
-            scipy.stats.rankdata(self.query.resindices, method="dense") - 1
-        )
-        self._sorted_membrane_resindices = (
-            scipy.stats.rankdata(self.database.resindices, method="dense") - 1
-        )
-
-        # Raise if selection doesn't exist
-        if len(self.query) == 0 or len(self.database) == 0:
-            raise ValueError("Invalid selection. Empty AtomGroup(s).")
-
-        if self.cutoff <= 0:
-            raise ValueError("The cutoff must be greater than 0.")
-
-    def _prepare(self):
-        # Initialize empty np.array with results
-        self.contacts = np.zeros(self.n_frames, dtype=object)
-
-    def _single_frame(self):
-        # Get the results and populate the results dictionary
-        gridsearch = FastNS(
-            self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True
-        )
-        result = gridsearch.search(self.query.positions)
-        pairs = result.get_pairs()
-
-        # Find unique pairs of residues interacting
-        # Currently we have pairs of atoms
-        query_residx, database_residx = np.unique(
-            np.array(
-                [
-                    [
-                        self._sorted_protein_resindices[pair[0]],
-                        self._sorted_membrane_resindices[pair[1]],
-                    ]
-                    for pair in pairs
-                ]
-            ),
-            axis=0,
-        ).T
-
-        # store neighbours for this frame
-        data = np.ones_like(query_residx)
-        self.contacts[self._frame_index] = scipy.sparse.csr_matrix(
-            (data, (query_residx, database_residx)),
-            dtype=np.int8,
-            shape=(self.query.n_residues, self.database.n_residues),
-        )
-
-    # def _conclude(self):
-    #     # OPTIONAL
-    #     # Called once iteration on the trajectory is finished.
-    #     # Apply normalisation and averaging to results here.
-    #     self.result = np.asarray(self.result) / np.sum(self.result)
-
-
-class ProLintSerialContacts(AnalysisBase):
-    r"""
-    Class to get the distance-based contacts starting from two AtomGroups
-    using a *serial* approach.
-
     It inherits from the MDAnalysis AnalysisBase class.
     """
     # TODO:
@@ -409,21 +337,12 @@ class Contacts(object):
         if self.runner.backend == None or self.runner.backend not in [
             "serial",
             "parallel",
-            "prolint_serial",
         ]:
             raise ValueError(
                 "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
             )
         if self.runner.backend == "serial":
             temp_instance = SerialContacts(
-                self.query.selected.universe,
-                self.query.selected,
-                self.database.selected,
-                cutoff,
-            )
-            temp_instance.run(verbose=True)
-        elif self.runner.backend == "prolint_serial":
-            temp_instance = ProLintSerialContacts(
                 self.query.selected.universe,
                 self.query.selected,
                 self.database.selected,
