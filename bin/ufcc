@@ -13,6 +13,13 @@ from ufcc.interactive_sel import interactive_selection
 from time import perf_counter
 import warnings
 from fpdf import FPDF
+import configparser
+from ufcc import get_config
+
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+report_config = config['Report']
+parameters_config = config['Parameters']
 
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(prog='ufcc', 
@@ -26,16 +33,16 @@ ufcc_parser.version = vers.get_versions()['version']
 # positional arguments
 ufcc_parser.add_argument('structure', action='store', type=str, help='path to the structure/topology file') 
 ufcc_parser.add_argument('trajectory', action='store', type=str, help='path to the trajectory file')
-ufcc_parser.add_argument('output_file', action='store', type=str, help='output pkl file with the contacts information')
+ufcc_parser.add_argument('output_file', action='store', type=str, help='output csv file with the contacts information')
 
 
 # optional arguments
 ufcc_parser.add_argument('-v', '--version', action='version')
-ufcc_parser.add_argument('-c', '--cutoff', metavar='', type=int, help='distance cutoff to get the contacts (angstroms)', default=7, dest='cutoff')
+ufcc_parser.add_argument('-c', '--cutoff', metavar='', type=int, help='distance cutoff to get the contacts (angstroms)', default=int(parameters_config['cutoff']), dest='cutoff')
 ufcc_parser.add_argument('-al', '--add_lipid_types', metavar='', type=list, help='additional lipid types to be included in the membrane group, supported lipid types are [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE]', default=[], dest='other_lipids')
-ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel'], default='serial', dest='backend')
-ufcc_parser.add_argument('-r', '--report', metavar='', type=bool, help='report file with a summary of warnings and compute statics of your calculation', default=False, nargs='?', const=True, dest='r_bool')
-ufcc_parser.add_argument('-rn', '--report_name', metavar='', type=str, help='name for report file', default='summary_report.pdf', dest='report')
+ufcc_parser.add_argument('-bk', '--backend', metavar='', type=str, help='backend to use during the calculation of the contacts (serial or parallel)', choices=['serial', 'parallel'], default=parameters_config['backend'], dest='backend')
+ufcc_parser.add_argument('-r', '--report', metavar='', type=bool, help='report file with a summary of warnings and compute statics of your calculation', default=(report_config['build-report'] == 'True'), nargs='?', const=True, dest='r_bool')
+ufcc_parser.add_argument('-rn', '--report_name', metavar='', type=str, help='name for report file', default=report_config['report-name'], dest='report')
 ufcc_parser.add_argument('-n', '--n_jobs', metavar='', type=int, help='number of CPU cores to use with the parallel backend', default=-1, dest='n_jobs')
 ufcc_parser.add_argument('-i', '--interactive', metavar='', type=bool, help='interactive selection of the atom groups for the calculation of the contacts', default=False, nargs='?', const=True, dest='i_bool')
 
