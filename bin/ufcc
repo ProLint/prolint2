@@ -6,14 +6,12 @@ r"""Argument parser to use ufcc from the command-line
 :Copyright: MIT License
 """
 
-import os
 import argparse
 import ufcc._version as vers
 from ufcc import UFCC
 from ufcc.interactive_sel import interactive_selection
 from time import perf_counter
 import warnings
-from fpdf import FPDF
 from ufcc.server.server import start_server
 
 # Creating the parser
@@ -29,16 +27,16 @@ ufcc_parser.version = vers.get_versions()["version"]
 
 # positional arguments
 ufcc_parser.add_argument(
-    "structure", action="store", type=str, help="path to the structure/topology file"
+    "structure", action="store", type=str, help="path to the structure/topology file."
 )
 ufcc_parser.add_argument(
-    "trajectory", action="store", type=str, help="path to the trajectory file"
+    "trajectory", action="store", type=str, help="path to the trajectory file."
 )
 ufcc_parser.add_argument(
     "output_file",
     action="store",
     type=str,
-    help="output pkl file with the contacts information",
+    help="output csv file with the contacts information.",
 )
 
 
@@ -49,7 +47,7 @@ ufcc_parser.add_argument(
     "--cutoff",
     metavar="",
     type=int,
-    help="distance cutoff to get the contacts (angstroms)",
+    help="distance cutoff to get the contacts (in angstroms).",
     default=7,
     dest="cutoff",
 )
@@ -58,7 +56,7 @@ ufcc_parser.add_argument(
     "--add_lipid_types",
     metavar="",
     type=list,
-    help="additional lipid types to be included in the membrane group, supported lipid types are [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE]",
+    help="additional lipid types to be included in the membrane group, supported lipid types are POPC, DPPC, DOPC, CHOL, CHL1, POPS and POPE.",
     default=[],
     dest="other_lipids",
 )
@@ -67,8 +65,8 @@ ufcc_parser.add_argument(
     "--backend",
     metavar="",
     type=str,
-    help="backend to use during the calculation of the contacts (serial or parallel)",
-    choices=["serial", "parallel", "prolint_serial"],
+    help="backend to use during the calculation of the contacts (serial or parallel).",
+    choices=["serial", "parallel"],
     default="serial",
     dest="backend",
 )
@@ -76,10 +74,9 @@ ufcc_parser.add_argument(
     "-r",
     "--report",
     metavar="",
-    type=bool,
-    help="report file with a summary of warnings and compute statics of your calculation",
+    help="report file with a summary of warnings and compute statics of your calculation.",
     default=False,
-    nargs="?",
+    action="store_const",
     const=True,
     dest="r_bool",
 )
@@ -97,7 +94,7 @@ ufcc_parser.add_argument(
     "--n_jobs",
     metavar="",
     type=int,
-    help="number of CPU cores to use with the parallel backend",
+    help="number of CPU cores to use with the parallel backend.",
     default=-1,
     dest="n_jobs",
 )
@@ -105,12 +102,21 @@ ufcc_parser.add_argument(
     "-i",
     "--interactive",
     metavar="",
-    type=bool,
-    help="interactive selection of the atom groups for the calculation of the contacts",
+    action="store_const",
+    help="interactive selection of the groups for the calculation of the contacts.",
     default=False,
-    nargs="?",
     const=True,
     dest="i_bool",
+)
+ufcc_parser.add_argument(
+    "-s",
+    "--server",
+    metavar="",
+    action="store_const",
+    help="launch the server for the visualization dashboard.",
+    default=False,
+    const=True,
+    dest="s_bool",
 )
 
 
@@ -118,7 +124,7 @@ ufcc_parser.add_argument(
 args = ufcc_parser.parse_args()
 
 print("args", type(args), args)
-if args.backend == "prolint_serial":
+if args.s_bool:
     start_server(payload=args, reloader=False)
     import sys
 
@@ -159,22 +165,24 @@ if args.backend == "serial":
     )
     target_system.contacts.compute(cutoff=args.cutoff)
     print("\n2- Getting the contacts metrics:")
-    target_system.contacts.count_contacts()
-    target_system.contacts.get_metrics(args.output_file)
-elif args.backend == "parallel":
-    target_system.contacts.runner.backend = "parallel"
-    target_system.contacts.runner.n_jobs = args.n_jobs
-    print(
-        "\n1- Getting the contacts between the groups over blocks of frames in the trajectory:"
-    )
-    target_system.contacts.compute(cutoff=args.cutoff)
-    print("\n2- Getting the contacts metrics:")
-    target_system.contacts.count_contacts()
-    target_system.contacts.get_metrics(args.output_file)
-elif args.backend == "prolint_serial":
-    target_system.contacts.runner.backend = "prolint_serial"
-    target_system.contacts.compute(cutoff=args.cutoff)
     payload = target_system.contacts.server_payload()
+elif args.backend == "parallel":
+    try:
+        import dask
+    except:
+        print(
+            "Please install Dask and Dask[distributed] to use the parallel backend. You can do so by running 'pip install dask dask[distributed]'."
+        )
+    else:
+        target_system.contacts.runner.backend = "parallel"
+        target_system.contacts.runner.n_jobs = args.n_jobs
+        print(
+            "\n1- Getting the contacts between the groups over blocks of frames in the trajectory:"
+        )
+        target_system.contacts.compute(cutoff=args.cutoff)
+        print("\n2- Getting the contacts metrics:")
+        target_system.contacts.count_contacts()
+        target_system.contacts.get_metrics(args.output_file)
 
 cal_total_time = perf_counter() - t1
 
@@ -200,59 +208,66 @@ print("\n########## Thanks for using ufcc! #########\n")
 # payload = target_system.contacts.server_payload()
 # TODO:
 # for the backend to carry out the calculations, the payload
-# has to include file paths + uffc options. And it should be checked
+# has to include file paths + ufcc options. And it should be checked
 # very early on.
-if args.backend == "prolint_serial":
+if args.s_bool:
     start_server(payload=payload, reloader=False)
 
 
-class PDF(FPDF):
-    def header(self):
-        # Arial bold 15
-        self.set_font("Arial", "B", 15)
-        # Calculate width of title and position
-        w = self.get_string_width(title) + 6
-        self.set_x((210 - w) / 2)
-        # Colors of frame, background and text
-        self.set_draw_color(250, 250, 250)
-        self.set_fill_color(250, 250, 250)
-        # Thickness of frame (1 mm)
-        self.set_line_width(1)
-        # Title
-        self.cell(w, 9, title, 1, 1, "C", 1)
-        # Line break
-        self.ln(10)
-
-    def chapter_title(self, label):
-        # Arial 12
-        self.set_font("Arial", "", 12)
-        # Background color
-        self.set_fill_color(250, 250, 250)
-        # Title
-        self.cell(0, 6, label, 0, 1, "L", 1)
-        # Line break
-        self.ln(4)
-
-    def chapter_body(self, text):
-        # Read text
-        txt = "\n".join(text)
-        # Times 12
-        self.set_font("Times", "", 12)
-        # Output justified text
-        self.multi_cell(0, 5, txt)
-        # Line break
-        self.ln(10)
-
-    def print_chapter(self, title, name):
-        self.chapter_title(title)
-        self.chapter_body(name)
-
-
 if args.r_bool:
-    pdf = PDF()
-    title = "Calculation report."
-    pdf.set_title(title)
-    pdf.add_page()
-    pdf.print_chapter("Warnings", warn2report)
-    pdf.print_chapter("Compute summary", comp_stats)
-    pdf.output(args.report, "F")
+    try:
+        from fpdf import FPDF
+    except:
+        print(
+            "Please install FPDF to use the report functionality. You can do so by running 'pip install fpdf'."
+        )
+    else:
+
+        class PDF(FPDF):
+            def header(self):
+                # Arial bold 15
+                self.set_font("Arial", "B", 15)
+                # Calculate width of title and position
+                w = self.get_string_width(title) + 6
+                self.set_x((210 - w) / 2)
+                # Colors of frame, background and text
+                self.set_draw_color(250, 250, 250)
+                self.set_fill_color(250, 250, 250)
+                # Thickness of frame (1 mm)
+                self.set_line_width(1)
+                # Title
+                self.cell(w, 9, title, 1, 1, "C", 1)
+                # Line break
+                self.ln(10)
+
+            def chapter_title(self, label):
+                # Arial 12
+                self.set_font("Arial", "", 12)
+                # Background color
+                self.set_fill_color(250, 250, 250)
+                # Title
+                self.cell(0, 6, label, 0, 1, "L", 1)
+                # Line break
+                self.ln(4)
+
+            def chapter_body(self, text):
+                # Read text
+                txt = "\n".join(text)
+                # Times 12
+                self.set_font("Times", "", 12)
+                # Output justified text
+                self.multi_cell(0, 5, txt)
+                # Line break
+                self.ln(10)
+
+            def print_chapter(self, title, name):
+                self.chapter_title(title)
+                self.chapter_body(name)
+
+        pdf = PDF()
+        title = "Calculation report."
+        pdf.set_title(title)
+        pdf.add_page()
+        pdf.print_chapter("Warnings", warn2report)
+        pdf.print_chapter("Compute summary", comp_stats)
+        pdf.output(args.report, "F")
