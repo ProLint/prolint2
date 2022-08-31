@@ -174,78 +174,57 @@ class SerialDistances(AnalysisBase):
         del self.result_array
 
 
-class ParallelContacts(ParallelAnalysisBase):
-    r"""
-    Class to get the distance-based contacts starting from two AtomGroups
-    using a *parallel* approach.
-    """
+# class ParallelContacts(ParallelAnalysisBase):
+#     r"""
+#     Class to get the distance-based contacts starting from two AtomGroups
+#     using a *parallel* approach.
+#     """
 
-    def __init__(self, universe, query, database, cutoff, **kwargs):
+#     def __init__(self, universe, query, database, cutoff, **kwargs):
 
-        super().__init__(universe.universe.trajectory, (query, database))
-        self.query = query
-        self.query_n_residues = self.query.n_residues
-        self.database = database
-        self.database_n_residues = self.database.n_residues
-        self.cutoff = cutoff
+#         super().__init__(universe.universe.trajectory, (query, database))
+#         self.query = query
+#         self.query_n_residues = self.query.n_residues
+#         self.database = database
+#         self.database_n_residues = self.database.n_residues
+#         self.cutoff = cutoff
 
-        # to allow for non-sequential resindices
-        self._sorted_protein_resindices = (
-            scipy.stats.rankdata(self.query.resindices, method="dense") - 1
-        )
-        self._sorted_membrane_resindices = (
-            scipy.stats.rankdata(self.database.resindices, method="dense") - 1
-        )
+#         # to allow for non-sequential resindices
+#         self._sorted_protein_resindices = scipy.stats.rankdata(self.query.resindices, method="dense") - 1
+#         self._sorted_membrane_resindices = scipy.stats.rankdata(self.database.resindices, method="dense") - 1
 
-        # Raise if selection doesn't exist
-        if len(self.query) == 0 or len(self.database) == 0:
-            raise ValueError("Invalid selection. Empty AtomGroup(s).")
+#         # Raise if selection doesn't exist
+#         if len(self.query) == 0 or len(self.database) == 0:
+#             raise ValueError("Invalid selection. Empty AtomGroup(s).")
 
-        if self.cutoff <= 0:
-            raise ValueError("The cutoff must be greater than 0.")
+#         if self.cutoff <= 0:
+#             raise ValueError("The cutoff must be greater than 0.")
 
-    def _prepare(self):
-        # Initialize empty np.array with results
-        self.contacts = None
+#     def _prepare(self):
+#         # Initialize empty np.array with results
+#         self.contacts = None
 
-    def _single_frame(self, ts, atomgroups):
-        # Get the results and populate the results dictionary
-        gridsearch = FastNS(
-            self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True
-        )
-        result = gridsearch.search(self.query.positions)
-        pairs = result.get_pairs()
+#     def _single_frame(self, ts, atomgroups):
+#         # Get the results and populate the results dictionary
+#         gridsearch = FastNS(self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True)
+#         result = gridsearch.search(self.query.positions)
+#         pairs = result.get_pairs()
 
-        # Find unique pairs of residues interacting
-        # Currently we have pairs of atoms
-        query_residx, database_residx = np.unique(
-            np.array(
-                [
-                    [
-                        self._sorted_protein_resindices[pair[0]],
-                        self._sorted_membrane_resindices[pair[1]],
-                    ]
-                    for pair in pairs
-                ]
-            ),
-            axis=0,
-        ).T
+#         # Find unique pairs of residues interacting
+#         # Currently we have pairs of atoms
+#         query_residx, database_residx = np.unique(np.array(
+#             [[self._sorted_protein_resindices[pair[0]], self._sorted_membrane_resindices[pair[1]]] for pair in pairs]),
+#                                                   axis=0).T
 
-        # store neighbours for this frame
-        data = np.ones_like(query_residx)
-        return (
-            ts.frame,
-            scipy.sparse.csr_matrix(
-                (data, (query_residx, database_residx)),
-                dtype=np.int8,
-                shape=(self.query_n_residues, self.database_n_residues),
-            ),
-        )
+#         # store neighbours for this frame
+#         data = np.ones_like(query_residx)
+#         return (ts.frame,
+#                 scipy.sparse.csr_matrix((data, (query_residx, database_residx)),
+#                                         dtype=np.int8,
+#                                         shape=(self.query_n_residues, self.database_n_residues)))
 
-    def _conclude(self):
-        self.contacts = np.array(
-            [l[1] for l in sorted(np.vstack(self._results), key=lambda tup: tup[0])]
-        )
+#     def _conclude(self):
+#         self.contacts = np.array([l[1] for l in sorted(np.vstack(self._results), key=lambda tup: tup[0])])
 
 
 class Runner(object):
@@ -302,13 +281,10 @@ class Contacts(object):
         self.runner = Runner()
         self.cutoff = None
         self.contacts = None
-        self.counts = None
-        self.contact_metrics = None
 
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
         # What's the best way here? Include trajectory as an initialization argument?
-        self.database_unique = np.unique(self.database.selected.resnames)
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
 
@@ -384,187 +360,123 @@ class Contacts(object):
         with open(path, "rb") as f:
             self.contacts = pickle.load(f)
 
-    def count_contacts(self):
-        """
-        Count the number of each contact type at each frame.
-        """
+    # def count_contacts(self):
+    #     """
+    #     Count the number of each contact type at each frame.     
+    #     """
 
-        if self.contacts is None:
-            raise ValueError(
-                "contacts attribute is None: use .compute() before calling .count_neighbours()"
-            )
+    #     if self.contacts is None:
+    #         raise ValueError("contacts attribute is None: use .compute() before calling .count_neighbours()")
 
-        # Use lipid resnames to distinguish lipids
-        count_by = np.full(
-            (
-                self.database.selected.n_residues,
-                self.database.selected.universe.trajectory.n_frames,
-            ),
-            fill_value=self.database.selected.residues.resnames[:, np.newaxis],
-        )
-        count_by_labels = {
-            label: index
-            for index, label in enumerate(
-                np.unique(self.database.selected.residues.resnames)
-            )
-        }
+    #     # Use lipid resnames to distinguish lipids
+    #     count_by = np.full(
+    #         (self.database.selected.n_residues, self.database.selected.universe.trajectory.n_frames),
+    #         fill_value=self.database.selected.residues.resnames[:, np.newaxis],
+    #     )
+    #     count_by_labels = {
+    #         label: index
+    #         for index, label in enumerate(np.unique(self.database.selected.residues.resnames))
+    #     }
 
-        # create output array
-        all_counts = np.full(
-            (
-                self.query.selected.n_residues,
-                self.query.selected.universe.trajectory.n_frames,
-                len(count_by_labels),
-            ),
-            fill_value=0,
-            dtype=np.uint8,  # count can't be negative, and no lipid will have more than 255 neighbours
-        )
+    #     # create output array
+    #     all_counts = np.full(
+    #         (self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames, len(count_by_labels)),
+    #         fill_value=0,
+    #         dtype=np.uint8  # count can't be negative, and no lipid will have more than 255 neighbours
+    #     )
 
-        # For counts we need to know which column of the output array to add counts to for each lipid type
-        type_index = {value: index for index, value in enumerate(count_by_labels)}
+    #     # For counts we need to know which column of the output array to add counts to for each lipid type
+    #     type_index = {value: index for index, value in enumerate(count_by_labels)}
 
-        # Get counts at each frame
-        for frame_index, contacts in tqdm(
-            enumerate(self.contacts),
-            total=self.query.selected.universe.trajectory.n_frames,
-        ):
-            ref, neigh = contacts.nonzero()
-            unique, counts = np.unique(
-                [ref, [type_index[t] for t in count_by[neigh, frame_index]]],
-                axis=1,
-                return_counts=True,
-            )
+    #     # Get counts at each frame
+    #     for frame_index, contacts in tqdm(enumerate(self.contacts),
+    #                                       total=self.query.selected.universe.trajectory.n_frames):
+    #         ref, neigh = contacts.nonzero()
+    #         unique, counts = np.unique([ref, [type_index[t] for t in count_by[neigh, frame_index]]],
+    #                                    axis=1,
+    #                                    return_counts=True)
 
-            r, t = unique  # reference index (r) and type index (t)
-            all_counts[r, frame_index, t] = counts
+    #         r, t = unique  # reference index (r) and type index (t)
+    #         all_counts[r, frame_index, t] = counts
 
-        labels = np.full(
-            (
-                self.query.selected.n_residues,
-                self.query.selected.universe.trajectory.n_frames,
-            ),
-            fill_value=self.query.selected.residues.macros[:, np.newaxis],
-        )
-        labels = labels.reshape(
-            self.query.selected.n_residues
-            * self.query.selected.universe.trajectory.n_frames
-        )
+    #     labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+    #                      fill_value=self.query.selected.residues.macros[:, np.newaxis])
+    #     labels = labels.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
-        # Assemble data for the DataFrame
-        residue_labels = np.full(
-            (
-                self.query.selected.n_residues,
-                self.query.selected.universe.trajectory.n_frames,
-            ),
-            fill_value=self.query.selected.residues.resnames[:, np.newaxis],
-        )
-        residue_labels = residue_labels.reshape(
-            self.query.selected.n_residues
-            * self.query.selected.universe.trajectory.n_frames
-        )
-        # labels = np.array([list(count_by_labels)[type_index[frame_index]] for lipid in count_by for frame_index in lipid])
+    #     # Assemble data for the DataFrame
+    #     residue_labels = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+    #                              fill_value=self.query.selected.residues.resnames[:, np.newaxis])
+    #     residue_labels = residue_labels.reshape(self.query.selected.n_residues *
+    #                                             self.query.selected.universe.trajectory.n_frames)
+    #     # labels = np.array([list(count_by_labels)[type_index[frame_index]] for lipid in count_by for frame_index in lipid])
 
-        resindices = np.full(
-            (
-                self.query.selected.n_residues,
-                self.query.selected.universe.trajectory.n_frames,
-            ),
-            fill_value=self.query.selected.residues.resindices[:, np.newaxis],
-        )
-        resindices = resindices.reshape(
-            self.query.selected.n_residues
-            * self.query.selected.universe.trajectory.n_frames
-        )
+    #     resindices = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+    #                          fill_value=self.query.selected.residues.resindices[:, np.newaxis])
+    #     resindices = resindices.reshape(self.query.selected.n_residues *
+    #                                     self.query.selected.universe.trajectory.n_frames)
 
-        frames = np.full(
-            (
-                self.query.selected.n_residues,
-                self.query.selected.universe.trajectory.n_frames,
-            ),
-            fill_value=range(self.query.selected.universe.trajectory.n_frames),
-        )
-        frames = frames.reshape(
-            self.query.selected.n_residues
-            * self.query.selected.universe.trajectory.n_frames
-        )
+    #     frames = np.full((self.query.selected.n_residues, self.query.selected.universe.trajectory.n_frames),
+    #                      fill_value=range(self.query.selected.universe.trajectory.n_frames))
+    #     frames = frames.reshape(self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames)
 
-        all_counts = all_counts.reshape(
-            self.query.selected.n_residues
-            * self.query.selected.universe.trajectory.n_frames,
-            len(count_by_labels),
-        )
-        total_counts = np.sum(all_counts, axis=1)
+    #     all_counts = all_counts.reshape(
+    #         self.query.selected.n_residues * self.query.selected.universe.trajectory.n_frames, len(count_by_labels))
+    #     total_counts = np.sum(all_counts, axis=1)
 
-        # Create the dataframe
-        # counts = pd.DataFrame(data=residue_labels, columns=["Residue"])
-        counts = pd.DataFrame(data=labels, columns=["Protein"])
+    #     # Create the dataframe
+    #     # counts = pd.DataFrame(data=residue_labels, columns=["Residue"])
+    #     counts = pd.DataFrame(data=labels, columns=["Protein"])
 
-        counts["Residue"] = residue_labels
-        counts["ResID"] = resindices
-        counts["FrameID"] = frames
+    #     counts["Residue"] = residue_labels
+    #     counts["ResID"] = resindices
+    #     counts["FrameID"] = frames
 
-        for count_by_label in count_by_labels:
-            counts[f"# {count_by_label}"] = all_counts.T[type_index[count_by_label]]
+    #     for count_by_label in count_by_labels:
+    #         counts[f"# {count_by_label}"] = all_counts.T[type_index[count_by_label]]
 
-        counts["Total"] = total_counts
+    #     counts["Total"] = total_counts
 
-        # make every column except the label take on integer values
-        for column in counts.columns[2:]:
-            counts[column] = pd.to_numeric(counts[column])
+    #     # make every column except the label take on integer values
+    #     for column in counts.columns[2:]:
+    #         counts[column] = pd.to_numeric(counts[column])
 
-        self.counts = counts
+    #     self.counts = counts
 
-    def get_metrics(self, save_file="", server=False):
-        if self.contacts is None or self.counts is None:
-            raise ValueError(
-                "contacts or counts attributes are None: use .compute() and .count_neighbours() methods  before calling get_metrics"
-            )
+    # def get_metrics(self, save_file=''):
+    #     if self.contacts is None or self.counts is None:
+    #         raise ValueError("contacts or counts attributes are None: use .compute() and .count_neighbours() methods  before calling get_metrics")
 
-        n_frames = self.database.selected.universe.trajectory.n_frames
-        unique_lip_resnames = np.unique(self.database.selected.residues.resnames)
-        protein = list(self.counts[self.counts["FrameID"] == 0]["Protein"]) * len(
-            unique_lip_resnames
-        )
-        res_ids = list(self.counts[self.counts["FrameID"] == 0]["ResID"]) * len(
-            unique_lip_resnames
-        )
-        res_names = list(self.counts[self.counts["FrameID"] == 0]["Residue"]) * len(
-            unique_lip_resnames
-        )
-        radius = self.cutoff
-        lipids = []
-        occupancy = []
-        lipid_number = []
-        sum_of_all_contacts = []
-        for lip in unique_lip_resnames:
-            for res in list(self.counts[self.counts["FrameID"] == 0]["ResID"]):
-                lipids.append(lip)
-            pivot_t = self.counts.pivot_table(
-                index="ResID", columns="FrameID", values=f"# {lip}"
-            )
-            occupancy += list(pivot_t.astype(bool).sum(axis=1) * 100 / n_frames)
-            lipid_number += list(
-                pivot_t.sum(axis=1)
-                / np.count_nonzero(self.database.selected.residues.resnames == lip)
-            )
-            # sum_of_all_contacts += list(pivot_t.sum(axis=1) / n_frames)
+    #     n_frames = self.database.selected.universe.trajectory.n_frames
+    #     unique_lip_resnames = np.unique(self.database.selected.residues.resnames)
+    #     protein = list(self.counts[self.counts['FrameID'] == 0]['Protein']) * len(unique_lip_resnames)
+    #     res_ids = list(self.counts[self.counts['FrameID'] == 0]['ResID']) * len(unique_lip_resnames)
+    #     res_names = list(self.counts[self.counts['FrameID'] == 0]['Residue']) * len(unique_lip_resnames)
+    #     radius = self.cutoff
+    #     lipids = []
+    #     occupancy = []
+    #     lipid_number = []
+    #     sum_of_all_contacts = []
+    #     for lip in unique_lip_resnames:
+    #         for res in list(self.counts[self.counts['FrameID'] == 0]['ResID']):
+    #             lipids.append(lip)
+    #         pivot_t = self.counts.pivot_table(index='ResID', columns='FrameID', values=f"# {lip}")
+    #         occupancy += list(pivot_t.astype(bool).sum(axis=1) * 100 / n_frames)
+    #         lipid_number += list(pivot_t.sum(axis=1) / np.count_nonzero(self.database.selected.residues.resnames == lip))
+    #         # sum_of_all_contacts += list(pivot_t.sum(axis=1) / n_frames)
 
-        contact_metrics = pd.DataFrame({"Protein": protein})
-        contact_metrics["ResID"] = res_ids
-        contact_metrics["ResName"] = res_names
-        contact_metrics["Lipids"] = lipids
-        contact_metrics["Radius"] = radius
-        contact_metrics["Occupancy"] = occupancy
-        contact_metrics["Lipid_Number"] = lipid_number
-        # contact_metrics['Sum_of_all_Contacts'] = sum_of_all_contacts
+    #     contact_metrics = pd.DataFrame({'Protein' : protein})
+    #     contact_metrics['ResID'] = res_ids
+    #     contact_metrics['ResName'] = res_names
+    #     contact_metrics['Lipids'] = lipids
+    #     contact_metrics['Radius'] = radius
+    #     contact_metrics['Occupancy'] = occupancy
+    #     contact_metrics['Lipid_Number'] = lipid_number
+    #     # contact_metrics['Sum_of_all_Contacts'] = sum_of_all_contacts
 
-        if save_file != "":
-            contact_metrics.to_csv(save_file, index=False)
+    #     if save_file != '':
+    #         contact_metrics.to_csv(save_file, index=False)
 
-        self.contact_metrics = contact_metrics
-
-        if server:
-            return contact_metrics
+    #     self.contact_metrics = contact_metrics
 
     def server_payload(self):
 
