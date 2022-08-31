@@ -9,10 +9,12 @@ import os
 
 from ufcc import get_data
 
+
 class GIRKDataSample:
     def __init__(self):
         self.path = os.path.abspath(get_data())
-        self.coordinates = os.path.join(self.path, 'coordinates.gro')
-        self.trajectory = os.path.join(self.path, 'trajectory.xtc')
+        self.coordinates = os.path.join(self.path, "coordinates.gro")
+        self.trajectory = os.path.join(self.path, "trajectory.xtc")
+
 
 GIRK = GIRKDataSample()

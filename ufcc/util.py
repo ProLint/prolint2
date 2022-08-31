@@ -152,8 +152,7 @@ def make_balanced_slices(n_frames, n_blocks, start=None, stop=None, step=None):
     elif n_blocks < 1:
         raise ValueError("n_blocks must be > 0")
     elif n_frames != 0 and n_blocks > n_frames:
-        raise ValueError(f"n_blocks must be smaller than n_frames: "
-                         f"{n_frames}")
+        raise ValueError(f"n_blocks must be smaller than n_frames: " f"{n_frames}")
     elif start < 0:
         raise ValueError("start must be >= 0 or None")
     elif stop is not None and stop < start:
@@ -166,7 +165,7 @@ def make_balanced_slices(n_frames, n_blocks, start=None, stop=None, step=None):
         return []
 
     bsizes = np.ones(n_blocks, dtype=np.int64) * n_frames // n_blocks
-    bsizes += (np.arange(n_blocks, dtype=np.int64) < n_frames % n_blocks)
+    bsizes += np.arange(n_blocks, dtype=np.int64) < n_frames % n_blocks
     # This can give a last index that is larger than the real last index;
     # this is not a problem for slicing but it's not pretty.
     # Example: original [0:20:3] -> n_frames=7, start=0, step=3:
@@ -276,7 +275,7 @@ def second_order_moments(S1, S2):
 
     T = S1[0] + S2[0]
     mu = (S1[0] * S1[1] + S2[0] * S2[1]) / T
-    M = S1[2] + S2[2] + (S1[0] * S2[0] / T) * (S2[1] - S1[1])**2
+    M = S1[2] + S2[2] + (S1[0] * S2[0] / T) * (S2[1] - S1[1]) ** 2
     S = T, mu, M
 
     return S

@@ -19,6 +19,7 @@ ARGS = None
 data = None
 data_loaded = False
 
+
 def sort_lipids(ts):
     """
     Sort lipid contacts according to their contact frequency, all the while keeping track
@@ -29,8 +30,9 @@ def sort_lipids(ts):
         g (dict): For each lipid ID, stores the residues in contact and the corresponding
                   frequency.
     """
+
     def sort_tuple(tup):
-        tup.sort(key = lambda x: x[1], reverse=True)
+        tup.sort(key=lambda x: x[1], reverse=True)
         return tup
 
     # TODO:
@@ -45,7 +47,8 @@ def sort_lipids(ts):
             top10_counter = contact_counter.most_common()
             for (lipid_id, lipid_counter) in top10_counter:
                 # Exclude short-lived contacts
-                if lipid_counter <= contact_threshold: continue
+                if lipid_counter <= contact_threshold:
+                    continue
                 if lipid_id in t[lipid]:
                     t[lipid][lipid_id] += lipid_counter
                     g[lipid_id].append((residue, lipid_counter))
@@ -62,6 +65,7 @@ def sort_lipids(ts):
 
     return t, g
 
+
 def get_frame_contact_intervals(frames, tolerance=6):
     """
     Get frame ranges
@@ -73,63 +77,73 @@ def get_frame_contact_intervals(frames, tolerance=6):
             range_start = el
             continue
 
-        prev_el = frames[ix-1]
-        if not el-tolerance <= prev_el:
+        prev_el = frames[ix - 1]
+        if not el - tolerance <= prev_el:
             ranges_collect.append((range_start, prev_el))
             range_start = el
         if ix == len(frames) - 1:
             ranges_collect.append((range_start, el))
     return ranges_collect
 
+
 def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
     gantt_data = []
     for res, _ in g[lipid_id][:residues_to_show]:
-        frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
+        frame_numbers = TS.contacts.contact_frames[f"{res},{lipid_id}"]
         frame_intervals = get_frame_contact_intervals(frame_numbers)
         for start, end in frame_intervals:
             if end - start < intervals_to_filter_out:
                 continue
-            gantt_data.append({
-            # "category": f'{res}',
-            "category": res,
-            "startFrame": start,
-            "endFrame": end,
-            "lipid_id": lipid_id
-            })
+            gantt_data.append(
+                {
+                    # "category": f'{res}',
+                    "category": res,
+                    "startFrame": start,
+                    "endFrame": end,
+                    "lipid_id": lipid_id,
+                }
+            )
 
     categories = []
-    for y in [x['category'] for x in gantt_data]:
+    for y in [x["category"] for x in gantt_data]:
         if y not in categories:
             categories.append(y)
     return gantt_data, categories
 
 
-@route('/static/<filepath:path>')
+@route("/static/<filepath:path>")
 def server_static(filepath):
-    return static_file(filepath, root=os.path.join(SERVER_PATH, 'static'))
+    return static_file(filepath, root=os.path.join(SERVER_PATH, "static"))
 
-@route('/')
+
+@route("/")
 def index():
-    return template(os.path.join(SERVER_PATH, 'home.tpl'))
+    return template(os.path.join(SERVER_PATH, "home.tpl"))
 
-@route('/app')
+
+@route("/app")
 def app():
-    return static_file('index.html', root=SERVER_PATH)
+    return static_file("index.html", root=SERVER_PATH)
 
-@route('/ufcc')
+
+@route("/ufcc")
 def ufcc():
     import sys
-    print(request.body.getvalue().decode('utf-8'), file=sys.stdout)
+
+    print(request.body.getvalue().decode("utf-8"), file=sys.stdout)
     return request.body
 
-@route('/toplipids/:metadata')
+
+@route("/toplipids/:metadata")
 def top_lipid_listener(metadata):
     global BACKEND_DATA
 
     metadata = ast.literal_eval(metadata)
-    lipid_id = metadata['lipidID']
+    lipid_id = metadata["lipidID"]
 
-    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+    gantt_data, categories = get_gantt_app_data(
+        BACKEND_DATA["lipid_contact_frames"], lipid_id
+    )
     # This will sort the residues
     # sorted_gantt_data = sorted(gantt_data, key=lambda d: d['category'])
 
@@ -141,14 +155,14 @@ def top_lipid_listener(metadata):
     }
 
 
-@route('/distance/:metadata')
+@route("/distance/:metadata")
 def distance_array_listener(metadata):
     global BACKEND_DATA
     global TS
 
     metadata = ast.literal_eval(metadata)
-    lipid_id = metadata['lipidID']
-    residue_id = int(metadata['residueID'])
+    lipid_id = metadata["lipidID"]
+    residue_id = int(metadata["residueID"])
 
     ri = ProLintSerialDistances(
         TS.query.selected.universe,
@@ -156,60 +170,55 @@ def distance_array_listener(metadata):
         TS.database.selected,
         lipid_id,
         residue_id,
-        TS.contacts.contact_frames[f'{residue_id},{lipid_id}']
-        )
+        TS.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+    )
     ri.run(verbose=False)
 
     hm_data, la_data = [], []
     for lx, la in enumerate(ri.lipid_atomnames):
-        la_data.append({ "LipidAtoms": la })
+        la_data.append({"LipidAtoms": la})
         for rx, ra in enumerate(ri.resid_atomnames):
             v = ri.distance_array[lx, rx]
-            hm_data.append({
-            "LipidAtoms": la,
-            "ResidueAtoms": ra,
-            "value": float(v)
-            })
+            hm_data.append({"LipidAtoms": la, "ResidueAtoms": ra, "value": float(v)})
     ra_data = [{"ResidueAtoms": x} for x in ri.resid_atomnames]
 
     return {
         "heatmapData": hm_data,
         "lipidAtomsData": la_data,
-        "residueAtomsData": ra_data
+        "residueAtomsData": ra_data,
     }
 
-@route('/tabledata/:metadata')
+
+@route("/tabledata/:metadata")
 def table_listener(metadata):
     global BACKEND_DATA
 
     metadata = ast.literal_eval(metadata)
-    lipid = metadata['lipid']
+    lipid = metadata["lipid"]
 
     table_data = []
-    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids'][lipid]):
-        table_data.append({
-            "id": ix,
-            "lipidID": lipid_id,
-            "contactFrequency": freq
-        })
+    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA["top_lipids"][lipid]):
+        table_data.append({"id": ix, "lipidID": lipid_id, "contactFrequency": freq})
 
     return {
         "tableData": table_data,
-        }
+    }
 
-@route('/pdb/:metadata')
+
+@route("/pdb/:metadata")
 def blob(metadata):
 
     global ARGS
     u = mda.Universe(ARGS.structure, ARGS.trajectory)
     protein = u.select_atoms("protein")
-    pstream = mda.lib.util.NamedStream(StringIO(), 'dummy.pdb')
-    with mda.Writer(pstream, format='PDB') as w:
+    pstream = mda.lib.util.NamedStream(StringIO(), "dummy.pdb")
+    with mda.Writer(pstream, format="PDB") as w:
         w.write(protein)
 
     return pstream.read()
 
-@route('/data/:metadata')
+
+@route("/data/:metadata")
 def listener(metadata):
 
     global data_loaded
@@ -223,74 +232,69 @@ def listener(metadata):
     # from bottle import response, request
     metadata = ast.literal_eval(metadata)
 
-    lipid = metadata['lipid']
-    protein = metadata['protein']
+    lipid = metadata["lipid"]
+    protein = metadata["protein"]
 
     if lipid == "" and protein == "":
         # Starting setup:
         try:
-            lipid = BACKEND_DATA['lipids'][0]
-            protein = BACKEND_DATA['proteins'][0]
+            lipid = BACKEND_DATA["lipids"][0]
+            protein = BACKEND_DATA["proteins"][0]
         except:
-            print ('Detached EXECUTION')
-            print ('This is currently meant for testing only. Not guaranteed to work!')
+            print("Detached EXECUTION")
+            print("This is currently meant for testing only. Not guaranteed to work!")
             BACKEND_DATA = independent_execution()
-            lipid = BACKEND_DATA['lipids'][0]
-            protein = BACKEND_DATA['proteins'][0]
+            lipid = BACKEND_DATA["lipids"][0]
+            protein = BACKEND_DATA["proteins"][0]
 
     table_data = []
-    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA['top_lipids'][lipid]):
-        table_data.append({
-            "id": ix,
-            "lipidID": lipid_id,
-            "contactFrequency": freq
-        })
+    for ix, (lipid_id, freq) in enumerate(BACKEND_DATA["top_lipids"][lipid]):
+        table_data.append({"id": ix, "lipidID": lipid_id, "contactFrequency": freq})
 
     # Initiate ganttApp with the top lipid
-    lipid_id = BACKEND_DATA['top_lipids'][lipid][0][0]
-    gantt_data, categories = get_gantt_app_data(BACKEND_DATA['lipid_contact_frames'], lipid_id)
+    lipid_id = BACKEND_DATA["top_lipids"][lipid][0][0]
+    gantt_data, categories = get_gantt_app_data(
+        BACKEND_DATA["lipid_contact_frames"], lipid_id
+    )
 
     # Initiate heatmapApp with the top residue
-    residue_id = BACKEND_DATA['lipid_contact_frames'][lipid_id][0][0]
+    residue_id = BACKEND_DATA["lipid_contact_frames"][lipid_id][0][0]
     ri = ProLintSerialDistances(
         TS.query.selected.universe,
         TS.query.selected,
         TS.database.selected,
         lipid_id,
         residue_id,
-        TS.contacts.contact_frames[f'{residue_id},{lipid_id}']
+        TS.contacts.contact_frames[f"{residue_id},{lipid_id}"],
     )
     ri.run(verbose=False)
 
     hm_data, la_data = [], []
     for lx, la in enumerate(ri.lipid_atomnames):
-        la_data.append({ "LipidAtoms": la })
+        la_data.append({"LipidAtoms": la})
         for rx, ra in enumerate(ri.resid_atomnames):
             v = ri.distance_array[lx, rx]
-            hm_data.append({
-            "LipidAtoms": la,
-            "ResidueAtoms": ra,
-            "value": float(v)
-            })
+            hm_data.append({"LipidAtoms": la, "ResidueAtoms": ra, "value": float(v)})
     ra_data = [{"ResidueAtoms": x} for x in ri.resid_atomnames]
 
     # TODO:
     # Possibly, avoid single point of failure on these dictionary lookups?
     response = {
         "data": BACKEND_DATA["data"][protein][lipid],
-        "proteins": BACKEND_DATA['proteins'],
-        "lipids": BACKEND_DATA['lipids'],
-        "pieData": BACKEND_DATA['pie_data'],
+        "proteins": BACKEND_DATA["proteins"],
+        "lipids": BACKEND_DATA["lipids"],
+        "pieData": BACKEND_DATA["pie_data"],
         "ganttData": gantt_data,
         "topLipids": categories,
-        "globalTopLipids": BACKEND_DATA['top_lipids'],
-        "lipidContactFrames": BACKEND_DATA['lipid_contact_frames'],
+        "globalTopLipids": BACKEND_DATA["top_lipids"],
+        "lipidContactFrames": BACKEND_DATA["lipid_contact_frames"],
         "tableData": table_data,
         "heatmapData": hm_data,
         "lipidAtomsData": la_data,
-        "residueAtomsData": ra_data
+        "residueAtomsData": ra_data,
     }
     return response
+
 
 def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
 
@@ -298,14 +302,14 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     # UFCC calls:
     args = payload
     ARGS = args
-    ts = UFCC(args.structure, args.trajectory, add_lipid_types = args.other_lipids)
-    ts.contacts.runner.backend = 'prolint_serial'
+    ts = UFCC(args.structure, args.trajectory, add_lipid_types=args.other_lipids)
+    ts.contacts.runner.backend = "prolint_serial"
     ts.contacts.compute(cutoff=args.cutoff)
     payload = ts.contacts.server_payload()
 
     t, g = sort_lipids(ts)
-    payload['top_lipids'] = t
-    payload['lipid_contact_frames'] = g
+    payload["top_lipids"] = t
+    payload["lipid_contact_frames"] = g
 
     # Make data accessible globally
     global BACKEND_DATA
@@ -314,7 +318,7 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     TS = ts
 
     debug(debug_bool)
-    run(reloader=reloader, host='localhost', port=port)
+    run(reloader=reloader, host="localhost", port=port)
 
 
 def independent_execution():
@@ -323,21 +327,24 @@ def independent_execution():
     independently, locally for testing purposes, we will load local data file
     and serve that to the dashboard.
     """
-    with open(os.path.join(SERVER_PATH, 'girk.json'), 'r') as fp:
+    with open(os.path.join(SERVER_PATH, "girk.json"), "r") as fp:
         data = json.load(fp)
 
-    pie_data = [{
-        "category": "LocalGirk",
-        "value": 500,
-        "subData": [
-            { "category": "CHOL", "value": 300 },
-            { "category": "POPE", "value": 150 },
-            { "category": "POPS", "value": 50 }
-        ]
-    }]
+    pie_data = [
+        {
+            "category": "LocalGirk",
+            "value": 500,
+            "subData": [
+                {"category": "CHOL", "value": 300},
+                {"category": "POPE", "value": 150},
+                {"category": "POPS", "value": 50},
+            ],
+        }
+    ]
 
     # ganttApp data input requirement
-    gantt_data = [{
+    gantt_data = [
+        {
             "category": "Lipid 1",
             "startFrame": 0,
             "endFrame": 10,
@@ -352,7 +359,6 @@ def independent_execution():
             "startFrame": 90,
             "endFrame": 100,
         },
-
         {
             "category": "Lipid 2",
             "startFrame": 10,
@@ -362,20 +368,21 @@ def independent_execution():
             "category": "Lipid 2",
             "startFrame": 45,
             "endFrame": 60,
-        }
+        },
     ]
-    top_10_lipids = ['Lipid 1', 'Lipid 2']
+    top_10_lipids = ["Lipid 1", "Lipid 2"]
 
     payload = {
         "data": data,
-        "proteins": ['LocalGirk'],
-        "lipids": list(data['LocalGirk'].keys()),
+        "proteins": ["LocalGirk"],
+        "lipids": list(data["LocalGirk"].keys()),
         "pie_data": pie_data,
         "gantt_data": gantt_data,
-        "top_10_lipids": top_10_lipids
+        "top_10_lipids": top_10_lipids,
     }
 
     return payload
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     start_server(debug_bool=True)

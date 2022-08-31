@@ -50,12 +50,13 @@ class MacrosClass(ResidueStringAttr):
     group and the *macro* of each residue. You can do the same for your **database** group.
 
     """
-    attrname = 'macros'
-    singular = 'macro'
+
+    attrname = "macros"
+    singular = "macro"
 
     @staticmethod
     def _gen_initial_values(n_atoms, n_residues, n_segments):
-        return np.array(['other'] * n_residues, dtype=object)
+        return np.array(["other"] * n_residues, dtype=object)
 
 
 class UFCC(object):
@@ -98,33 +99,41 @@ class UFCC(object):
         md = mda.Universe(structure, trajectory)
         self.atoms = md.atoms
         self.residues = self.atoms.residues
-        self.atoms.universe.add_TopologyAttr('macros')
+        self.atoms.universe.add_TopologyAttr("macros")
 
         # adding the macros to the membrane residues
-        lipid_types = ['POPC', 'DPPC', 'DOPC', 'CHOL', 'CHL1', 'POPS', 'POPE']
+        lipid_types = ["POPC", "DPPC", "DOPC", "CHOL", "CHL1", "POPS", "POPE"]
         lipid_types = lipid_types + add_lipid_types
-        not_protein_restypes = np.unique(self.atoms.select_atoms('not protein').residues.resnames)
+        not_protein_restypes = np.unique(
+            self.atoms.select_atoms("not protein").residues.resnames
+        )
         membrane_restypes = []
         for type in lipid_types:
             if type in not_protein_restypes:
-                membrane_restypes.append('resname ' + type)
+                membrane_restypes.append("resname " + type)
         if len(membrane_restypes) == 1:
             membrane_sel = membrane_restypes[0]
         elif len(membrane_restypes) > 1:
             membrane_sel = membrane_restypes[0]
             for type in membrane_restypes[1:]:
-                membrane_sel = membrane_sel + ' or ' + type
+                membrane_sel = membrane_sel + " or " + type
         else:
-            print('There are not lipid residues in your system')
+            print("There are not lipid residues in your system")
 
         # adding the macros to the protein residues
-        protein_sel = 'protein'
+        protein_sel = "protein"
         # First possibility: we can access segment(chain) information from the Universe.
-        if len(self.atoms.select_atoms(protein_sel).segments) > 1 and self.atoms.select_atoms(
-                protein_sel).segments.n_atoms == self.atoms.select_atoms(protein_sel).n_atoms:
-            for segment_idx in range(len(self.atoms.select_atoms(protein_sel).segments)):
-                self.atoms.select_atoms(
-                    protein_sel).segments[segment_idx].residues.macros = 'Protein' + str(segment_idx)
+        if (
+            len(self.atoms.select_atoms(protein_sel).segments) > 1
+            and self.atoms.select_atoms(protein_sel).segments.n_atoms
+            == self.atoms.select_atoms(protein_sel).n_atoms
+        ):
+            for segment_idx in range(
+                len(self.atoms.select_atoms(protein_sel).segments)
+            ):
+                self.atoms.select_atoms(protein_sel).segments[
+                    segment_idx
+                ].residues.macros = "Protein" + str(segment_idx)
         # Second possibility: the assumption here is that proteins are ordered and the start residue of the next
         # protein is always smaller than the last residue of the previous protein.
         else:
@@ -144,13 +153,14 @@ class UFCC(object):
             for idx, values in enumerate(fi_li):
                 fi = values[0]
                 li = values[1]
-                self.atoms.select_atoms(protein_sel).residues[list(range(fi, li +
-                                                                         1))].residues.macros = 'Protein' + str(idx)
+                self.atoms.select_atoms(protein_sel).residues[
+                    list(range(fi, li + 1))
+                ].residues.macros = "Protein" + str(idx)
 
         # TODO
         # Add merge chains and options to change the name of the proteins.
 
-        self.atoms.select_atoms(membrane_sel).residues.macros = 'membrane'
+        self.atoms.select_atoms(membrane_sel).residues.macros = "membrane"
         self.list_of_macros = list(np.unique(self.atoms.residues.macros))
         self.query = QueryProteins(self.atoms.select_atoms(protein_sel))
         self.database = MembraneDatabase(self.atoms.select_atoms(membrane_sel))
@@ -166,7 +176,6 @@ class UFCC(object):
         self.time = md.trajectory.time
         self.units = md.trajectory.units
         self.dt = md.trajectory.dt
-
 
     def __str__(self):
         return "Base class to handle the calculation of the contacts in UFCC."
@@ -195,7 +204,7 @@ class BasicGroup(object):
         self.selected = whole
         self.whole = whole
 
-    def select(self, selection='all'):
+    def select(self, selection="all"):
         """
         Cast an MDAnalysis.Atom, MDAnalysis.Residue, MDAnalysis.ResidueGroup, or str syntax
         from the **whole** AtomGroup to the **selected** AtomGroup.
@@ -207,10 +216,18 @@ class BasicGroup(object):
         """
         assert isinstance(
             selection,
-            (str, np.ndarray, mda.core.groups.Residue, mda.core.groups.ResidueGroup, mda.core.groups.Atom,
-             mda.core.groups.AtomGroup),
+            (
+                str,
+                np.ndarray,
+                mda.core.groups.Residue,
+                mda.core.groups.ResidueGroup,
+                mda.core.groups.Atom,
+                mda.core.groups.AtomGroup,
+            ),
         ), "the selection must be one of the preceding types"
-        if isinstance(selection, (mda.core.groups.Residue, mda.core.groups.ResidueGroup)):
+        if isinstance(
+            selection, (mda.core.groups.Residue, mda.core.groups.ResidueGroup)
+        ):
             selection = selection.atoms
         elif isinstance(selection, mda.core.groups.Atom):
             selection = self.whole.select_atoms(f"index {selection.index}")
@@ -256,20 +273,26 @@ class MembraneDatabase(BasicGroup):
         lc = {}
         lipids = self.lipid_types()
         for lipid in lipids:
-            lc[lipid] = len(self.selected.residues[self.selected.residues.resnames == lipid])
+            lc[lipid] = len(
+                self.selected.residues[self.selected.residues.resnames == lipid]
+            )
         return lc
 
     def __str__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<ufcc.MembraneDatabase containing 0 atoms>"
         else:
-            return "<ufcc.MembraneDatabase containing {} atoms>".format(self.selected.n_atoms)
+            return "<ufcc.MembraneDatabase containing {} atoms>".format(
+                self.selected.n_atoms
+            )
 
     def __repr__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<ufcc.MembraneDatabase containing 0 atoms>"
         else:
-            return "<ufcc.MembraneDatabase containing {} atoms>".format(self.selected.n_atoms)
+            return "<ufcc.MembraneDatabase containing {} atoms>".format(
+                self.selected.n_atoms
+            )
 
 
 class QueryProteins(BasicGroup):
@@ -297,10 +320,14 @@ class QueryProteins(BasicGroup):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<ufcc.QueryProteins containing 0 atoms>"
         else:
-            return "<ufcc.QueryProteins containing {} atoms>".format(self.selected.n_atoms)
+            return "<ufcc.QueryProteins containing {} atoms>".format(
+                self.selected.n_atoms
+            )
 
     def __repr__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<ufcc.QueryProteins containing 0 atoms>"
         else:
-            return "<ufcc.QueryProteins containing {} atoms>".format(self.selected.n_atoms)
+            return "<ufcc.QueryProteins containing {} atoms>".format(
+                self.selected.n_atoms
+            )

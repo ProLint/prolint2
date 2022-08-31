@@ -34,7 +34,18 @@ class Timing(object):
     store various timeing results of obtained during a parallel analysis run
     """
 
-    def __init__(self, io, compute, total, universe, prepare, conclude, wait=None, io_block=None, compute_block=None):
+    def __init__(
+        self,
+        io,
+        compute,
+        total,
+        universe,
+        prepare,
+        conclude,
+        wait=None,
+        io_block=None,
+        compute_block=None,
+    ):
         self._io = io
         self._io_block = io_block
         self._compute = compute
@@ -229,7 +240,7 @@ class ParallelAnalysisBase(object):
         # guards to stop people assigning to self when they shouldn't
         # if locked, the only attribute you can modify is _attr_lock
         # if self._attr_lock isn't set, default to unlocked
-        if key == '_attr_lock' or not getattr(self, '_attr_lock', False):
+        if key == "_attr_lock" or not getattr(self, "_attr_lock", False):
             super(ParallelAnalysisBase, self).__setattr__(key, val)
         else:
             # raise HalError("I'm sorry Dave, I'm afraid I can't do that")
@@ -303,7 +314,7 @@ class ParallelAnalysisBase(object):
         """
         # are we using a distributed scheduler or should we use
         # multiprocessing?
-        scheduler = dask.config.get('scheduler', None)
+        scheduler = dask.config.get("scheduler", None)
         if scheduler is None:
             # maybe we can grab a global worker
             try:
@@ -318,26 +329,28 @@ class ParallelAnalysisBase(object):
         # job. Therefore we run this on the single threaded scheduler for
         # debugging.
         if scheduler is None and n_jobs == 1:
-            scheduler = 'synchronous'
+            scheduler = "synchronous"
 
         # fall back to multiprocessing, we tried everything
         if scheduler is None:
-            scheduler = 'processes'
+            scheduler = "processes"
 
         if n_blocks is None:
-            if scheduler == 'processes':
+            if scheduler == "processes":
                 n_blocks = n_jobs
             elif isinstance(scheduler, dask.distributed.Client):
                 n_blocks = len(scheduler.ncores())
             else:
                 n_blocks = 1
-                warnings.warn("Couldn't guess ideal number of blocks from scheduler. "
-                              "Setting n_blocks=1. "
-                              "Please provide `n_blocks` in call to method.")
+                warnings.warn(
+                    "Couldn't guess ideal number of blocks from scheduler. "
+                    "Setting n_blocks=1. "
+                    "Please provide `n_blocks` in call to method."
+                )
 
-        scheduler_kwargs = {'scheduler': scheduler}
-        if scheduler == 'processes':
-            scheduler_kwargs['num_workers'] = n_jobs
+        scheduler_kwargs = {"scheduler": scheduler}
+        if scheduler == "processes":
+            scheduler_kwargs["num_workers"] = n_jobs
 
         start, stop, step = self._trajectory.check_slice_indices(start, stop, step)
         n_frames = len(range(start, stop, step))
@@ -349,10 +362,11 @@ class ParallelAnalysisBase(object):
         if n_frames == 0:
             warnings.warn("run() analyses no frames: check start/stop/step")
         if n_frames < n_blocks:
-            warnings.warn("run() uses more blocks than frames: "
-                          "decrease n_blocks")
+            warnings.warn("run() uses more blocks than frames: " "decrease n_blocks")
 
-        slices = make_balanced_slices(n_frames, n_blocks, start=start, stop=stop, step=step)
+        slices = make_balanced_slices(
+            n_frames, n_blocks, start=start, stop=stop, step=step
+        )
 
         # record total time
         with timeit() as total:
@@ -400,7 +414,8 @@ class ParallelAnalysisBase(object):
             # waiting time = wait_end - wait_start
             np.array([el[4] - wait_start for el in res]),
             np.array([el[5] for el in res]),
-            np.array([el[6] for el in res]))
+            np.array([el[6] for el in res]),
+        )
         return self
 
     def _dask_helper(self, bslice, indices, top, traj):
@@ -430,11 +445,18 @@ class ParallelAnalysisBase(object):
             times_compute.append(b_compute.elapsed)
 
         # calculate io and compute time per block
-        return np.asarray(res), np.asarray(times_io), np.asarray(times_compute), b_universe.elapsed, wait_end, np.sum(
-            times_io), np.sum(times_compute)
+        return (
+            np.asarray(res),
+            np.asarray(times_io),
+            np.asarray(times_compute),
+            b_universe.elapsed,
+            wait_end,
+            np.sum(times_io),
+            np.sum(times_compute),
+        )
 
     @staticmethod
     def _reduce(res, result_single_frame):
-        """ 'append' action for a time series"""
+        """'append' action for a time series"""
         res.append(result_single_frame)
         return res

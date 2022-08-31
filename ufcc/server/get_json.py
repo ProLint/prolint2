@@ -18,15 +18,15 @@ import json
 # with system-agnostic terminology:
 # {Reference: {InteractionObject: ReferenceUnit: [FrameValue]}}
 
-csv_in = open('out_girk.csv')
+csv_in = open("out_girk.csv")
 
 js = {}
 for row in csv.DictReader(csv_in):
-    lipid = row['Lipids']
-    protein = row['Protein']
+    lipid = row["Lipids"]
+    protein = row["Protein"]
     # if lipid != "CHOL": continue
-    residue_id = row['ResName'] + " " + row['ResID']
-    lipid_number_value = float(row['Lipid_Number'])
+    residue_id = row["ResName"] + " " + row["ResID"]
+    lipid_number_value = float(row["Lipid_Number"])
     value = [residue_id, float("{:.2f}".format(lipid_number_value))]
 
     if js.get(protein):
@@ -37,5 +37,5 @@ for row in csv.DictReader(csv_in):
     else:
         js[protein] = {lipid: [value]}
 
-with open('girk.json', 'w') as fp:
+with open("girk.json", "w") as fp:
     json.dump(js, fp)
