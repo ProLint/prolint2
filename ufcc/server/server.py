@@ -1,4 +1,5 @@
 from collections import Counter
+from ufcc.interactive_sel import interactive_selection
 import enum
 import os
 import ast
@@ -296,13 +297,16 @@ def listener(metadata):
     return response
 
 
-def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
+def start_server(payload=None, debug_bool=False, reloader=True, port=8351, i_bool=True):
 
     global ARGS
     # UFCC calls:
     args = payload
     ARGS = args
     ts = UFCC(args.structure, args.trajectory, add_lipid_types=args.other_lipids)
+    # For interactive selection of the groups for the contacts calculation
+    if i_bool:
+        ts = interactive_selection(ts)
     ts.contacts.runner.backend = "serial"
     ts.contacts.compute(cutoff=args.cutoff)
     payload = ts.contacts.server_payload()

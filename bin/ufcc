@@ -125,7 +125,7 @@ args = ufcc_parser.parse_args()
 
 print("args", type(args), args)
 if args.s_bool:
-    start_server(payload=args, reloader=False)
+    start_server(payload=args, reloader=False, i_bool=args.i_bool)
     import sys
 
     sys.exit()
@@ -213,7 +213,7 @@ print("\n########## Thanks for using ufcc! #########\n")
 # has to include file paths + ufcc options. And it should be checked
 # very early on.
 if args.s_bool:
-    start_server(payload=payload, reloader=False)
+    start_server(payload=payload, reloader=False, i_bool=False)
 
 
 if args.r_bool:
