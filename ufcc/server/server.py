@@ -5,7 +5,7 @@ import ast
 import json
 
 from bottle import route, run, template, debug, static_file, request
-from ufcc.contacts import ProLintSerialDistances
+from ufcc.contacts import SerialDistances
 
 import MDAnalysis as mda
 from ufcc.ufcc import UFCC
@@ -164,7 +164,7 @@ def distance_array_listener(metadata):
     lipid_id = metadata["lipidID"]
     residue_id = int(metadata["residueID"])
 
-    ri = ProLintSerialDistances(
+    ri = SerialDistances(
         TS.query.selected.universe,
         TS.query.selected,
         TS.database.selected,
@@ -259,7 +259,7 @@ def listener(metadata):
 
     # Initiate heatmapApp with the top residue
     residue_id = BACKEND_DATA["lipid_contact_frames"][lipid_id][0][0]
-    ri = ProLintSerialDistances(
+    ri = SerialDistances(
         TS.query.selected.universe,
         TS.query.selected,
         TS.database.selected,
@@ -303,7 +303,7 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351):
     args = payload
     ARGS = args
     ts = UFCC(args.structure, args.trajectory, add_lipid_types=args.other_lipids)
-    ts.contacts.runner.backend = "prolint_serial"
+    ts.contacts.runner.backend = "serial"
     ts.contacts.compute(cutoff=args.cutoff)
     payload = ts.contacts.server_payload()
 
