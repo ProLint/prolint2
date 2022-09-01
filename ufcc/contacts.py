@@ -265,13 +265,9 @@ class Contacts(object):
             )
             temp_instance.run(verbose=True)
         elif self.runner.backend == "parallel":
-            temp_instance = ParallelContacts(
-                self.query.selected.universe,
-                self.query.selected,
-                self.database.selected,
-                cutoff,
+            print(
+            "The parallel routine is not included in this DEMO release of the software, as our main goal is to see how the software behaves with different types and how we can improve its capabilities. Please use the serial routine for now and let us now your feedback."
             )
-            temp_instance.run(n_jobs=self.runner.n_jobs)
 
         self.contacts = temp_instance.contacts
         self.contacts_sum = temp_instance.contacts_sum
