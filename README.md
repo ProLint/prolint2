@@ -25,7 +25,7 @@ To install **ufcc** we recommend creating a new conda environment as follows:
 Then you can install **ufcc** via pip:
 
 ``` bash
-   pip install ufcc==0.0.4
+   pip install ufcc==0.0.5
 ```
 
 Basic example (from the command-line):
