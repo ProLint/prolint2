@@ -11,7 +11,6 @@ import MDAnalysis as mda
 from collections import Counter
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
-
 from MDAnalysis.analysis import distances
 
 

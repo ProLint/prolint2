@@ -29,15 +29,16 @@ def interactive_selection(target_system):
     def print_action_keys():
         print(
             """\nActions keys:
-db  :  update database group for contacts calculation. (i.e. >> d Group_ID) where Group_ID is the identifier of the group on the list of groups.
-qr  :  update query group for contacts calculation. (i.e. >> d Group_ID) where Group_ID is the identifier of the group on the list of groups.
-gb :  create subgroups grouped by any topology attribute ("names", "resnames", "masses", etc). (i.e. >> gp Group_ID resnames) creates new groups for every different resname in the Group_ID selected.
-sl  :  create new groups by splitting a previous group at the desired level ("segment", "residue", "atom", "molecule"). (i.e. >> sl Group_ID residue) splits the Group_ID selected into all the residues that make it up, and create a new group for each of them.
-add:  merge two or more groups and create a new group with the combination. (i.e. >> add Group_ID1 Group_ID2 ... Group_IDn) creates a new group for the combination of the groups Group_ID1 Group_ID2 ... Group_IDn.
-del:  delete a group from the list of groups. (i.e. >> del Group_ID) remove the Group_ID selected.
-lg :  print the list of groups.
-h  :  print the help for all the available action keys.
-e  :  exit interactive selection and calculate de contacts between the Query and Database groups. 
+db  :  update database (i.e. >> db Group_ID).
+qr  :  update query (i.e. >> qr Group_ID).
+gb :   group by topological attribute (i.e. >> gp Group_ID resnames). 
+sl  :  split group (i.e. >> sl Group_ID residue)
+add:  merge two or more groups (i.e. >> add Group_ID1 Group_ID2 ... Group_IDn).
+del:  delete a group (i.e. >> del Group_ID).
+lg :  print the groups.
+h  :  print the list of action keys.
+e  :  exit interactive selection mode. 
+For a more detailed description of the actions, please refer to the README.md file.
 """
         )
 
@@ -54,7 +55,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
 
     def print_help_message():
         print(
-            "You can type (lg) to list the groups at any time, or (h) to review the available action keys with examples."
+            "You can type (lg) to list the groups, or (h) to review the available action keys with examples."
         )
 
     def add_atomgroups(ag_list):
@@ -63,13 +64,13 @@ e  :  exit interactive selection and calculate de contacts between the Query and
             combined = mda.Merge(combined, ag)
         return combined
 
+    print_action_keys()
     print_db_qr()
     print_list_groups()
-    print_action_keys()
 
     input_key = ""
     while input_key != "e":
-        print_help_message()
+        # print_help_message()
         input_key = input(">> ")
         if input_key != "e" and len(input_key) > 0:
             input_list = input_key.split()
@@ -93,6 +94,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
                             groups_dict[int(input_list[1])][1]
                         )
                         db_qr["Database"] = groups_dict[int(input_list[1])][1]
+                        print("Database group updated to {} atoms.".format(groups_dict[int(input_list[1])][1].n_atoms))
             elif input_list[0] == "qr":
                 if len(input_list) > 2:
                     print("Error: Too many arguments.")
@@ -109,6 +111,7 @@ e  :  exit interactive selection and calculate de contacts between the Query and
                     else:
                         target_system.query.select(groups_dict[int(input_list[1])][1])
                         db_qr["Query"] = groups_dict[int(input_list[1])][1]
+                        print("Query group updated to {} atoms.".format(groups_dict[int(input_list[1])][1].n_atoms))
 
             # creating subgroups
             elif input_list[0] == "gb":
