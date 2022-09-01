@@ -169,22 +169,9 @@ if args.backend == "serial":
     target_system.contacts.get_metrics(args.output_file)
     payload = target_system.contacts.server_payload()
 elif args.backend == "parallel":
-    try:
-        import dask
-    except:
-        print(
-            "Please install Dask and Dask[distributed] to use the parallel backend. You can do so by running 'pip install dask dask[distributed]'."
+    print(
+            "The parallel routine is not included in this DEMO release of the software, as our main goal is to see how the software behaves with different types and how we can improve its capabilities. Please use the serial routine for now and let us now your feedback."
         )
-    else:
-        target_system.contacts.runner.backend = "parallel"
-        target_system.contacts.runner.n_jobs = args.n_jobs
-        print(
-            "\n1- Getting the contacts between the groups over blocks of frames in the trajectory:"
-        )
-        target_system.contacts.compute(cutoff=args.cutoff)
-        print("\n2- Getting the contacts metrics:")
-        target_system.contacts.count_contacts()
-        target_system.contacts.get_metrics(args.output_file)
 
 cal_total_time = perf_counter() - t1
 

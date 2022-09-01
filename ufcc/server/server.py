@@ -1,6 +1,5 @@
 from collections import Counter
 from ufcc.interactive_sel import interactive_selection
-import enum
 import os
 import ast
 import json
