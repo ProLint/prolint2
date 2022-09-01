@@ -11,8 +11,7 @@ Ultra-Fast Contacts Calculation (UFCC)
 
 
 
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
-of the Canadian Chemistry Conference and Exhibition 2022, but is aimed also to include other types of interactions in the future (i.e. protein-protein, protein-ligand, and membrane-ligand interactions).
+The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is *demo* version with a reduced number of features to test how it behaves with different use cases.
 
 Installation
 ============
@@ -63,7 +62,7 @@ lg :  print the list of groups.
 h  :  print the help for all the available action keys.
 e  :  exit interactive selection and calculate de contacts between the Query and Database groups. 
 ```
-As for explaining the capacities of this selection interface we will show some examples below using a membrane made up POPS, CHOL and POPE and a single protein:
+As for explaining the capabilities of this selection interface we will show some examples below using a membrane made up POPS, CHOL and POPE and a single protein:
 
 **Example 1:** Using only two types of protein residues (ARG and LEU) as *Query* and all the lipids in the membrane as *Database*:
 - Default groups:
@@ -207,6 +206,13 @@ db 12
 ```
 e
 ```
+
+How to contribute?
+==================
+If you find a bug in the source code, you can help us by submitting an issue to our [GitHub repo](https://github.com/ProLint/ufcc/tree/demo). Even better, you can submit a Pull Request with a fix. 
+
+We really appreciate your feedback!
+
 License 
 =======
 
