@@ -11,7 +11,7 @@ Ultra-Fast Contacts Calculation (UFCC)
 
 
 
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is *demo* version with a reduced number of features to test how it behaves with different use cases.
+The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is a *demo* version with a reduced number of features to test how it behaves with different use cases.
 
 Installation
 ============
