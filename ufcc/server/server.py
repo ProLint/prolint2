@@ -11,6 +11,8 @@ import MDAnalysis as mda
 from ufcc.ufcc import UFCC
 from io import StringIO
 
+from .chord_utils import contact_chord
+
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
 BACKEND_DATA = None
@@ -208,6 +210,22 @@ def blob(metadata):
         w.write(protein)
 
     return pstream.read()
+
+@route('/network/:metadata')
+def network_listener(metadata):
+    global BACKEND_DATA
+    global TS
+
+    metadata = ast.literal_eval(metadata)
+    lipid = metadata['lipid']
+
+    top_lipid_ids = [x[0] for x in BACKEND_DATA['top_lipids'][lipid]]
+    chord_elements, hidden_node_indices = contact_chord(TS, top_lipid_ids, cutoff=100)
+
+    return {
+        "chordElements": chord_elements,
+        "positionResidues": hidden_node_indices
+    }
 
 @route('/data/:metadata')
 def listener(metadata):

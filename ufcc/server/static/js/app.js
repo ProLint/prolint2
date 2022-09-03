@@ -1157,6 +1157,155 @@ fetch('/data/' + JSON.stringify(obj))
         heatmapChart.appear(1000, 100);
 
 
+
+
+        // ##########################
+        var button = chart.plotContainer.children.push(am5.Button.new(root, {
+            dx: 0,
+            dy: 0,
+            // layer: 40,
+            label: am5.Label.new(root, {
+              text: "Change Chart"
+            })
+          }));
+
+        button.events.on("click", function(ev) {
+            root.container.children.clear();
+
+
+            var linkDefaultOpacity = 0.5,
+            lihnkHoveredOpacity = 1;
+
+        // Create series
+        var series = root.container.children.push(am5flow.ChordNonRibbon.new(root, {
+          sourceIdField: "from",
+          targetIdField: "to",
+          valueField: "value",
+          padAngle: 0,
+          startAngle: 90,
+          draggable: true,
+
+        }));
+
+        series.nodes.labels.template.setAll({
+          textType: "radial",
+          fontSize: "0.5em",
+          radius: 15,
+        });
+
+        series.nodes.bullets.push(function (root, series, dataItem) {
+          return am5.Bullet.new(root, {
+            sprite: am5.Circle.new(root, {
+              radius: 2.5,
+              fillOpacity: 0.3,
+              fill: am5.color(0x000000),
+            }),
+          });
+        });
+
+        series.children.moveValue(series.bulletsContainer, 0);
+
+        series.nodes.rectangles.template.events.on("pointerover", function(ev){
+            var incomingLinks = ev.target.dataItem._settings.incomingLinks
+            var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
+            if (incomingLinks != undefined) {
+                incomingLinks.forEach(link => {
+                    link._settings.link._settings.stroke = am5.color(0xff0000)
+                    link._settings.link._display.alpha = lihnkHoveredOpacity
+                })
+            }
+            if (outgoingLinks != undefined) {
+                outgoingLinks.forEach(link => {
+                    link._settings.link._settings.stroke = am5.color(0xff0000)
+                    link._settings.link._display.alpha = lihnkHoveredOpacity
+                })
+            }
+          })
+
+        series.nodes.rectangles.template.events.on("pointerout", function(ev){
+        var incomingLinks = ev.target._dataItem._settings.incomingLinks
+        var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
+        if (incomingLinks != undefined) {
+            incomingLinks.forEach(link => {
+                link._settings.link._settings.stroke = am5.color("#8E8A8A")
+                link._settings.link._display.alpha = linkDefaultOpacity
+            })
+        }
+        if (outgoingLinks != undefined) {
+            outgoingLinks.forEach(link => {
+                link._settings.link._settings.stroke = am5.color("#8E8A8A")
+                link._settings.link._display.alpha = linkDefaultOpacity
+            })
+        }
+        })
+
+        obj = {
+            "lipid": "CHOL",
+            // "residueID": ctx.category
+        }
+        fetch('/network/' + JSON.stringify(obj))
+        .then(response => response.json())
+        .then(responseData => {
+
+            // console.log('rD', rD);
+            data = responseData['chordElements']
+            posRes = responseData['positionResidues']
+            series.data.setAll(data);
+
+            series.links.template.setAll({
+                strokeWidth: 0.2,
+                opacity: linkDefaultOpacity,
+                stroke: am5.color("#8E8A8A"),
+                strokeStyle: "none",
+            })
+
+            series.nodes.rectangles.template.setAll({
+                fillOpacity: 0,
+                fill: am5.color(0x095256),
+                tooltipText: "Residue [bold]{name}[/]\nContacts: {sum}"
+            });
+
+            series.events.on("datavalidated", function () {
+
+                for (let ix = 0; ix < root.container.allChildren().length; ix++) {
+                    const el = root.container.allChildren()[ix];
+
+                    for (let jx = 0; jx < posRes.length; jx++) {
+                        const pos = posRes[jx];
+                        el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
+                        el.nodes.labels._values[pos]._display.visible = false
+                        el.nodes.rectangles.template._entities[pos]._display.visible = false
+                    }
+                    el.links._values.forEach((nodeLinks, ix) => {
+                        if (nodeLinks.dataItem.dataContext.from == 0) {
+                            nodeLinks._settings.strokeWidth = 0;
+                            nodeLinks._settings.strokeOpacity = 0;
+                            nodeLinks._display.visible = false
+                        } else {
+                            nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
+                        }
+                    })
+                }
+            });
+        });
+
+        // Make stuff animate on load
+        series.appear(1000, 100);
+
+
+        });
+
+
+
+
+
+
+
+
+
+
+
+
         ///////////////////////////////////////////
         ////////////// Hide Logos /////////////////
         ///////////////////////////////////////////
