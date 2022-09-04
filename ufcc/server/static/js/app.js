@@ -11,9 +11,9 @@
  */
 
 
- var rootReferenceObjects;
- var networkRootReference;
- var globalLipidReference;
+var rootReferenceObjects;
+var networkRootReference;
+var globalLipidReference;
 // Fetch the data from the backend
 var obj = {
     "lipid": "",
@@ -135,13 +135,13 @@ fetch('/data/' + JSON.stringify(obj))
                 "start": undefined,
                 "end": undefined,
             }
-            cursor.events.on("selectstarted", function(ev) {
+            cursor.events.on("selectstarted", function (ev) {
                 var x = ev.target.getPrivate("positionX");
                 var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
                 viewerResidueSelection["start"] = residue_id
             });
 
-            cursor.events.on("selectended", function(ev) {
+            cursor.events.on("selectended", function (ev) {
                 var x = ev.target.getPrivate("positionX");
                 var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
                 viewerResidueSelection["end"] = residue_id
@@ -167,20 +167,25 @@ fetch('/data/' + JSON.stringify(obj))
                 var selectSections = [{
                     start_residue_number: residueRange[0],
                     end_residue_number: residueRange[1],
-                    color:{r:255,g:0,b:255},
+                    color: {
+                        r: 255,
+                        g: 0,
+                        b: 255
+                    },
                     representation: 'spacefill',
                     focus: true,
-                    }
-                ]
+                }]
                 viewerInstance.visual.select({
                     data: selectSections, // selSec is very slow
                 })
 
             });
 
-            chart.zoomOutButton.events.on('click', function(ev) {
+            chart.zoomOutButton.events.on('click', function (ev) {
                 viewerInstance.visual.clearSelection()
-                viewerInstance.visual.reset({ camera: true })
+                viewerInstance.visual.reset({
+                    camera: true
+                })
             })
 
             // Pie chart label
@@ -201,7 +206,7 @@ fetch('/data/' + JSON.stringify(obj))
                 })
             }));
 
-            series.on("tooltipDataItem", function(tooltipDataItem){
+            series.on("tooltipDataItem", function (tooltipDataItem) {
                 radarSeriesLegend.showValue(tooltipDataItem.get("valueY"))
 
                 residueID = tooltipDataItem.dataContext.residue.split(' ')[1]
@@ -209,9 +214,12 @@ fetch('/data/' + JSON.stringify(obj))
 
                 var selectSections = [{
                     residue_number: residueID,
-                    color:{r:255,g:0,b:255},
-                    }
-                ]
+                    color: {
+                        r: 255,
+                        g: 0,
+                        b: 255
+                    },
+                }]
                 viewerInstance.visual.highlight({
                     data: selectSections,
                 })
@@ -315,20 +323,18 @@ fetch('/data/' + JSON.stringify(obj))
                 dx: 0,
                 dy: 0,
                 label: am5.Label.new(root, {
-                  text: "Change Chart"
+                    text: "Change Chart"
                 })
-              }));
+            }));
 
-            button.events.on("click", function(ev) {
+            button.events.on("click", function (ev) {
                 root.dispose();
 
                 am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-                    // console.log('dataItem', dataItem)
                     if (dataItem._settings.slice._settings.active) {
                         lipid = dataItem.dataContext.category
                         col = subSeries.get("colors").getIndex(ix)
-                        networkRootReference = networkApp(lipid=lipid)
-                        // console.log('networkRootReference', networkRootReference)
+                        networkRootReference = networkApp(lipid = lipid)
                         rootReferenceObjects["active"] = false
                     }
                 })
@@ -400,9 +406,9 @@ fetch('/data/' + JSON.stringify(obj))
             am5.color(0x5aaa95),
             am5.color(0x86a873),
             am5.color(0xbb9f06)
-          ]);
+        ]);
 
-          pieSeries.labels.template.setAll({
+        pieSeries.labels.template.setAll({
             text: "{category}"
         });
 
@@ -428,7 +434,7 @@ fetch('/data/' + JSON.stringify(obj))
 
                 });
 
-                rootReferenceObjects["series"].appear(100);
+            rootReferenceObjects["series"].appear(100);
         });
 
         // Create sub chart
@@ -450,9 +456,9 @@ fetch('/data/' + JSON.stringify(obj))
         );
         var sliceTemplate = subSeries.slices.template;
         sliceTemplate.setAll({
-          draggable: true,
-          cornerRadius: 5,
-          cursorOverStyle: "pointer",
+            draggable: true,
+            cornerRadius: 5,
+            cursorOverStyle: "pointer",
         });
 
         sliceTemplate.events.on("pointerup", function (e) {
@@ -471,14 +477,14 @@ fetch('/data/' + JSON.stringify(obj))
                 duration: 500,
                 easing: am5.ease.out(am5.ease.cubic)
             });
-          });
+        });
 
         var currentSlice;
-        subSeries.slices.template.on("active", function(active, slice) {
-        if (currentSlice && currentSlice != slice && active) {
-            currentSlice.set("active", undefined)
-        }
-        currentSlice = slice;
+        subSeries.slices.template.on("active", function (active, slice) {
+            if (currentSlice && currentSlice != slice && active) {
+                currentSlice.set("active", undefined)
+            }
+            currentSlice = slice;
         });
 
         // subSeries click event to link to radar chart
@@ -494,8 +500,8 @@ fetch('/data/' + JSON.stringify(obj))
             var lipid = e.target.dataItem.dataContext.category
 
             var sameLipid = true;
-                if (rootReferenceObjects['active']) {
-                    if (lipid != rootReferenceObjects["axisRange"].get("label").get('text')) {
+            if (rootReferenceObjects['active']) {
+                if (lipid != rootReferenceObjects["axisRange"].get("label").get('text')) {
                     sameLipid = false;
                     // TODO:
                     // get correct protein
@@ -519,21 +525,21 @@ fetch('/data/' + JSON.stringify(obj))
                                 }
                             })
                         });
-                    }
-                } else {
-                    if (lipid != networkRootReference["series"]._settings.lipid) {
-                        sameLipid = false;
-                        networkRootReference["root"].dispose();
-                        networkRootReference = networkApp(lipid=lipid)
-                        networkRootReference["series"].appear(1000)
-
-                    }
                 }
+            } else {
+                if (lipid != networkRootReference["series"]._settings.lipid) {
+                    sameLipid = false;
+                    networkRootReference["root"].dispose();
+                    networkRootReference = networkApp(lipid = lipid)
+                    networkRootReference["series"].appear(1000)
 
-                if (!sameLipid) {
+                }
+            }
 
-                    // Update Table Data
-                    fetch('/tabledata/' + JSON.stringify(obj))
+            if (!sameLipid) {
+
+                // Update Table Data
+                fetch('/tabledata/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(pieChartResponseData => {
                         table.replaceData(pieChartResponseData['tableData']);
@@ -547,29 +553,31 @@ fetch('/data/' + JSON.stringify(obj))
                             .then(response => response.json())
                             .then(tableResponseData => {
 
-                                ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
+                                ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
+                                    ...lp
+                                }))
                                 ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
                                     category: v
                                 })))
                                 ganttSeries.data.setAll(ganttData);
                                 sortCategoryAxis()
 
-                            // Update Heatmap App Data
-                            obj = {
-                                "lipidID": lipid_id,
-                                "residueID": ganttData[0]['category']
-                            }
-                            fetch('/distance/' + JSON.stringify(obj))
-                                .then(response => response.json())
-                                .then(heatmapResponseData => {
-                                    heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
-                                    hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
-                                    hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
-                                });
+                                // Update Heatmap App Data
+                                obj = {
+                                    "lipidID": lipid_id,
+                                    "residueID": ganttData[0]['category']
+                                }
+                                fetch('/distance/' + JSON.stringify(obj))
+                                    .then(response => response.json())
+                                    .then(heatmapResponseData => {
+                                        heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
+                                        hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                                        hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                                    });
 
                             });
 
-                });
+                    });
 
                 rootReferenceObjects["series"].appear(100);
             }
@@ -581,11 +589,11 @@ fetch('/data/' + JSON.stringify(obj))
             am5.color(0x5aaa95),
             am5.color(0x86a873),
             am5.color(0xbb9f06)
-          ]);
+        ]);
 
         subSeries.labels.template.setAll({
             text: "{category}"
-          });
+        });
 
         subSeries.data.setAll(lipids.map(lipidName => ({
             category: lipidName,
@@ -606,14 +614,14 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         // Pre-select first slice
-        subSeries.events.on("datavalidated", function() {
+        subSeries.events.on("datavalidated", function () {
             subSeries.slices.getIndex(0).set("active", true);
         });
-          pieContainer.events.on("boundschanged", function() {
-            pieRoot.events.on("frameended", function(){
-              updateLines();
-             })
-          })
+        pieContainer.events.on("boundschanged", function () {
+            pieRoot.events.on("frameended", function () {
+                updateLines();
+            })
+        })
 
         function updateLines() {
             if (selectedSlice) {
@@ -736,81 +744,91 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         ////////////// Lipid Table ////////////////
         ///////////////////////////////////////////
-            var table = new Tabulator("#lipid-table", {
+        var table = new Tabulator("#lipid-table", {
             data: responseData['tableData'],
             height: "300px",
-            layout:"fitColumns",
+            layout: "fitColumns",
             // autoResize:false,
-            resizableRows:false,
+            resizableRows: false,
             selectable: 1,
-            selectablePersistence:false,
-            columns: [
-                {
-                    title:"Lipid <br>Contact Frequencies",
-                    columns: [
-                {
-                    title: "id",
-                    field: "lipidID",
-                    // width: 100,
-                    hozAlign: "center",
-                    // frozen:true,
-                    headerSort:false,
-                    resizable:false,
-                    // headerFilter:"input"
-                },
-                {
-                    title: "f",
-                    field: "contactFrequency",
-                    // width: 120,
-                    hozAlign: "center",
-                    headerSort:false,
-                    resizable:false,
-                },]
-            }
-            ],
+            selectablePersistence: false,
+            columns: [{
+                title: "Lipid <br>Contact Frequencies",
+                columns: [{
+                        title: "id",
+                        field: "lipidID",
+                        // width: 100,
+                        hozAlign: "center",
+                        // frozen:true,
+                        headerSort: false,
+                        resizable: false,
+                        // headerFilter:"input"
+                    },
+                    {
+                        title: "f",
+                        field: "contactFrequency",
+                        // width: 120,
+                        hozAlign: "center",
+                        headerSort: false,
+                        resizable: false,
+                    },
+                ]
+            }],
             headerVisible: true,
         });
 
         table.on("rowClick", function (e, row) {
-            obj = {"lipidID": row.getData()['lipidID']}
+            obj = {
+                "lipidID": row.getData()['lipidID']
+            }
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp, besi: 'green'}))
-                    console.log('ganttData', ganttData)
-                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
+                        ...lp,
+                        besi: 'green'
+                    }))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
+                        category: v
+                    })))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
 
-                // On LipidID selection, show interacting residue on the 3D viewer.
-                var selectSections = []
-                for (let ix = 0; ix < ganttData.length; ix++) {
-                    const residueID = ganttData[ix].category;
-                    const residueColor = ganttChart.get('colors').getIndex(ix)
+                    // On LipidID selection, show interacting residue on the 3D viewer.
+                    var selectSections = []
+                    for (let ix = 0; ix < ganttData.length; ix++) {
+                        const residueID = ganttData[ix].category;
+                        const residueColor = ganttChart.get('colors').getIndex(ix)
 
-                    selectSections.push({
-                        residue_number: parseInt(residueID),
-                        sideChain: true,
-                        representation: 'spacefill',
-                        representationColor: residueColor
-                    })
-                }
+                        selectSections.push({
+                            residue_number: parseInt(residueID),
+                            sideChain: true,
+                            representation: 'spacefill',
+                            representationColor: residueColor
+                        })
+                    }
 
-                viewerInstance.visual.select({
-                    data: selectSections,
+                    viewerInstance.visual.select({
+                        data: selectSections,
                     })
                 });
 
         });
 
         // Should work for touch displays.
-        table.on("rowTap", function(e, row){
-            obj = {"lipidID": row.getData()['lipidID']}
+        table.on("rowTap", function (e, row) {
+            obj = {
+                "lipidID": row.getData()['lipidID']
+            }
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(tableResponseData => {
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({...lp}))
-                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({category: v})))
+                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
+                        ...lp
+                    }))
+                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
+                        category: v
+                    })))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
                 });
@@ -890,7 +908,7 @@ fetch('/data/' + JSON.stringify(obj))
             y: am5.percent(70),
             centerY: am5.percent(70),
             fontWeight: "500",
-          }), 0);
+        }), 0);
 
         ganttYAxis.data.setAll(responseData['topLipids'].map(v => ({
             category: v,
@@ -914,7 +932,7 @@ fetch('/data/' + JSON.stringify(obj))
             centerX: am5.p50,
             fontWeight: "500",
             // fontStyle: "oblique",
-          }), ganttXAxis.children.length - 1);
+        }), ganttXAxis.children.length - 1);
 
         var ganttSeries = ganttChart.series.push(am5xy.ColumnSeries.new(ganttRoot, {
             xAxis: ganttXAxis,
@@ -1054,24 +1072,26 @@ fetch('/data/' + JSON.stringify(obj))
                 // color:{r:255,g:0,b:255},
                 representation: 'spacefill',
                 representationColor: residueColor,
-                }
-              ]
-              viewerInstance.visual.select({
+            }]
+            viewerInstance.visual.select({
                 data: selectSections,
             })
         });
 
-        ganttSeries.columns.template.events.on("pointerover", function(e) {
+        ganttSeries.columns.template.events.on("pointerover", function (e) {
             residueID = e.target.dataItem.dataContext.category;
             ctx = e.target.dataItem.dataContext;
 
             var selectSections = [{
                 residue_number: parseInt(ctx.category),
-                color:{r:255,g:0,b:255},
+                color: {
+                    r: 255,
+                    g: 0,
+                    b: 255
+                },
                 representation: 'spacefill'
-                }
-              ]
-              viewerInstance.visual.highlight({
+            }]
+            viewerInstance.visual.highlight({
                 data: selectSections,
             })
         })
@@ -1130,7 +1150,7 @@ fetch('/data/' + JSON.stringify(obj))
             centerY: am5.percent(75),
             fontWeight: "500",
             // fontStyle: "oblique",
-          }), 0);
+        }), 0);
 
         var hmXRenderer = am5xy.AxisRendererX.new(heatmapRoot, {
             visible: false,
@@ -1159,7 +1179,7 @@ fetch('/data/' + JSON.stringify(obj))
 
             fontWeight: "500",
             // fontStyle: "oblique",
-          }), hmXAxis.children.length - 1);
+        }), hmXAxis.children.length - 1);
 
         // Create series
         var heatmapSeries = heatmapChart.series.push(am5xy.ColumnSeries.new(heatmapRoot, {
@@ -1222,43 +1242,43 @@ fetch('/data/' + JSON.stringify(obj))
 
         // ##########################
 
-        function networkApp(lipid="CHOL") {
+        function networkApp(lipid = "CHOL") {
 
             var root = am5.Root.new("chartdiv");
 
             root.setThemes([
-              am5themes_Animated.new(root)
+                am5themes_Animated.new(root)
             ]);
 
             var linkDefaultOpacity = 0.5,
-            lihnkHoveredOpacity = 1;
+                lihnkHoveredOpacity = 1;
 
             // Create series
             var series = root.container.children.push(am5flow.ChordNonRibbon.new(root, {
-            sourceIdField: "from",
-            targetIdField: "to",
-            valueField: "value",
-            padAngle: 0,
-            startAngle: 90,
-            draggable: true,
-            lipid: lipid,
+                sourceIdField: "from",
+                targetIdField: "to",
+                valueField: "value",
+                padAngle: 0,
+                startAngle: 90,
+                draggable: true,
+                lipid: lipid,
 
             }));
 
             series.nodes.labels.template.setAll({
-            textType: "radial",
-            fontSize: "0.5em",
-            radius: 15,
+                textType: "radial",
+                fontSize: "0.5em",
+                radius: 15,
             });
 
             series.nodes.bullets.push(function (root, series, dataItem) {
-            return am5.Bullet.new(root, {
-                sprite: am5.Circle.new(root, {
-                radius: 2.5,
-                fillOpacity: 0.3,
-                fill: am5.color(0x000000),
-                }),
-            });
+                return am5.Bullet.new(root, {
+                    sprite: am5.Circle.new(root, {
+                        radius: 2.5,
+                        fillOpacity: 0.3,
+                        fill: am5.color(0x000000),
+                    }),
+                });
             });
 
             series.children.moveValue(series.bulletsContainer, 0);
@@ -1271,7 +1291,7 @@ fetch('/data/' + JSON.stringify(obj))
             })
 
 
-            series.nodes.rectangles.template.events.on("pointerover", function(ev){
+            series.nodes.rectangles.template.events.on("pointerover", function (ev) {
                 var incomingLinks = ev.target.dataItem._settings.incomingLinks
                 var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
                 if (incomingLinks != undefined) {
@@ -1288,21 +1308,21 @@ fetch('/data/' + JSON.stringify(obj))
                 }
             })
 
-            series.nodes.rectangles.template.events.on("pointerout", function(ev){
-            var incomingLinks = ev.target._dataItem._settings.incomingLinks
-            var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
-            if (incomingLinks != undefined) {
-                incomingLinks.forEach(link => {
-                    link._settings.link._settings.stroke = am5.color("#8E8A8A")
-                    link._settings.link._display.alpha = linkDefaultOpacity
-                })
-            }
-            if (outgoingLinks != undefined) {
-                outgoingLinks.forEach(link => {
-                    link._settings.link._settings.stroke = am5.color("#8E8A8A")
-                    link._settings.link._display.alpha = linkDefaultOpacity
-                })
-            }
+            series.nodes.rectangles.template.events.on("pointerout", function (ev) {
+                var incomingLinks = ev.target._dataItem._settings.incomingLinks
+                var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
+                if (incomingLinks != undefined) {
+                    incomingLinks.forEach(link => {
+                        link._settings.link._settings.stroke = am5.color("#8E8A8A")
+                        link._settings.link._display.alpha = linkDefaultOpacity
+                    })
+                }
+                if (outgoingLinks != undefined) {
+                    outgoingLinks.forEach(link => {
+                        link._settings.link._settings.stroke = am5.color("#8E8A8A")
+                        link._settings.link._display.alpha = linkDefaultOpacity
+                    })
+                }
             })
 
             obj = {
@@ -1310,50 +1330,49 @@ fetch('/data/' + JSON.stringify(obj))
                 // "residueID": ctx.category
             }
             fetch('/network/' + JSON.stringify(obj))
-            .then(response => response.json())
-            .then(responseData => {
+                .then(response => response.json())
+                .then(responseData => {
 
-                // console.log('rD', rD);
-                data = responseData['chordElements']
-                posRes = responseData['positionResidues']
-                series.data.setAll(data);
+                    data = responseData['chordElements']
+                    posRes = responseData['positionResidues']
+                    series.data.setAll(data);
 
-                series.links.template.setAll({
-                    strokeWidth: 0.2,
-                    opacity: linkDefaultOpacity,
-                    stroke: am5.color("#8E8A8A"),
-                    strokeStyle: "none",
-                })
+                    series.links.template.setAll({
+                        strokeWidth: 0.2,
+                        opacity: linkDefaultOpacity,
+                        stroke: am5.color("#8E8A8A"),
+                        strokeStyle: "none",
+                    })
 
-                series.nodes.rectangles.template.setAll({
-                    fillOpacity: 0,
-                    fill: am5.color(0x095256),
-                    tooltipText: "Residue [bold]{name}[/]\nContacts: {sum}"
-                });
+                    series.nodes.rectangles.template.setAll({
+                        fillOpacity: 0,
+                        fill: hoverColor,
+                        tooltipText: "Residue [bold]{name}[/]\nContacts: {sum}"
+                    });
 
-                series.events.on("datavalidated", function () {
+                    series.events.on("datavalidated", function () {
 
-                    for (let ix = 0; ix < root.container.allChildren().length; ix++) {
-                        const el = root.container.allChildren()[ix];
+                        for (let ix = 0; ix < root.container.allChildren().length; ix++) {
+                            const el = root.container.allChildren()[ix];
 
-                        for (let jx = 0; jx < posRes.length; jx++) {
-                            const pos = posRes[jx];
-                            el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
-                            el.nodes.labels._values[pos]._display.visible = false
-                            el.nodes.rectangles.template._entities[pos]._display.visible = false
-                        }
-                        el.links._values.forEach((nodeLinks, ix) => {
-                            if (nodeLinks.dataItem.dataContext.from == 0) {
-                                nodeLinks._settings.strokeWidth = 0;
-                                nodeLinks._settings.strokeOpacity = 0;
-                                nodeLinks._display.visible = false
-                            } else {
-                                nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
+                            for (let jx = 0; jx < posRes.length; jx++) {
+                                const pos = posRes[jx];
+                                el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
+                                el.nodes.labels._values[pos]._display.visible = false
+                                el.nodes.rectangles.template._entities[pos]._display.visible = false
                             }
-                        })
-                    }
+                            el.links._values.forEach((nodeLinks, ix) => {
+                                if (nodeLinks.dataItem.dataContext.from == 0) {
+                                    nodeLinks._settings.strokeWidth = 0;
+                                    nodeLinks._settings.strokeOpacity = 0;
+                                    nodeLinks._display.visible = false
+                                } else {
+                                    nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
+                                }
+                            })
+                        }
+                    });
                 });
-            });
 
             // Make stuff animate on load
             series.appear(1000, 100);
@@ -1363,39 +1382,36 @@ fetch('/data/' + JSON.stringify(obj))
                 dx: 0,
                 dy: 0,
                 label: am5.Label.new(root, {
-                  text: "Change Chart"
+                    text: "Change Chart"
                 })
-              }));
+            }));
 
-            button2.events.on("click", function(ev) {
+            button2.events.on("click", function (ev) {
                 root.dispose();
                 fetch('/data/' + JSON.stringify({
-                    lipid: lipid,
-                    protein: "GIRK",
-                }))
-                .then(response => response.json())
-                .then(cirData => {
+                        lipid: lipid,
+                        protein: "GIRK",
+                    }))
+                    .then(response => response.json())
+                    .then(cirData => {
 
-                    console.log('cirD', cirData)
+                        rootReferenceObjects = radarApp()
 
-                    rootReferenceObjects = radarApp()
+                        updateData = cirData['data']
+                        rootReferenceObjects["series"].data.setAll(updateData);
+                        rootReferenceObjects["categoryAxis"].data.setAll(updateData);
+                        // rootReferenceObjects["createRange"]("POPE", updateData, 0);
 
-                    updateData = cirData['data']
-                    rootReferenceObjects["series"].data.setAll(updateData);
-                    rootReferenceObjects["categoryAxis"].data.setAll(updateData);
-                    // rootReferenceObjects["createRange"]("POPE", updateData, 0);
+                        am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                            if (dataItem._settings.slice._settings.active) {
+                                col = subSeries.get("colors").getIndex(ix)
+                                rootReferenceObjects["createRange"](dataItem.dataContext.category, updateData, 0);
+                                rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
 
-                    am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-                        // console.log('di', dataItem._settings.slice._settings.active)
-                        if (dataItem._settings.slice._settings.active) {
-                            col = subSeries.get("colors").getIndex(ix)
-                            rootReferenceObjects["createRange"](dataItem.dataContext.category, updateData, 0);
-                            rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
+                            }
+                        })
 
-                        }
-                    })
-
-                });
+                    });
 
                 rootReferenceObjects["series"].appear(100);
             });
@@ -1407,11 +1423,10 @@ fetch('/data/' + JSON.stringify(obj))
             }
         }
 
-
         ///////////////////////////////////////////
         ////////////// Hide Logos /////////////////
         ///////////////////////////////////////////
-        am5.array.each(am5.registry.rootElements, function(rootElement) {
+        am5.array.each(am5.registry.rootElements, function (rootElement) {
             rootElement.events.on("framestarted", function () {
                 rootChildren = rootElement.tooltipContainer.allChildren()
                 for (let ix = 0; ix < rootChildren.length; ix++) {
@@ -1421,6 +1436,6 @@ fetch('/data/' + JSON.stringify(obj))
                     }
                 }
             });
-          });
+        });
 
     });
