@@ -330,7 +330,8 @@ fetch('/data/' + JSON.stringify(obj))
                 dx: 0,
                 dy: 0,
                 label: am5.Label.new(root, {
-                    text: "Change Chart"
+                    text: "Network Application",
+                    fontSize: 10,
                 })
             }));
 
@@ -1411,7 +1412,8 @@ fetch('/data/' + JSON.stringify(obj))
                 dx: 0,
                 dy: 0,
                 label: am5.Label.new(root, {
-                    text: "Change Chart"
+                    text: "Circular Application",
+                    fontSize: 10,
                 })
             }));
 
