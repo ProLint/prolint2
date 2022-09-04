@@ -218,12 +218,10 @@ def network_listener(metadata):
 
     metadata = ast.literal_eval(metadata)
     lipid = metadata['lipid']
-    print ('Working with lipid: ', lipid)
 
     top_lipid_ids = [x[0] for x in BACKEND_DATA['top_lipids'][lipid]]
     chord_elements, hidden_node_indices = contact_chord(TS, top_lipid_ids, cutoff=100)
 
-    print (len(chord_elements))
     return {
         "chordElements": chord_elements,
         "positionResidues": hidden_node_indices

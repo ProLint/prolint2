@@ -11,7 +11,8 @@
  */
 
 
- var rootReferenceObjects
+ var rootReferenceObjects;
+ var networkRootReference;
 // Fetch the data from the backend
 var obj = {
     "lipid": "",
@@ -321,21 +322,15 @@ fetch('/data/' + JSON.stringify(obj))
                 root.dispose();
 
                 am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-                    console.log('dataItem', dataItem)
+                    // console.log('dataItem', dataItem)
                     if (dataItem._settings.slice._settings.active) {
                         lipid = dataItem.dataContext.category
                         col = subSeries.get("colors").getIndex(ix)
-                        console.log('=> ', dataItem)
-                        networkApp(lipid=lipid)
-                        // break
-                        // rootReferenceObjects["createRange"](dataItem.dataContext.category, updateData, 0);
-                        // rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
-
+                        networkRootReference = networkApp(lipid=lipid)
+                        rootReferenceObjects["active"] = false
                     }
                 })
 
-
-                // networkApp()
             });
 
             return {
@@ -491,35 +486,44 @@ fetch('/data/' + JSON.stringify(obj))
             // this is the main entry point to the entire dashboard. Once a slice
             // is clicked, we need to update all apps of the dashboard. Below
             // we update the circular, table, gantt, and heatmap apps.
+            var lipid_id = undefined;
+            var residue_id = undefined;
             var lipid = e.target.dataItem.dataContext.category
-            // console.log('series', series.className)
-            // console.log('chart', chart.className)
-            if (lipid != rootReferenceObjects["axisRange"].get("label").get('text')) {
-                obj.lipid = lipid
-                // TODO:
-                // get correct protein
-                // Update Circular App Data
-                obj.protein = "GIRK"
-                fetch('/data/' + JSON.stringify(obj))
-                    .then(response => response.json())
-                    .then(responseData => {
+            am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                if (dataItem.dataContext.category == lipid) {
+                    selectedLipidColor = subSeries.get("colors").getIndex(ix)
+                }
+            })
 
-                        updateData = responseData['data'];
-                        var lipid_id = undefined;
-                        var residue_id = undefined;
 
-                        rootReferenceObjects["series"].data.setAll(updateData);
-                        rootReferenceObjects["categoryAxis"].data.setAll(updateData);
-                        rootReferenceObjects["createRange"](lipid, updateData, 0);
+                if (rootReferenceObjects['active']) {
+                    // TODO:
+                    // get correct protein
+                    // Update Circular App Data
+                    obj.protein = "GIRK"
+                    obj.lipid = lipid
+                    fetch('/data/' + JSON.stringify(obj))
+                        .then(response => response.json())
+                        .then(responseData => {
 
-                        am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-                            if (dataItem.dataContext.category == lipid) {
-                                col = subSeries.get("colors").getIndex(ix)
-                                rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
-                            }
-                        })
+                            updateData = responseData['data'];
 
-                    });
+                            rootReferenceObjects["series"].data.setAll(updateData);
+                            rootReferenceObjects["categoryAxis"].data.setAll(updateData);
+                            rootReferenceObjects["createRange"](lipid, updateData, 0);
+
+                            am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                                if (dataItem.dataContext.category == lipid) {
+                                    col = subSeries.get("colors").getIndex(ix)
+                                    rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
+                                }
+                            })
+                        });
+                } else {
+                    networkRootReference["root"].dispose();
+                    networkRootReference = networkApp(lipid=lipid)
+                    networkRootReference["series"].appear(1000)
+                }
 
                     // Update Table Data
                     fetch('/tabledata/' + JSON.stringify(obj))
@@ -561,8 +565,7 @@ fetch('/data/' + JSON.stringify(obj))
                 });
 
                 rootReferenceObjects["series"].appear(100);
-                // chart.appear(100);
-            }
+            // }
         });
 
         subSeries.get("colors").set("colors", [
@@ -1252,18 +1255,26 @@ fetch('/data/' + JSON.stringify(obj))
 
             series.children.moveValue(series.bulletsContainer, 0);
 
+            hoverColor = am5.color(0xff0000);
+            am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                if (dataItem.dataContext.category == lipid) {
+                    hoverColor = subSeries.get("colors").getIndex(ix)
+                }
+            })
+
+
             series.nodes.rectangles.template.events.on("pointerover", function(ev){
                 var incomingLinks = ev.target.dataItem._settings.incomingLinks
                 var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
                 if (incomingLinks != undefined) {
                     incomingLinks.forEach(link => {
-                        link._settings.link._settings.stroke = am5.color(0xff0000)
+                        link._settings.link._settings.stroke = hoverColor
                         link._settings.link._display.alpha = lihnkHoveredOpacity
                     })
                 }
                 if (outgoingLinks != undefined) {
                     outgoingLinks.forEach(link => {
-                        link._settings.link._settings.stroke = am5.color(0xff0000)
+                        link._settings.link._settings.stroke = hoverColor
                         link._settings.link._display.alpha = lihnkHoveredOpacity
                     })
                 }
@@ -1381,7 +1392,13 @@ fetch('/data/' + JSON.stringify(obj))
                 rootReferenceObjects["series"].appear(100);
             });
 
+            return {
+                "series": series,
+                "root": root,
+                "active": true
+            }
         }
+
 
         ///////////////////////////////////////////
         ////////////// Hide Logos /////////////////
