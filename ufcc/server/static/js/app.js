@@ -28,6 +28,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
+        var frameNumber = responseData["frameNumber"];
+
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
@@ -943,8 +945,8 @@ fetch('/data/' + JSON.stringify(obj))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
-            // max: 180,
-            strictMinMax: true,
+            max: frameNumber,
+            // strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {}),
             tooltip: am5.Tooltip.new(ganttRoot, {
                 themeTags: ["axis"],

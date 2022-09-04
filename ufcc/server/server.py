@@ -307,7 +307,8 @@ def listener(metadata):
         "tableData": table_data,
         "heatmapData": hm_data,
         "lipidAtomsData": la_data,
-        "residueAtomsData": ra_data
+        "residueAtomsData": ra_data,
+        "frameNumber": TS.n_frames,
     }
     return response
 
