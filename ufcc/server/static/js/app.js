@@ -11,6 +11,7 @@
  */
 
 
+ var rootReferenceObjects
 // Fetch the data from the backend
 var obj = {
     "lipid": "",
@@ -301,12 +302,12 @@ fetch('/data/' + JSON.stringify(obj))
                 });
             }
 
-            series.data.setAll(contactData);
-            categoryAxis.data.setAll(contactData);
-            createRange(lipids[0], contactData, 0);
+            // series.data.setAll(contactData);
+            // categoryAxis.data.setAll(contactData);
+            // createRange(lipid, contactData, 0);
 
-            series.appear(100);
-            chart.appear(100);
+            // series.appear(100);
+            // chart.appear(100);
 
             var button = chart.plotContainer.children.push(am5.Button.new(root, {
                 dx: 0,
@@ -318,12 +319,41 @@ fetch('/data/' + JSON.stringify(obj))
 
             button.events.on("click", function(ev) {
                 root.dispose();
-                networkApp()
+
+                am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                    console.log('dataItem', dataItem)
+                    if (dataItem._settings.slice._settings.active) {
+                        lipid = dataItem.dataContext.category
+                        col = subSeries.get("colors").getIndex(ix)
+                        console.log('=> ', dataItem)
+                        networkApp(lipid=lipid)
+                        // break
+                        // rootReferenceObjects["createRange"](dataItem.dataContext.category, updateData, 0);
+                        // rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
+
+                    }
+                })
+
+
+                // networkApp()
             });
 
-            return [chart, series, axisRange, categoryAxis, createRange]
+            return {
+                chart: chart,
+                series: series,
+                axisRange: axisRange,
+                categoryAxis: categoryAxis,
+                createRange: createRange,
+                active: true
+            }
         }
-        [chart, series, axisRange, categoryAxis, createRange] = radarApp()
+        rootReferenceObjects = radarApp()
+        rootReferenceObjects["series"].data.setAll(contactData);
+        rootReferenceObjects["categoryAxis"].data.setAll(contactData);
+        rootReferenceObjects["createRange"](lipids[0], contactData, 0);
+
+        rootReferenceObjects["series"].appear(100);
+        rootReferenceObjects["chart"].appear(100);
 
         ///////////////////////////////////////////
         /////////////// PieApp ////////////////////
@@ -349,7 +379,7 @@ fetch('/data/' + JSON.stringify(obj))
             })
         );
 
-        // Create series
+        // Create rootReferenceObjects["series"]
         var pieSeries = pieChart.series.push(
             am5percent.PieSeries.new(pieRoot, {
                 valueField: "value",
@@ -394,13 +424,13 @@ fetch('/data/' + JSON.stringify(obj))
                 .then(responseData => {
 
                     updateData = responseData['data']
-                    series.data.setAll(updateData);
-                    categoryAxis.data.setAll(updateData);
-                    createRange(lipid, updateData, 0);
+                    rootReferenceObjects["series"].data.setAll(updateData);
+                    rootReferenceObjects["categoryAxis"].data.setAll(updateData);
+                    rootReferenceObjects["createRange"](lipid, updateData, 0);
 
                 });
 
-            series.appear(100);
+                rootReferenceObjects["series"].appear(100);
         });
 
         // Create sub chart
@@ -462,7 +492,9 @@ fetch('/data/' + JSON.stringify(obj))
             // is clicked, we need to update all apps of the dashboard. Below
             // we update the circular, table, gantt, and heatmap apps.
             var lipid = e.target.dataItem.dataContext.category
-            if (lipid != axisRange.get("label").get('text')) {
+            // console.log('series', series.className)
+            // console.log('chart', chart.className)
+            if (lipid != rootReferenceObjects["axisRange"].get("label").get('text')) {
                 obj.lipid = lipid
                 // TODO:
                 // get correct protein
@@ -476,14 +508,14 @@ fetch('/data/' + JSON.stringify(obj))
                         var lipid_id = undefined;
                         var residue_id = undefined;
 
-                        series.data.setAll(updateData);
-                        categoryAxis.data.setAll(updateData);
-                        createRange(lipid, updateData, 0);
+                        rootReferenceObjects["series"].data.setAll(updateData);
+                        rootReferenceObjects["categoryAxis"].data.setAll(updateData);
+                        rootReferenceObjects["createRange"](lipid, updateData, 0);
 
                         am5.array.each(subSeries.dataItems, function (dataItem, ix) {
                             if (dataItem.dataContext.category == lipid) {
                                 col = subSeries.get("colors").getIndex(ix)
-                                axisRange.get("axisFill").set("fill", col)
+                                rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
                             }
                         })
 
@@ -528,7 +560,7 @@ fetch('/data/' + JSON.stringify(obj))
 
                 });
 
-                series.appear(100);
+                rootReferenceObjects["series"].appear(100);
                 // chart.appear(100);
             }
         });
@@ -1180,7 +1212,7 @@ fetch('/data/' + JSON.stringify(obj))
 
         // ##########################
 
-        function networkApp() {
+        function networkApp(lipid="CHOL") {
 
             var root = am5.Root.new("chartdiv");
 
@@ -1255,7 +1287,7 @@ fetch('/data/' + JSON.stringify(obj))
             })
 
             obj = {
-                "lipid": "CHOL",
+                "lipid": lipid,
                 // "residueID": ctx.category
             }
             fetch('/network/' + JSON.stringify(obj))
@@ -1317,13 +1349,36 @@ fetch('/data/' + JSON.stringify(obj))
               }));
 
             button2.events.on("click", function(ev) {
-                console.log('root', root)
                 root.dispose();
-                radarApp()
-                // console.log('chart', chart)
-                // root.container.children.clear();
+                fetch('/data/' + JSON.stringify({
+                    lipid: lipid,
+                    protein: "GIRK",
+                }))
+                .then(response => response.json())
+                .then(cirData => {
 
-                // networkApp()
+                    console.log('cirD', cirData)
+
+                    rootReferenceObjects = radarApp()
+
+                    updateData = cirData['data']
+                    rootReferenceObjects["series"].data.setAll(updateData);
+                    rootReferenceObjects["categoryAxis"].data.setAll(updateData);
+                    // rootReferenceObjects["createRange"]("POPE", updateData, 0);
+
+                    am5.array.each(subSeries.dataItems, function (dataItem, ix) {
+                        // console.log('di', dataItem._settings.slice._settings.active)
+                        if (dataItem._settings.slice._settings.active) {
+                            col = subSeries.get("colors").getIndex(ix)
+                            rootReferenceObjects["createRange"](dataItem.dataContext.category, updateData, 0);
+                            rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
+
+                        }
+                    })
+
+                });
+
+                rootReferenceObjects["series"].appear(100);
             });
 
         }
