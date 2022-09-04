@@ -13,6 +13,7 @@
 
  var rootReferenceObjects;
  var networkRootReference;
+ var globalLipidReference;
 // Fetch the data from the backend
 var obj = {
     "lipid": "",
@@ -327,6 +328,7 @@ fetch('/data/' + JSON.stringify(obj))
                         lipid = dataItem.dataContext.category
                         col = subSeries.get("colors").getIndex(ix)
                         networkRootReference = networkApp(lipid=lipid)
+                        // console.log('networkRootReference', networkRootReference)
                         rootReferenceObjects["active"] = false
                     }
                 })
@@ -346,6 +348,7 @@ fetch('/data/' + JSON.stringify(obj))
         rootReferenceObjects["series"].data.setAll(contactData);
         rootReferenceObjects["categoryAxis"].data.setAll(contactData);
         rootReferenceObjects["createRange"](lipids[0], contactData, 0);
+        globalLipidReference = lipids[0]
 
         rootReferenceObjects["series"].appear(100);
         rootReferenceObjects["chart"].appear(100);
@@ -470,13 +473,13 @@ fetch('/data/' + JSON.stringify(obj))
             });
           });
 
-          var currentSlice;
-          subSeries.slices.template.on("active", function(active, slice) {
-            if (currentSlice && currentSlice != slice && active) {
-              currentSlice.set("active", false)
-            }
-            currentSlice = slice;
-          });
+        var currentSlice;
+        subSeries.slices.template.on("active", function(active, slice) {
+        if (currentSlice && currentSlice != slice && active) {
+            currentSlice.set("active", undefined)
+        }
+        currentSlice = slice;
+        });
 
         // subSeries click event to link to radar chart
         subSeries.slices.template.events.on("click", function (e) {
@@ -489,14 +492,11 @@ fetch('/data/' + JSON.stringify(obj))
             var lipid_id = undefined;
             var residue_id = undefined;
             var lipid = e.target.dataItem.dataContext.category
-            am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-                if (dataItem.dataContext.category == lipid) {
-                    selectedLipidColor = subSeries.get("colors").getIndex(ix)
-                }
-            })
 
-
+            var sameLipid = true;
                 if (rootReferenceObjects['active']) {
+                    if (lipid != rootReferenceObjects["axisRange"].get("label").get('text')) {
+                    sameLipid = false;
                     // TODO:
                     // get correct protein
                     // Update Circular App Data
@@ -519,11 +519,18 @@ fetch('/data/' + JSON.stringify(obj))
                                 }
                             })
                         });
+                    }
                 } else {
-                    networkRootReference["root"].dispose();
-                    networkRootReference = networkApp(lipid=lipid)
-                    networkRootReference["series"].appear(1000)
+                    if (lipid != networkRootReference["series"]._settings.lipid) {
+                        sameLipid = false;
+                        networkRootReference["root"].dispose();
+                        networkRootReference = networkApp(lipid=lipid)
+                        networkRootReference["series"].appear(1000)
+
+                    }
                 }
+
+                if (!sameLipid) {
 
                     // Update Table Data
                     fetch('/tabledata/' + JSON.stringify(obj))
@@ -565,7 +572,7 @@ fetch('/data/' + JSON.stringify(obj))
                 });
 
                 rootReferenceObjects["series"].appear(100);
-            // }
+            }
         });
 
         subSeries.get("colors").set("colors", [
@@ -1234,6 +1241,7 @@ fetch('/data/' + JSON.stringify(obj))
             padAngle: 0,
             startAngle: 90,
             draggable: true,
+            lipid: lipid,
 
             }));
 
