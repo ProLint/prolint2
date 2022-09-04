@@ -984,6 +984,7 @@ fetch('/data/' + JSON.stringify(obj))
             interactive: true,
             fillOpacity: 0.8,
             tooltipText: "{category}",
+            cursorOverStyle: "pointer",
             // Rounded corners for bars
             cornerRadiusTR: 5,
             cornerRadiusBR: 5,
