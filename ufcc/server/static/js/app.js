@@ -10,6 +10,20 @@
  * ---------------------------------------
  */
 
+// NOTES (and TODO:)
+// 1.
+// The network app is always redrawn (rather than updated)
+// This is mainly due to the pointerover events which retrieve the color
+// value from the subseries pie chart. A solution might be update these
+// events (or remove and add new events everytime the chart is updated).
+// 2.
+// The radarApp & networkApp use the same html element, but are rendered differently.
+// The current solution is to use global objects to easily keep references to the disposed
+// roots and releted elements. Ideally, we would not need to dispose root, but
+// clear and reuse, and working within the same scope, to avoid using globals.
+
+// 3. Data fetching is not optimized to the scope of the different objects. The JSON.stringify
+// calls can also be avoided.
 
 var rootReferenceObjects;
 var networkRootReference;
