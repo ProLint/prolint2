@@ -35,276 +35,295 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         /////////////// RadarApp //////////////////
         ///////////////////////////////////////////
-        var root = am5.Root.new("chartdiv");
+        function radarApp() {
 
-        const theme = am5.Theme.new(root);
-        theme.rule("Label").set("fontSize", 10);
-        theme.rule("Grid").set("strokeOpacity", 0.06);
+            var root = am5.Root.new("chartdiv");
 
-        root.setThemes([
-            am5themes_Animated.new(root),
-            theme
-        ]);
+            const theme = am5.Theme.new(root);
+            theme.rule("Label").set("fontSize", 10);
+            theme.rule("Grid").set("strokeOpacity", 0.06);
 
-        root.fps = 60;
+            root.setThemes([
+                am5themes_Animated.new(root),
+                theme
+            ]);
 
-        var startFrameGroup = 0;
-        var endFrameGroup = 1;
-        var currentFrameGroup = 1;
+            root.fps = 60;
 
-        var colorSet = am5.ColorSet.new(root, {});
+            var startFrameGroup = 0;
+            var endFrameGroup = 1;
+            var currentFrameGroup = 1;
 
-        // Params
-        var innerRadius = 50;
+            var colorSet = am5.ColorSet.new(root, {});
 
-        // Create chart
-        var chart = root.container.children.push(am5radar.RadarChart.new(root, {
-            panX: false,
-            panY: false,
-            wheelX: "none",
-            wheelY: "none",
-            innerRadius: am5.percent(innerRadius),
-            radius: am5.percent(85),
-            startAngle: 270 - 170,
-            endAngle: 270 + 170
-            // Right handed half circle:
-            // startAngle: -90,
-            // endAngle: 90
-        }));
+            // Params
+            var innerRadius = 50;
 
-        // Add cursor
-        var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
-            behavior: "zoomX",
-            radius: am5.percent(innerRadius),
-            innerRadius: -15
-        }));
-        cursor.lineY.set("visible", true);
-        cursor.lineY.set("opacity", 0.5);
+            // Create chart
+            var chart = root.container.children.push(am5radar.RadarChart.new(root, {
+                panX: false,
+                panY: false,
+                wheelX: "none",
+                wheelY: "none",
+                innerRadius: am5.percent(innerRadius),
+                radius: am5.percent(85),
+                startAngle: 270 - 170,
+                endAngle: 270 + 170
+                // Right handed half circle:
+                // startAngle: -90,
+                // endAngle: 90
+            }));
 
-        // Create axes and their renderers
-        var xRenderer = am5radar.AxisRendererCircular.new(root, {
-            minGridDistance: 10
-        });
+            // Add cursor
+            var cursor = chart.set("cursor", am5radar.RadarCursor.new(root, {
+                behavior: "zoomX",
+                radius: am5.percent(innerRadius),
+                innerRadius: -15
+            }));
+            cursor.lineY.set("visible", true);
+            cursor.lineY.set("opacity", 0.5);
 
-        xRenderer.labels.template.setAll({
-            radius: 5,
-            textType: "radial",
-            centerY: am5.p50
-        });
+            // Create axes and their renderers
+            var xRenderer = am5radar.AxisRendererCircular.new(root, {
+                minGridDistance: 10
+            });
 
-        // Metric axis
-        var yRenderer = am5radar.AxisRendererRadial.new(root, {
-            axisAngle: 90
-        });
-        // Metric axis labels
-        yRenderer.labels.template.setAll({
-            centerX: am5.p50
-        });
+            xRenderer.labels.template.setAll({
+                radius: 5,
+                textType: "radial",
+                centerY: am5.p50
+            });
 
-        var categoryAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
-            maxDeviation: 0,
-            categoryField: "residue",
-            renderer: xRenderer
-        }));
+            // Metric axis
+            var yRenderer = am5radar.AxisRendererRadial.new(root, {
+                axisAngle: 90
+            });
+            // Metric axis labels
+            yRenderer.labels.template.setAll({
+                centerX: am5.p50
+            });
 
-        var modGridCategoryAxis = categoryAxis.get("renderer");
-        modGridCategoryAxis.grid.template.setAll({
-            strokeDasharray: [2, 2]
-        });
+            var categoryAxis = chart.xAxes.push(am5xy.CategoryAxis.new(root, {
+                maxDeviation: 0,
+                categoryField: "residue",
+                renderer: xRenderer
+            }));
 
-        var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
-            min: 0,
-            strictMinMax: true,
-            extraMax: 0.1,
-            renderer: yRenderer
-        }));
+            var modGridCategoryAxis = categoryAxis.get("renderer");
+            modGridCategoryAxis.grid.template.setAll({
+                strokeDasharray: [2, 2]
+            });
 
-        var modGridValueAxis = valueAxis.get("renderer");
-        modGridValueAxis.grid.template.setAll({
-            strokeDasharray: [2, 2]
-        });
+            var valueAxis = chart.yAxes.push(am5xy.ValueAxis.new(root, {
+                min: 0,
+                strictMinMax: true,
+                extraMax: 0.1,
+                renderer: yRenderer
+            }));
 
-        // We need to get mouse selection events to form a selection
-        // which we'll pass to the 3D viewer.
-        viewerResidueSelection = {
-            "start": undefined,
-            "end": undefined,
+            var modGridValueAxis = valueAxis.get("renderer");
+            modGridValueAxis.grid.template.setAll({
+                strokeDasharray: [2, 2]
+            });
+
+            // We need to get mouse selection events to form a selection
+            // which we'll pass to the 3D viewer.
+            viewerResidueSelection = {
+                "start": undefined,
+                "end": undefined,
+            }
+            cursor.events.on("selectstarted", function(ev) {
+                var x = ev.target.getPrivate("positionX");
+                var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+                viewerResidueSelection["start"] = residue_id
+            });
+
+            cursor.events.on("selectended", function(ev) {
+                var x = ev.target.getPrivate("positionX");
+                var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
+                viewerResidueSelection["end"] = residue_id
+
+                const residueRange = [
+                    parseInt(viewerResidueSelection["start"]),
+                    parseInt(viewerResidueSelection["end"])
+                ];
+                residueRange.sort((a, b) => a - b);
+
+                // Only ok for very small selections.
+                // Very slow otherwise.
+                // selSec = []
+                // for (let ix = residueRange[0]; ix < residueRange[1]; ix++) {
+                //     columnColor = series.columns.values[ix].get("fill")
+                //     selSec.push({
+                //         residue_number: ix,
+                //         representation: 'spacefill',
+                //         representationColor: columnColor,
+                //     })
+                // }
+
+                var selectSections = [{
+                    start_residue_number: residueRange[0],
+                    end_residue_number: residueRange[1],
+                    color:{r:255,g:0,b:255},
+                    representation: 'spacefill',
+                    focus: true,
+                    }
+                ]
+                viewerInstance.visual.select({
+                    data: selectSections, // selSec is very slow
+                })
+
+            });
+
+            chart.zoomOutButton.events.on('click', function(ev) {
+                viewerInstance.visual.clearSelection()
+                viewerInstance.visual.reset({ camera: true })
+            })
+
+            // Pie chart label
+            var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
+                above: true
+            }));
+
+            // Create series
+            var series = chart.series.push(am5radar.RadarColumnSeries.new(root, {
+                calculateAggregates: true,
+                name: "Series",
+                xAxis: categoryAxis,
+                yAxis: valueAxis,
+                valueYField: "value",
+                categoryXField: "residue",
+                tooltip: am5.Tooltip.new(root, {
+                    labelText: "{categoryX}: {valueY}"
+                })
+            }));
+
+            series.on("tooltipDataItem", function(tooltipDataItem){
+                radarSeriesLegend.showValue(tooltipDataItem.get("valueY"))
+
+                residueID = tooltipDataItem.dataContext.residue.split(' ')[1]
+                residueID = parseInt(residueID)
+
+                var selectSections = [{
+                    residue_number: residueID,
+                    color:{r:255,g:0,b:255},
+                    }
+                ]
+                viewerInstance.visual.highlight({
+                    data: selectSections,
+                })
+            })
+
+            series.columns.template.set("strokeOpacity", 0);
+
+            series.events.on("datavalidated", function () {
+                radarSeriesLegend.set("endValue", series.getPrivate("valueYHigh"));
+                radarSeriesLegend.set("startValue", series.getPrivate("valueYLow"));
+            });
+
+            // Set up heat rules
+            series.set("heatRules", [{
+                target: series.columns.template,
+                key: "fill",
+                min: am5.color(0x673AB7),
+                max: am5.color(0xF44336),
+                dataField: "valueY",
+                key: "fill"
+            }]);
+
+            var radarSeriesLegend = chart.bottomAxesContainer.children.push(am5.HeatLegend.new(root, {
+                orientation: "horizontal",
+                startColor: am5.color(0x673AB7),
+                endColor: am5.color(0xF44336),
+                width: 160,
+                x: am5.percent(37.5),
+                // puts the legen inside the plot
+                // position: "absolute",
+                // x: am5.percent(37.5),
+                // centerY: am5.percent(1350),
+                opacity: 1,
+                // startText: "",
+                // endText: "",
+            }));
+            radarSeriesLegend.startLabel.setAll({
+                fontSize: 12,
+                fill: radarSeriesLegend.get("startColor"),
+                isMeasured: false,
+                paddingLeft: -10,
+                paddingTop: -1,
+            });
+            radarSeriesLegend.endLabel.setAll({
+                fontSize: 12,
+                fill: radarSeriesLegend.get("endColor"),
+                isMeasured: false,
+                x: am5.percent(75),
+                paddingTop: -1,
+            });
+
+
+            function createRange(name, lipidData, index) {
+                axisRange.get("label").setAll({
+                    text: name
+                });
+                // first residue
+                axisRange.set("category", lipidData[0].residue);
+                // last residue
+                axisRange.set("endCategory", lipidData[lipidData.length - 1].residue);
+
+                // every 3rd color for a bigger contrast
+                var fill = axisRange.get("axisFill");
+                fill.setAll({
+                    toggleKey: "active",
+                    cursorOverStyle: "pointer",
+                    fill: am5.color(0x095256),
+                    // fill: colorSet.getIndex(3),
+                    visible: true,
+                    innerRadius: -15,
+                    cornerRadius: 15,
+                });
+                axisRange.get("grid").set("visible", false);
+
+                var label = axisRange.get("label");
+                label.setAll({
+                    fill: am5.color(0xffffff),
+                    textType: "circular",
+                    visible: true,
+                    radius: -12
+                });
+
+                fill.events.on("click", function (event) {
+                    var dataItem = event.target.dataItem;
+                    if (event.target.get("active")) {
+                        categoryAxis.zoom(0, 1);
+                    } else {
+                        categoryAxis.zoomToCategories(dataItem.get("category"), dataItem.get("endCategory"));
+                    }
+                });
+            }
+
+            series.data.setAll(contactData);
+            categoryAxis.data.setAll(contactData);
+            createRange(lipids[0], contactData, 0);
+
+            series.appear(100);
+            chart.appear(100);
+
+            var button = chart.plotContainer.children.push(am5.Button.new(root, {
+                dx: 0,
+                dy: 0,
+                label: am5.Label.new(root, {
+                  text: "Change Chart"
+                })
+              }));
+
+            button.events.on("click", function(ev) {
+                root.dispose();
+                networkApp()
+            });
+
+            return [chart, series, axisRange, categoryAxis, createRange]
         }
-        cursor.events.on("selectstarted", function(ev) {
-            var x = ev.target.getPrivate("positionX");
-            var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
-            viewerResidueSelection["start"] = residue_id
-          });
-
-        cursor.events.on("selectended", function(ev) {
-            var x = ev.target.getPrivate("positionX");
-            var residue_id = categoryAxis.axisPositionToIndex(categoryAxis.toAxisPosition(x));
-            viewerResidueSelection["end"] = residue_id
-
-            const residueRange = [
-                parseInt(viewerResidueSelection["start"]),
-                parseInt(viewerResidueSelection["end"])
-            ];
-            residueRange.sort((a, b) => a - b);
-
-            // Only ok for very small selections.
-            // Very slow otherwise.
-            // selSec = []
-            // for (let ix = residueRange[0]; ix < residueRange[1]; ix++) {
-            //     columnColor = series.columns.values[ix].get("fill")
-            //     selSec.push({
-            //         residue_number: ix,
-            //         representation: 'spacefill',
-            //         representationColor: columnColor,
-            //     })
-            // }
-
-            var selectSections = [{
-                start_residue_number: residueRange[0],
-                end_residue_number: residueRange[1],
-                color:{r:255,g:0,b:255},
-                representation: 'spacefill',
-                focus: true,
-                }
-              ]
-              viewerInstance.visual.select({
-                data: selectSections, // selSec is very slow
-            })
-
-        });
-
-        chart.zoomOutButton.events.on('click', function(ev) {
-            viewerInstance.visual.clearSelection()
-            viewerInstance.visual.reset({ camera: true })
-          })
-
-        // Pie chart label
-        var axisRange = categoryAxis.createAxisRange(categoryAxis.makeDataItem({
-            above: true
-        }));
-
-        // Create series
-        var series = chart.series.push(am5radar.RadarColumnSeries.new(root, {
-            calculateAggregates: true,
-            name: "Series",
-            xAxis: categoryAxis,
-            yAxis: valueAxis,
-            valueYField: "value",
-            categoryXField: "residue",
-            tooltip: am5.Tooltip.new(root, {
-                labelText: "{categoryX}: {valueY}"
-            })
-        }));
-
-        series.on("tooltipDataItem", function(tooltipDataItem){
-            radarSeriesLegend.showValue(tooltipDataItem.get("valueY"))
-
-            residueID = tooltipDataItem.dataContext.residue.split(' ')[1]
-            residueID = parseInt(residueID)
-
-            var selectSections = [{
-                residue_number: residueID,
-                color:{r:255,g:0,b:255},
-                }
-            ]
-            viewerInstance.visual.highlight({
-                data: selectSections,
-            })
-          })
-
-        series.columns.template.set("strokeOpacity", 0);
-
-        series.events.on("datavalidated", function () {
-            radarSeriesLegend.set("endValue", series.getPrivate("valueYHigh"));
-            radarSeriesLegend.set("startValue", series.getPrivate("valueYLow"));
-        });
-
-        // Set up heat rules
-        series.set("heatRules", [{
-            target: series.columns.template,
-            key: "fill",
-            min: am5.color(0x673AB7),
-            max: am5.color(0xF44336),
-            dataField: "valueY",
-            key: "fill"
-        }]);
-
-        var radarSeriesLegend = chart.bottomAxesContainer.children.push(am5.HeatLegend.new(root, {
-            orientation: "horizontal",
-            startColor: am5.color(0x673AB7),
-            endColor: am5.color(0xF44336),
-            width: 160,
-            x: am5.percent(37.5),
-            // puts the legen inside the plot
-            // position: "absolute",
-            // x: am5.percent(37.5),
-            // centerY: am5.percent(1350),
-            opacity: 1,
-            // startText: "",
-            // endText: "",
-        }));
-        radarSeriesLegend.startLabel.setAll({
-            fontSize: 12,
-            fill: radarSeriesLegend.get("startColor"),
-            isMeasured: false,
-            paddingLeft: -10,
-            paddingTop: -1,
-          });
-          radarSeriesLegend.endLabel.setAll({
-            fontSize: 12,
-            fill: radarSeriesLegend.get("endColor"),
-            isMeasured: false,
-            x: am5.percent(75),
-            paddingTop: -1,
-          });
-
-
-        function createRange(name, lipidData, index) {
-            axisRange.get("label").setAll({
-                text: name
-            });
-            // first residue
-            axisRange.set("category", lipidData[0].residue);
-            // last residue
-            axisRange.set("endCategory", lipidData[lipidData.length - 1].residue);
-
-            // every 3rd color for a bigger contrast
-            var fill = axisRange.get("axisFill");
-            fill.setAll({
-                toggleKey: "active",
-                cursorOverStyle: "pointer",
-                fill: am5.color(0x095256),
-                // fill: colorSet.getIndex(3),
-                visible: true,
-                innerRadius: -15,
-                cornerRadius: 15,
-            });
-            axisRange.get("grid").set("visible", false);
-
-            var label = axisRange.get("label");
-            label.setAll({
-                fill: am5.color(0xffffff),
-                textType: "circular",
-                visible: true,
-                radius: -12
-            });
-
-            fill.events.on("click", function (event) {
-                var dataItem = event.target.dataItem;
-                if (event.target.get("active")) {
-                    categoryAxis.zoom(0, 1);
-                } else {
-                    categoryAxis.zoomToCategories(dataItem.get("category"), dataItem.get("endCategory"));
-                }
-            });
-        }
-
-        series.data.setAll(contactData);
-        categoryAxis.data.setAll(contactData);
-        createRange(lipids[0], contactData, 0);
-
-        series.appear(100);
-        chart.appear(100);
+        [chart, series, axisRange, categoryAxis, createRange] = radarApp()
 
         ///////////////////////////////////////////
         /////////////// PieApp ////////////////////
@@ -1160,151 +1179,154 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         // ##########################
-        var button = chart.plotContainer.children.push(am5.Button.new(root, {
-            dx: 0,
-            dy: 0,
-            // layer: 40,
-            label: am5.Label.new(root, {
-              text: "Change Chart"
-            })
-          }));
 
-        button.events.on("click", function(ev) {
-            root.container.children.clear();
+        function networkApp() {
 
+            var root = am5.Root.new("chartdiv");
+
+            root.setThemes([
+              am5themes_Animated.new(root)
+            ]);
 
             var linkDefaultOpacity = 0.5,
             lihnkHoveredOpacity = 1;
 
-        // Create series
-        var series = root.container.children.push(am5flow.ChordNonRibbon.new(root, {
-          sourceIdField: "from",
-          targetIdField: "to",
-          valueField: "value",
-          padAngle: 0,
-          startAngle: 90,
-          draggable: true,
+            // Create series
+            var series = root.container.children.push(am5flow.ChordNonRibbon.new(root, {
+            sourceIdField: "from",
+            targetIdField: "to",
+            valueField: "value",
+            padAngle: 0,
+            startAngle: 90,
+            draggable: true,
 
-        }));
+            }));
 
-        series.nodes.labels.template.setAll({
-          textType: "radial",
-          fontSize: "0.5em",
-          radius: 15,
-        });
+            series.nodes.labels.template.setAll({
+            textType: "radial",
+            fontSize: "0.5em",
+            radius: 15,
+            });
 
-        series.nodes.bullets.push(function (root, series, dataItem) {
-          return am5.Bullet.new(root, {
-            sprite: am5.Circle.new(root, {
-              radius: 2.5,
-              fillOpacity: 0.3,
-              fill: am5.color(0x000000),
-            }),
-          });
-        });
+            series.nodes.bullets.push(function (root, series, dataItem) {
+            return am5.Bullet.new(root, {
+                sprite: am5.Circle.new(root, {
+                radius: 2.5,
+                fillOpacity: 0.3,
+                fill: am5.color(0x000000),
+                }),
+            });
+            });
 
-        series.children.moveValue(series.bulletsContainer, 0);
+            series.children.moveValue(series.bulletsContainer, 0);
 
-        series.nodes.rectangles.template.events.on("pointerover", function(ev){
-            var incomingLinks = ev.target.dataItem._settings.incomingLinks
+            series.nodes.rectangles.template.events.on("pointerover", function(ev){
+                var incomingLinks = ev.target.dataItem._settings.incomingLinks
+                var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
+                if (incomingLinks != undefined) {
+                    incomingLinks.forEach(link => {
+                        link._settings.link._settings.stroke = am5.color(0xff0000)
+                        link._settings.link._display.alpha = lihnkHoveredOpacity
+                    })
+                }
+                if (outgoingLinks != undefined) {
+                    outgoingLinks.forEach(link => {
+                        link._settings.link._settings.stroke = am5.color(0xff0000)
+                        link._settings.link._display.alpha = lihnkHoveredOpacity
+                    })
+                }
+            })
+
+            series.nodes.rectangles.template.events.on("pointerout", function(ev){
+            var incomingLinks = ev.target._dataItem._settings.incomingLinks
             var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
             if (incomingLinks != undefined) {
                 incomingLinks.forEach(link => {
-                    link._settings.link._settings.stroke = am5.color(0xff0000)
-                    link._settings.link._display.alpha = lihnkHoveredOpacity
+                    link._settings.link._settings.stroke = am5.color("#8E8A8A")
+                    link._settings.link._display.alpha = linkDefaultOpacity
                 })
             }
             if (outgoingLinks != undefined) {
                 outgoingLinks.forEach(link => {
-                    link._settings.link._settings.stroke = am5.color(0xff0000)
-                    link._settings.link._display.alpha = lihnkHoveredOpacity
+                    link._settings.link._settings.stroke = am5.color("#8E8A8A")
+                    link._settings.link._display.alpha = linkDefaultOpacity
                 })
             }
-          })
-
-        series.nodes.rectangles.template.events.on("pointerout", function(ev){
-        var incomingLinks = ev.target._dataItem._settings.incomingLinks
-        var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
-        if (incomingLinks != undefined) {
-            incomingLinks.forEach(link => {
-                link._settings.link._settings.stroke = am5.color("#8E8A8A")
-                link._settings.link._display.alpha = linkDefaultOpacity
-            })
-        }
-        if (outgoingLinks != undefined) {
-            outgoingLinks.forEach(link => {
-                link._settings.link._settings.stroke = am5.color("#8E8A8A")
-                link._settings.link._display.alpha = linkDefaultOpacity
-            })
-        }
-        })
-
-        obj = {
-            "lipid": "CHOL",
-            // "residueID": ctx.category
-        }
-        fetch('/network/' + JSON.stringify(obj))
-        .then(response => response.json())
-        .then(responseData => {
-
-            // console.log('rD', rD);
-            data = responseData['chordElements']
-            posRes = responseData['positionResidues']
-            series.data.setAll(data);
-
-            series.links.template.setAll({
-                strokeWidth: 0.2,
-                opacity: linkDefaultOpacity,
-                stroke: am5.color("#8E8A8A"),
-                strokeStyle: "none",
             })
 
-            series.nodes.rectangles.template.setAll({
-                fillOpacity: 0,
-                fill: am5.color(0x095256),
-                tooltipText: "Residue [bold]{name}[/]\nContacts: {sum}"
-            });
+            obj = {
+                "lipid": "CHOL",
+                // "residueID": ctx.category
+            }
+            fetch('/network/' + JSON.stringify(obj))
+            .then(response => response.json())
+            .then(responseData => {
 
-            series.events.on("datavalidated", function () {
+                // console.log('rD', rD);
+                data = responseData['chordElements']
+                posRes = responseData['positionResidues']
+                series.data.setAll(data);
 
-                for (let ix = 0; ix < root.container.allChildren().length; ix++) {
-                    const el = root.container.allChildren()[ix];
+                series.links.template.setAll({
+                    strokeWidth: 0.2,
+                    opacity: linkDefaultOpacity,
+                    stroke: am5.color("#8E8A8A"),
+                    strokeStyle: "none",
+                })
 
-                    for (let jx = 0; jx < posRes.length; jx++) {
-                        const pos = posRes[jx];
-                        el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
-                        el.nodes.labels._values[pos]._display.visible = false
-                        el.nodes.rectangles.template._entities[pos]._display.visible = false
-                    }
-                    el.links._values.forEach((nodeLinks, ix) => {
-                        if (nodeLinks.dataItem.dataContext.from == 0) {
-                            nodeLinks._settings.strokeWidth = 0;
-                            nodeLinks._settings.strokeOpacity = 0;
-                            nodeLinks._display.visible = false
-                        } else {
-                            nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
+                series.nodes.rectangles.template.setAll({
+                    fillOpacity: 0,
+                    fill: am5.color(0x095256),
+                    tooltipText: "Residue [bold]{name}[/]\nContacts: {sum}"
+                });
+
+                series.events.on("datavalidated", function () {
+
+                    for (let ix = 0; ix < root.container.allChildren().length; ix++) {
+                        const el = root.container.allChildren()[ix];
+
+                        for (let jx = 0; jx < posRes.length; jx++) {
+                            const pos = posRes[jx];
+                            el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
+                            el.nodes.labels._values[pos]._display.visible = false
+                            el.nodes.rectangles.template._entities[pos]._display.visible = false
                         }
-                    })
-                }
+                        el.links._values.forEach((nodeLinks, ix) => {
+                            if (nodeLinks.dataItem.dataContext.from == 0) {
+                                nodeLinks._settings.strokeWidth = 0;
+                                nodeLinks._settings.strokeOpacity = 0;
+                                nodeLinks._display.visible = false
+                            } else {
+                                nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
+                            }
+                        })
+                    }
+                });
             });
-        });
 
-        // Make stuff animate on load
-        series.appear(1000, 100);
-
-
-        });
+            // Make stuff animate on load
+            series.appear(1000, 100);
 
 
+            var button2 = series.children.push(am5.Button.new(root, {
+                dx: 0,
+                dy: 0,
+                label: am5.Label.new(root, {
+                  text: "Change Chart"
+                })
+              }));
 
+            button2.events.on("click", function(ev) {
+                console.log('root', root)
+                root.dispose();
+                radarApp()
+                // console.log('chart', chart)
+                // root.container.children.clear();
 
+                // networkApp()
+            });
 
-
-
-
-
-
-
+        }
 
         ///////////////////////////////////////////
         ////////////// Hide Logos /////////////////
