@@ -15,7 +15,9 @@ var rootReferenceObjects;
 var networkRootReference;
 var globalLipidReference;
 
-networkRootReference = {"active": false}
+networkRootReference = {
+    "active": false
+}
 
 // Fetch the data from the backend
 var obj = {
@@ -817,20 +819,26 @@ fetch('/data/' + JSON.stringify(obj))
                     })
                 });
 
-                if (networkRootReference['active']) {
-                    lipidNodes = networkRootReference["series"].lipidNodes[lipidID]
-                    if (lipidNodes.length != 0) {
-                        am5.array.each(networkRootReference["series"].dataItems, function(dataItem) {
-                            if (dataItem.dataContext.from != 0 && dataItem.dataContext.to != 0) {
-                                dataItem.hide();
-                            }
-                            if (lipidNodes.includes(parseInt(dataItem.dataContext.from)) && lipidNodes.includes(parseInt(dataItem.dataContext.to))) {
-                                dataItem.show();
-                            }
-                        });
-
-                    }
+            if (networkRootReference['active']) {
+                lipidNodes = networkRootReference["series"].lipidNodes[lipidID]
+                console.log('lipidNodes', lipidNodes)
+                if (lipidNodes != undefined) {
+                    am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
+                        if (dataItem.dataContext.from != 0) {
+                            dataItem.hide();
+                        }
+                        if (lipidNodes.includes(parseInt(dataItem.dataContext.from)) && lipidNodes.includes(parseInt(dataItem.dataContext.to))) {
+                            dataItem.show();
+                        }
+                    });
+                } else {
+                    am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
+                        if (dataItem.dataContext.from != 0) {
+                            dataItem.hide();
+                        }
+                    });
                 }
+            }
         });
 
         // Should work for touch displays.
