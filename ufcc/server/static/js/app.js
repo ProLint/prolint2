@@ -14,6 +14,9 @@
 var rootReferenceObjects;
 var networkRootReference;
 var globalLipidReference;
+
+networkRootReference = {"active": false}
+
 // Fetch the data from the backend
 var obj = {
     "lipid": "",
@@ -778,8 +781,9 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         table.on("rowClick", function (e, row) {
+            lipidID = row.getData()['lipidID']
             obj = {
-                "lipidID": row.getData()['lipidID']
+                "lipidID": lipidID
             }
             fetch('/toplipids/' + JSON.stringify(obj))
                 .then(response => response.json())
@@ -813,6 +817,20 @@ fetch('/data/' + JSON.stringify(obj))
                     })
                 });
 
+                if (networkRootReference['active']) {
+                    lipidNodes = networkRootReference["series"].lipidNodes[lipidID]
+                    if (lipidNodes.length != 0) {
+                        am5.array.each(networkRootReference["series"].dataItems, function(dataItem) {
+                            if (dataItem.dataContext.from != 0 && dataItem.dataContext.to != 0) {
+                                dataItem.hide();
+                            }
+                            if (lipidNodes.includes(parseInt(dataItem.dataContext.from)) && lipidNodes.includes(parseInt(dataItem.dataContext.to))) {
+                                dataItem.show();
+                            }
+                        });
+
+                    }
+                }
         });
 
         // Should work for touch displays.
@@ -832,6 +850,7 @@ fetch('/data/' + JSON.stringify(obj))
                     ganttSeries.data.setAll(ganttData);
                     sortCategoryAxis()
                 });
+
         });
 
         // table.on("tableBuilt", function(e, row) {
@@ -1241,7 +1260,6 @@ fetch('/data/' + JSON.stringify(obj))
 
 
         // ##########################
-
         function networkApp(lipid = "CHOL") {
 
             var root = am5.Root.new("chartdiv");
@@ -1336,6 +1354,7 @@ fetch('/data/' + JSON.stringify(obj))
                     data = responseData['chordElements']
                     posRes = responseData['positionResidues']
                     series.data.setAll(data);
+                    series.lipidNodes = responseData['lipidNodes'];
 
                     series.links.template.setAll({
                         strokeWidth: 0.2,

@@ -93,4 +93,10 @@ def contact_chord(ts, top_lipid_ids, cutoff=100):
     nodes, hidden_node_indices = get_node_list(ts.query.selected.n_residues, linked_nodes)
     chord_elements = get_chord_elements(ts, nodes, ordered_combinations, cutoff=cutoff)
 
-    return chord_elements, hidden_node_indices
+    per_lipid_nodes = {}
+    for lipid, res_dict in lipid_contacts.items():
+        all_lipid_nodes = [x for x in res_dict if x in linked_nodes]
+        if all_lipid_nodes:
+            per_lipid_nodes[lipid] = all_lipid_nodes
+
+    return chord_elements, hidden_node_indices, per_lipid_nodes
