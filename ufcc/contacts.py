@@ -221,8 +221,6 @@ class Contacts(object):
         self.runner = Runner()
         self.cutoff = None
         self.contacts = None
-        self.contacts_sum = None
-        self.contact_frames = None
 
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
