@@ -20,6 +20,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
+        var frameNumber = responseData["frameNumber"];
+
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
         var proteins = responseData['proteins'];
@@ -446,9 +448,8 @@ fetch('/data/' + JSON.stringify(obj))
             if (lipid != axisRange.get("label").get('text')) {
                 obj.lipid = lipid
                 // TODO:
-                // get correct protein
-                // Update Circular App Data
-                obj.protein = "GIRK"
+                // For multiple proteins this is not going to work.
+                obj.protein = pieSeries.dataItems[0].dataContext.category
                 fetch('/data/' + JSON.stringify(obj))
                     .then(response => response.json())
                     .then(responseData => {
@@ -837,8 +838,8 @@ fetch('/data/' + JSON.stringify(obj))
 
         var ganttXAxis = ganttChart.xAxes.push(am5xy.ValueAxis.new(ganttRoot, {
             min: 0,
-            // max: 180,
-            strictMinMax: true,
+            max: frameNumber,
+            // strictMinMax: true,
             renderer: am5xy.AxisRendererX.new(ganttRoot, {}),
             tooltip: am5.Tooltip.new(ganttRoot, {
                 themeTags: ["axis"],
@@ -875,6 +876,7 @@ fetch('/data/' + JSON.stringify(obj))
             interactive: true,
             fillOpacity: 0.8,
             tooltipText: "{category}",
+            cursorOverStyle: "pointer",
             // Rounded corners for bars
             cornerRadiusTR: 5,
             cornerRadiusBR: 5,

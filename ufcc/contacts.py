@@ -304,8 +304,9 @@ class Contacts(object):
         # update code to handle multiple identical proteins
         # update code to handle multiple copies of different proteins
         resnames = self.query.selected.resnames
+        protein_name = "QueryGroup (Protein)"
         protein = (
-            "GIRK"  # TODO: we'll need to update this into a list and iterate over it
+            protein_name  # TODO: we'll need to update this into a list and iterate over it
         )
         lipids = list(np.unique(self.database.selected.resnames))
         sub_data = {
@@ -339,8 +340,8 @@ class Contacts(object):
 
         # TODO:
         # Hardcoded
-        proteins = ["GIRK"]
-        protein_counts = {"GIRK": 1}
+        proteins = [protein_name]
+        protein_counts = {protein_name: 1}
 
         pie_data = []
         for protein in proteins:
