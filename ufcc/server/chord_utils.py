@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+from inspect import ArgSpec
 import numpy as np
 from itertools import combinations
+from .utils import calculate_contact_intervals
 
 def per_lipid_contacts(ts, lipids, frame_cutoff=10):
     """
@@ -38,6 +40,19 @@ def sort_dict(d, cutoff=None):
         return dict(item_list[:cutoff])
     return dict(item_list)
 
+def residue_pair_matching_contacts(res1_contacts, res2_contacts):
+    """
+    docstring: important improvement to the network app contacts
+    """
+    total_contacts = 0
+    for s1, e1 in res1_contacts:
+        for s2, e2 in res2_contacts:
+            if not e1 < s2 and not s1 > e2:
+                contacts = min(e1, e2) - max(s1, s2)
+                total_contacts += contacts
+
+    return total_contacts
+
 def get_ordered_combinations(lipid_contacts):
     """
     This function turns residue:contact information into shared contacts. To speed up
@@ -60,8 +75,12 @@ def get_ordered_combinations(lipid_contacts):
     with the same lipid.
 
     TODO:
+    1.
     Is it possible to improve the last point, by counting only real shared contacts?
     The information is already contained in `contacts.contact_frames`.
+    2.
+    combinations call already returns an iterable. Simply by removing the
+    subsequent call to list().
     """
     ordered_combinations = {}
     for lipid_id, lipid_vals in lipid_contacts.items():
@@ -78,6 +97,31 @@ def get_ordered_combinations(lipid_contacts):
                 ordered_combinations[key] = value
 
     return ordered_combinations
+
+def shared_contacts(ts, top_lipids, lipid_contact_frames, *args, **kwargs):
+    """
+    Aim: improve the shortcomings outlined in `get_ordered_combinations`.
+    """
+    lipid_shared_contacts = {}
+    for lipid in top_lipids:
+        contact_intervals = calculate_contact_intervals(ts, lipid_contact_frames, lipid, *args, **kwargs)
+        residue_contacts = {}
+        for res1, res2 in combinations(contact_intervals.keys(), 2):
+            contacts = residue_pair_matching_contacts(contact_intervals[res1], contact_intervals[res2])
+            residue_contacts[f'{res1},{res2}'] = contacts
+        lipid_shared_contacts[lipid] = residue_contacts
+
+    shared_contacts_all = {}
+    for residue_pair_contacts in lipid_shared_contacts.values():
+        for residue_pair, pair_contacts in residue_pair_contacts.items():
+            if residue_pair in shared_contacts_all:
+                shared_contacts_all[residue_pair] += pair_contacts
+            else:
+                shared_contacts_all[residue_pair] = pair_contacts
+
+    # return sort_dict(shared_contacts_all)
+    return lipid_shared_contacts, sort_dict(shared_contacts_all)
+
 
 def get_linked_nodes(ordered_combinations, cutoff=100):
     """
@@ -152,7 +196,7 @@ def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
 
     return chord_elements
 
-def contact_chord(ts, top_lipid_ids, cutoff=100):
+def contact_chord(ts, top_lipid_ids, lipid_contact_frames, cutoff=100):
     """
     We call all functions here. We return the chord elements (these are the data
     amCharts needs to render nodes and links), we also return information on which
@@ -161,15 +205,23 @@ def contact_chord(ts, top_lipid_ids, cutoff=100):
     TODO:
     `per_lipid_nodes` can be further refined.
     """
-    lipid_contacts = per_lipid_contacts(ts, top_lipid_ids)
-    ordered_combinations = get_ordered_combinations(lipid_contacts)
+    # lipid_contacts = per_lipid_contacts(ts, top_lipid_ids)
+    lipid_shared_contacts, ordered_combinations = shared_contacts(
+        ts,
+        top_lipid_ids,
+        lipid_contact_frames,
+        residues_to_show=30,
+        intervals_to_filter_out=10
+        )
+    # ordered_combinations = get_ordered_combinations(lipid_contacts)
     linked_nodes = get_linked_nodes(ordered_combinations, cutoff=cutoff)
     nodes, hidden_node_indices = get_node_list(ts.query.selected.n_residues, linked_nodes)
     chord_elements = get_chord_elements(ts, nodes, ordered_combinations, cutoff=cutoff)
 
     per_lipid_nodes = {}
-    for lipid, res_dict in lipid_contacts.items():
-        all_lipid_nodes = [x for x in res_dict if x in linked_nodes]
+    for lipid, pair_contacts in lipid_shared_contacts.items():
+        lipid_nodes = get_linked_nodes(pair_contacts, cutoff=None)
+        all_lipid_nodes = [x for x in lipid_nodes if x in linked_nodes]
         if all_lipid_nodes:
             per_lipid_nodes[lipid] = all_lipid_nodes
 

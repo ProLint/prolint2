@@ -99,6 +99,9 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out
             "lipid_id": lipid_id
             })
 
+    # TODO:
+    # `categories` is now just the `gantt_data` keys.
+    # replace with: `list(gantt_data.keys())` or remove entirely
     categories = []
     for y in [x['category'] for x in gantt_data]:
         if y not in categories:
@@ -220,7 +223,12 @@ def network_listener(metadata):
     lipid = metadata['lipid']
 
     top_lipid_ids = [x[0] for x in BACKEND_DATA['top_lipids'][lipid]]
-    chord_elements, hidden_node_indices, per_lipid_nodes = contact_chord(TS, top_lipid_ids, cutoff=100)
+    chord_elements, hidden_node_indices, per_lipid_nodes = contact_chord(
+        TS,
+        top_lipid_ids,
+        BACKEND_DATA['lipid_contact_frames'],
+        cutoff=100
+        )
 
     return {
         "chordElements": chord_elements,

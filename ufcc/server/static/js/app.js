@@ -42,6 +42,8 @@ fetch('/data/' + JSON.stringify(obj))
     .then(response => response.json())
     .then(responseData => {
 
+        console.log('responseData', responseData)
+
         var frameNumber = responseData["frameNumber"];
 
         var contactData = responseData['data'];
@@ -344,7 +346,7 @@ fetch('/data/' + JSON.stringify(obj))
                 dx: 0,
                 dy: 0,
                 label: am5.Label.new(root, {
-                    text: "Network Application",
+                    text: "Shared Contacts",
                     fontSize: 10,
                 })
             }));
@@ -1392,7 +1394,7 @@ fetch('/data/' + JSON.stringify(obj))
                     series.nodes.rectangles.template.setAll({
                         fillOpacity: 0,
                         fill: hoverColor,
-                        tooltipText: "Residue [bold]{name}[/]\nContacts: {sum}"
+                        tooltipText: "Residue [bold]{name}[/]\nShared Contacts: {sum}"
                     });
 
                     series.events.on("datavalidated", function () {
