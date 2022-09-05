@@ -69,6 +69,8 @@ args = ufcc_parser.parse_args()
 
 # print("args", type(args), args)
 start_server(payload=args, reloader=False, i_bool=args.i_bool)
+import sys
+sys.exit()
 
 # Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
 mass_flag = 0
