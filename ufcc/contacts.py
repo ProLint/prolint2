@@ -108,7 +108,7 @@ class SerialContacts(AnalysisBase):
                 self.contact_frames[string] = [self._frame_index]
 
     def _conclude(self):
-        # self.contacts_sum = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts_sum.items()))
+        self.contacts_sum = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts_sum.items()))
         self.contacts = dict(
             map(
                 lambda x: (
