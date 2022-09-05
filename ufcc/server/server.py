@@ -292,6 +292,7 @@ def listener(metadata):
         "heatmapData": hm_data,
         "lipidAtomsData": la_data,
         "residueAtomsData": ra_data,
+        "frameNumber": TS.n_frames,
     }
     return response
 
