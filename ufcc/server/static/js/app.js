@@ -802,60 +802,79 @@ fetch('/data/' + JSON.stringify(obj))
         });
 
         table.on("rowClick", function (e, row) {
+
+            classList = row.getElement().classList;
+
             lipidID = row.getData()['lipidID']
             obj = {
                 "lipidID": lipidID
             }
-            fetch('/toplipids/' + JSON.stringify(obj))
-                .then(response => response.json())
-                .then(tableResponseData => {
-                    ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
-                        ...lp,
-                        besi: 'green'
-                    }))
-                    ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
-                        category: v
-                    })))
-                    ganttSeries.data.setAll(ganttData);
-                    sortCategoryAxis()
+            if (classList.contains('tabulator-selected')) {
+                fetch('/toplipids/' + JSON.stringify(obj))
+                    .then(response => response.json())
+                    .then(tableResponseData => {
+                        ganttData = tableResponseData['ganttData'].map((lp, ix) => ({
+                            ...lp,
+                        }))
+                        ganttYAxis.data.setAll(tableResponseData['topLipids'].map(v => ({
+                            category: v
+                        })))
+                        ganttSeries.data.setAll(ganttData);
+                        sortCategoryAxis()
 
-                    // On LipidID selection, show interacting residue on the 3D viewer.
-                    var selectSections = []
-                    for (let ix = 0; ix < ganttData.length; ix++) {
-                        const residueID = ganttData[ix].category;
-                        const residueColor = ganttChart.get('colors').getIndex(ix)
+                        // On LipidID selection, show interacting residue on the 3D viewer.
+                        var selectSections = []
+                        for (let ix = 0; ix < ganttData.length; ix++) {
+                            const residueID = ganttData[ix].category;
+                            const residueColor = ganttChart.get('colors').getIndex(ix)
 
-                        selectSections.push({
-                            residue_number: parseInt(residueID),
-                            sideChain: true,
-                            representation: 'spacefill',
-                            representationColor: residueColor
+                            selectSections.push({
+                                residue_number: parseInt(residueID),
+                                sideChain: true,
+                                representation: 'spacefill',
+                                representationColor: residueColor
+                            })
+                        }
+
+                        viewerInstance.visual.select({
+                            data: selectSections,
                         })
-                    }
+                    });
 
-                    viewerInstance.visual.select({
-                        data: selectSections,
-                    })
-                });
+            } else {
+                viewerInstance.visual.select({
+                    data: [],
+                })
+
+            }
 
             if (networkRootReference['active']) {
-                lipidNodes = networkRootReference["series"].lipidNodes[lipidID]
-                console.log('lipidNodes', lipidNodes)
-                if (lipidNodes != undefined) {
-                    am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
-                        if (dataItem.dataContext.from != 0) {
-                            dataItem.hide();
-                        }
-                        if (lipidNodes.includes(parseInt(dataItem.dataContext.from)) && lipidNodes.includes(parseInt(dataItem.dataContext.to))) {
-                            dataItem.show();
-                        }
-                    });
+                if (classList.contains('tabulator-selected')) {
+                    lipidNodes = networkRootReference["series"].lipidNodes[lipidID]
+                    console.log('lipidNodes', lipidNodes)
+                    if (lipidNodes != undefined) {
+                        am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
+                            if (dataItem.dataContext.from != 0) {
+                                dataItem.hide();
+                            }
+                            if (lipidNodes.includes(parseInt(dataItem.dataContext.from)) && lipidNodes.includes(parseInt(dataItem.dataContext.to))) {
+                                dataItem.show();
+                            }
+                        });
+                    } else {
+                        am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
+                            if (dataItem.dataContext.from != 0) {
+                                dataItem.hide();
+                            }
+                        });
+                    }
                 } else {
                     am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
                         if (dataItem.dataContext.from != 0) {
-                            dataItem.hide();
+                            dataItem.show();
                         }
                     });
+                    // }
                 }
             }
         });
@@ -1317,38 +1336,38 @@ fetch('/data/' + JSON.stringify(obj))
                 radius: 15,
             });
 
-            series.nodes.bullets.push(function(_root, _series, dataItem) {
+            series.nodes.bullets.push(function (_root, _series, dataItem) {
                 var bulletCircle = am5.Circle.new(root, {
-                  radius: 2.5,
-                  fill: am5.color("#8E8A8A"),
-                  fillOpacity: 1,
+                    radius: 2.5,
+                    fill: am5.color("#8E8A8A"),
+                    fillOpacity: 1,
                 });
 
-                bulletCircle.adapters.add("fill", function(fill, target) {
-                  var dataItem = target.dataItem;
-                  if (dataItem) {
-                    var sum = dataItem.get("sum", 0) // we can also use sumIncoming or sumOutgoing
-                    var min = Infinity;
-                    var max = -Infinity;
-                    am5.array.each(series.nodes.dataItems, function(dataItem) {
-                      var value = dataItem.get("sum");
-                      if (value < min) {
-                        min = value;
-                      }
-                      if (value > max) {
-                        max = value;
-                      }
-                    })
+                bulletCircle.adapters.add("fill", function (fill, target) {
+                    var dataItem = target.dataItem;
+                    if (dataItem) {
+                        var sum = dataItem.get("sum", 0) // we can also use sumIncoming or sumOutgoing
+                        var min = Infinity;
+                        var max = -Infinity;
+                        am5.array.each(series.nodes.dataItems, function (dataItem) {
+                            var value = dataItem.get("sum");
+                            if (value < min) {
+                                min = value;
+                            }
+                            if (value > max) {
+                                max = value;
+                            }
+                        })
 
-                    return am5.Color.interpolate((sum - min) / (max - min), am5.color(0x673AB7), am5.color(0xF44336));
-                  }
-                  return fill;
+                        return am5.Color.interpolate((sum - min) / (max - min), am5.color(0x673AB7), am5.color(0xF44336));
+                    }
+                    return fill;
                 })
 
                 return am5.Bullet.new(root, {
-                  sprite: bulletCircle
+                    sprite: bulletCircle
                 });
-              });
+            });
 
             series.children.moveValue(series.bulletsContainer, 0);
 
@@ -1372,7 +1391,6 @@ fetch('/data/' + JSON.stringify(obj))
 
             series.nodes.rectangles.template.events.on("pointerover", function (ev) {
                 var di = ev.target.dataItem;
-                console.log('ev', di)
                 if (di) {
                     networkHeatLegend.showValue(di._settings.sum);
                 }
