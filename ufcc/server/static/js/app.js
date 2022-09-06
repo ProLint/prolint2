@@ -851,7 +851,6 @@ fetch('/data/' + JSON.stringify(obj))
             if (networkRootReference['active']) {
                 if (classList.contains('tabulator-selected')) {
                     lipidNodes = networkRootReference["series"].lipidNodes[lipidID]
-                    console.log('lipidNodes', lipidNodes)
                     if (lipidNodes != undefined) {
                         am5.array.each(networkRootReference["series"].dataItems, function (dataItem) {
                             if (dataItem.dataContext.from != 0) {
@@ -1395,37 +1394,108 @@ fetch('/data/' + JSON.stringify(obj))
                     networkHeatLegend.showValue(di._settings.sum);
                 }
 
-                var incomingLinks = ev.target.dataItem._settings.incomingLinks
-                var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
-                if (incomingLinks != undefined) {
+                var incomingLinks = di.get('incomingLinks')
+                var outgoingLinks = di.get('outgoingLinks')
+                var selectSections = [{
+                    residue_number: parseInt(di.dataContext.id),
+                    color: {
+                        r: 255,
+                        g: 0,
+                        b: 255
+                    }
+                }]
+                if (incomingLinks) {
                     incomingLinks.forEach(link => {
+                        sourceId = link.get('sourceId')
+                        if (sourceId) {
+                            selectSections.push({
+                                residue_number: parseInt(sourceId),
+                                color: {
+                                    r: 255,
+                                    g: 0,
+                                    b: 255
+                                }
+                            })
+                        }
                         link._settings.link._settings.stroke = hoverColor
                         link._settings.link._display.alpha = lihnkHoveredOpacity
                     })
                 }
-                if (outgoingLinks != undefined) {
+                if (outgoingLinks) {
                     outgoingLinks.forEach(link => {
+                        targetId = link.get('targetId')
+                        selectSections.push({
+                            residue_number: parseInt(targetId),
+                            color: {
+                                r: 255,
+                                g: 0,
+                                b: 255
+                            }
+                        })
                         link._settings.link._settings.stroke = hoverColor
                         link._settings.link._display.alpha = lihnkHoveredOpacity
                     })
                 }
+                viewerInstance.visual.highlight({
+                    data: selectSections,
+                })
             })
 
             series.nodes.rectangles.template.events.on("pointerout", function (ev) {
+
                 var incomingLinks = ev.target._dataItem._settings.incomingLinks
                 var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
-                if (incomingLinks != undefined) {
+                if (incomingLinks) {
                     incomingLinks.forEach(link => {
                         link._settings.link._settings.stroke = am5.color("#8E8A8A")
                         link._settings.link._display.alpha = linkDefaultOpacity
                     })
                 }
-                if (outgoingLinks != undefined) {
+                if (outgoingLinks) {
                     outgoingLinks.forEach(link => {
                         link._settings.link._settings.stroke = am5.color("#8E8A8A")
                         link._settings.link._display.alpha = linkDefaultOpacity
                     })
                 }
+                var selectSections = []
+                viewerInstance.visual.highlight({
+                    data: selectSections,
+                })
+            })
+
+            series.nodes.rectangles.template.events.on('click', function(ev) {
+
+                di = ev.target.dataItem;
+                var incomingLinks = di.get('incomingLinks')
+                var outgoingLinks = di.get('outgoingLinks')
+                var selectSections = [{
+                    residue_number: parseInt(di.dataContext.id),
+                    representation: 'spacefill',
+                }]
+                if (incomingLinks) {
+                    incomingLinks.forEach(link => {
+                        sourceId = link.get('sourceId')
+                        if (sourceId) {
+                            selectSections.push({
+                                residue_number: parseInt(sourceId),
+                                representation: 'spacefill',
+                            })
+                        }
+                    })
+                }
+                if (outgoingLinks) {
+                    outgoingLinks.forEach(link => {
+                        targetId = link.get('targetId')
+                        selectSections.push({
+                            residue_number: parseInt(targetId),
+                            representation: 'spacefill',
+                        })
+                    })
+                }
+                viewerInstance.visual.select({
+                    data: selectSections,
+                })
+
             })
 
             obj = {
