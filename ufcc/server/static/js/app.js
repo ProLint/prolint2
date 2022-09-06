@@ -1463,7 +1463,7 @@ fetch('/data/' + JSON.stringify(obj))
                 })
             })
 
-            series.nodes.rectangles.template.events.on('click', function(ev) {
+            series.nodes.rectangles.template.events.on('click', function (ev) {
 
                 di = ev.target.dataItem;
                 var incomingLinks = di.get('incomingLinks')
@@ -1524,12 +1524,13 @@ fetch('/data/' + JSON.stringify(obj))
                         tooltipText: "Residue [bold]{name}[/]\nShared Contacts: {sum}"
                     });
 
-                    series.events.on("datavalidated", function () {
+                    series.events.on("datavalidated", function (ev) {
+                        el = ev.target;
 
                         var bulletSums = [];
                         for (let ix = 0; ix < series.nodes.dataItems.length; ix++) {
-                            var el = series.nodes.dataItems[ix];
-                            sum = el.get('sum');
+                            var di = series.nodes.dataItems[ix];
+                            sum = di.get('sum');
                             if (sum != 0) {
                                 bulletSums.push(sum);
                             }
@@ -1538,25 +1539,21 @@ fetch('/data/' + JSON.stringify(obj))
                         networkHeatLegend.set("startValue", Math.min(...bulletSums));
                         networkHeatLegend.set("endValue", Math.max(...bulletSums));
 
-                        for (let ix = 0; ix < root.container.allChildren().length; ix++) {
-                            const el = root.container.allChildren()[ix];
-
-                            for (let jx = 0; jx < posRes.length; jx++) {
-                                const pos = posRes[jx];
-                                el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
-                                el.nodes.labels._values[pos]._display.visible = false
-                                el.nodes.rectangles.template._entities[pos]._display.visible = false
-                            }
-                            el.links._values.forEach((nodeLinks, ix) => {
-                                if (nodeLinks.dataItem.dataContext.from == 0) {
-                                    nodeLinks._settings.strokeWidth = 0;
-                                    nodeLinks._settings.strokeOpacity = 0;
-                                    nodeLinks._display.visible = false
-                                } else {
-                                    nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
-                                }
-                            })
+                        for (let jx = 0; jx < posRes.length; jx++) {
+                            const pos = posRes[jx];
+                            el.nodes.dataItems[pos].bullets[0]._settings.sprite._display.visible = false
+                            el.nodes.labels._values[pos]._display.visible = false
+                            el.nodes.rectangles.template._entities[pos]._display.visible = false
                         }
+                        el.links._values.forEach((nodeLinks, ix) => {
+                            if (nodeLinks.dataItem.dataContext.from == 0) {
+                                nodeLinks._settings.strokeWidth = 0;
+                                nodeLinks._settings.strokeOpacity = 0;
+                                nodeLinks._display.visible = false
+                            } else {
+                                nodeLinks._settings.strokeWidth = nodeLinks.dataItem.dataContext.valueWidth * 2;
+                            }
+                        })
                     });
                 });
 
