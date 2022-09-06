@@ -1313,21 +1313,44 @@ fetch('/data/' + JSON.stringify(obj))
 
             series.nodes.labels.template.setAll({
                 textType: "radial",
-                fontSize: "0.5em",
+                fontSize: "0.6em",
                 radius: 15,
             });
 
-            series.nodes.bullets.push(function (root, series, dataItem) {
-                return am5.Bullet.new(root, {
-                    sprite: am5.Circle.new(root, {
-                        radius: 2.5,
-                        fillOpacity: 0.3,
-                        fill: am5.color(0x000000),
-                    }),
+            series.nodes.bullets.push(function(_root, _series, dataItem) {
+                var bulletCircle = am5.Circle.new(root, {
+                  radius: 2.5,
+                  fill: am5.color("#8E8A8A"),
+                  fillOpacity: 1,
                 });
-            });
 
-            series.children.moveValue(series.bulletsContainer, 0);
+                bulletCircle.adapters.add("fill", function(fill, target) {
+                  var dataItem = target.dataItem;
+                  if (dataItem) {
+                    var sum = dataItem.get("sum", 0) // we can also use sumIncoming or sumOutgoing
+                    var min = Infinity;
+                    var max = -Infinity;
+                    am5.array.each(series.nodes.dataItems, function(dataItem) {
+                      var value = dataItem.get("sum");
+                      if (value < min) {
+                        min = value;
+                      }
+                      if (value > max) {
+                        max = value;
+                      }
+                    })
+
+                    return am5.Color.interpolate((sum - min) / (max - min), am5.color(0x673AB7), am5.color(0xF44336));
+                  }
+                  return fill;
+                })
+
+                return am5.Bullet.new(root, {
+                  sprite: bulletCircle
+                });
+              });
+
+              series.children.moveValue(series.bulletsContainer, 0);
 
             hoverColor = am5.color(0xff0000);
             am5.array.each(subSeries.dataItems, function (dataItem, ix) {
