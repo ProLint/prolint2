@@ -1350,7 +1350,7 @@ fetch('/data/' + JSON.stringify(obj))
                 });
               });
 
-              series.children.moveValue(series.bulletsContainer, 0);
+            series.children.moveValue(series.bulletsContainer, 0);
 
             hoverColor = am5.color(0xff0000);
             am5.array.each(subSeries.dataItems, function (dataItem, ix) {
@@ -1359,8 +1359,24 @@ fetch('/data/' + JSON.stringify(obj))
                 }
             })
 
+            // Add heat legend
+            var networkHeatLegend = series.children.push(am5.HeatLegend.new(root, {
+                orientation: "horizontal",
+                startColor: am5.color(0x673AB7),
+                endColor: am5.color(0xF44336),
+                width: 160,
+                x: am5.percent(70),
+                y: am5.percent(95),
+                opacity: 1,
+            }));
 
             series.nodes.rectangles.template.events.on("pointerover", function (ev) {
+                var di = ev.target.dataItem;
+                console.log('ev', di)
+                if (di) {
+                    networkHeatLegend.showValue(di._settings.sum);
+                }
+
                 var incomingLinks = ev.target.dataItem._settings.incomingLinks
                 var outgoingLinks = ev.target.dataItem._settings.outgoingLinks
                 if (incomingLinks != undefined) {
@@ -1421,6 +1437,18 @@ fetch('/data/' + JSON.stringify(obj))
                     });
 
                     series.events.on("datavalidated", function () {
+
+                        var bulletSums = [];
+                        for (let ix = 0; ix < series.nodes.dataItems.length; ix++) {
+                            var el = series.nodes.dataItems[ix];
+                            sum = el.get('sum');
+                            if (sum != 0) {
+                                bulletSums.push(sum);
+                            }
+                        }
+
+                        networkHeatLegend.set("startValue", Math.min(...bulletSums));
+                        networkHeatLegend.set("endValue", Math.max(...bulletSums));
 
                         for (let ix = 0; ix < root.container.allChildren().length; ix++) {
                             const el = root.container.allChildren()[ix];
