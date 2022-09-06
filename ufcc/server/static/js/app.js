@@ -1470,6 +1470,7 @@ fetch('/data/' + JSON.stringify(obj))
                 var outgoingLinks = di.get('outgoingLinks')
                 var selectSections = [{
                     residue_number: parseInt(di.dataContext.id),
+                    representationColor: {r:255, g:0, b:0},
                     representation: 'spacefill',
                 }]
                 if (incomingLinks) {
@@ -1478,6 +1479,7 @@ fetch('/data/' + JSON.stringify(obj))
                         if (sourceId) {
                             selectSections.push({
                                 residue_number: parseInt(sourceId),
+                                representationColor: {r:255, g:255, b:255},
                                 representation: 'spacefill',
                             })
                         }
