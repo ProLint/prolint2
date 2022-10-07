@@ -61,7 +61,7 @@ For a more detailed description of the actions, please refer to the README.md fi
     def add_atomgroups(ag_list):
         combined = ag_list[0]
         for ag in ag_list[1:]:
-            combined = mda.Merge(combined, ag)
+            combined = mda.Merge(combined.atoms, ag)
         return combined
 
     print_action_keys()
@@ -198,10 +198,12 @@ For a more detailed description of the actions, please refer to the README.md fi
                     else:
                         ag_list = [groups_dict[int(x)][1] for x in input_list[1:]]
                         combined = add_atomgroups(ag_list).atoms
+                        combined.dimensions = groups_dict[int(input_list[2])][1].dimensions
                         groups_dict[max(groups_dict.keys()) + 1] = [
                             "Group combined from {}".format(input_list[1:]),
                             combined,
                         ]
+
             elif input_list[0] == "del":
                 if len(input_list) > 2:
                     print("Error: Too many arguments.")
