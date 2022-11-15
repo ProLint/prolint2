@@ -167,6 +167,7 @@ class SerialDistances(AnalysisBase):
         self.distance_array = np.mean(self.result_array, axis=0)
         del self.result_array
 
+
 class Runner(object):
     """
     Class to configure the runner for the calculations of distances. As the *parallel* routine uses
@@ -265,7 +266,7 @@ class Contacts(object):
             temp_instance.run(verbose=True)
         elif self.runner.backend == "parallel":
             print(
-            "The parallel routine is not included in this DEMO release of the software, as our main goal is to see how the software behaves with different types and how we can improve its capabilities. Please use the serial routine for now and let us now your feedback."
+                "The parallel routine is not included in this DEMO release of the software, as our main goal is to see how the software behaves with different types and how we can improve its capabilities. Please use the serial routine for now and let us now your feedback."
             )
 
         self.contacts = temp_instance.contacts
@@ -296,7 +297,6 @@ class Contacts(object):
         with open(path, "rb") as f:
             self.contacts = pickle.load(f)
 
-
     def server_payload(self):
 
         # TODO:
@@ -305,9 +305,7 @@ class Contacts(object):
         # update code to handle multiple copies of different proteins
         resnames = self.query.selected.resnames
         protein_name = "QueryGroup (Protein)"
-        protein = (
-            protein_name  # TODO: we'll need to update this into a list and iterate over it
-        )
+        protein = protein_name  # TODO: we'll need to update this into a list and iterate over it
         lipids = list(np.unique(self.database.selected.resnames))
         sub_data = {
             k: {"category": k, "value": 0} for k in lipids

@@ -94,7 +94,11 @@ For a more detailed description of the actions, please refer to the README.md fi
                             groups_dict[int(input_list[1])][1]
                         )
                         db_qr["Database"] = groups_dict[int(input_list[1])][1]
-                        print("Database group updated to {} atoms.".format(groups_dict[int(input_list[1])][1].n_atoms))
+                        print(
+                            "Database group updated to {} atoms.".format(
+                                groups_dict[int(input_list[1])][1].n_atoms
+                            )
+                        )
             elif input_list[0] == "qr":
                 if len(input_list) > 2:
                     print("Error: Too many arguments.")
@@ -111,7 +115,11 @@ For a more detailed description of the actions, please refer to the README.md fi
                     else:
                         target_system.query.select(groups_dict[int(input_list[1])][1])
                         db_qr["Query"] = groups_dict[int(input_list[1])][1]
-                        print("Query group updated to {} atoms.".format(groups_dict[int(input_list[1])][1].n_atoms))
+                        print(
+                            "Query group updated to {} atoms.".format(
+                                groups_dict[int(input_list[1])][1].n_atoms
+                            )
+                        )
 
             # creating subgroups
             elif input_list[0] == "gb":
@@ -198,7 +206,9 @@ For a more detailed description of the actions, please refer to the README.md fi
                     else:
                         ag_list = [groups_dict[int(x)][1] for x in input_list[1:]]
                         combined = add_atomgroups(ag_list).atoms
-                        combined.dimensions = groups_dict[int(input_list[2])][1].dimensions
+                        combined.dimensions = groups_dict[int(input_list[2])][
+                            1
+                        ].dimensions
                         groups_dict[max(groups_dict.keys()) + 1] = [
                             "Group combined from {}".format(input_list[1:]),
                             combined,
