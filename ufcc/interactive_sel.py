@@ -7,65 +7,77 @@ r"""Interactive selection of Database and Query
 
 import MDAnalysis as mda
 
-
+# Function to select the query and the database groups interactively starting from a UFCC object. It returns a new UFCC object with the selected groups for the query and the database.
 def interactive_selection(target_system):
+
+    # default selections for query and database
     db_qr = {
         "Database": target_system.database.selected,
         "Query": target_system.query.selected,
     }
 
+    # dictionary to store the groups for selections
     groups_dict = {
         0: ["System", target_system.query.whole.universe.atoms],
         1: ["Protein", target_system.query.whole],
         2: ["Lipids", target_system.database.whole],
     }
 
+    # adding groups for each lipid type in the database
     groups_to_add = target_system.database.whole.universe.select_atoms(
         "not protein"
     ).groupby("resnames")
     for label, ag in groups_to_add.items():
         groups_dict[max(groups_dict.keys()) + 1] = ["{}".format(label), ag]
 
+    # function to print action labels
     def print_action_keys():
         print(
             """\nActions keys:\ndb\t:  update database (i.e. >> db Group_ID).\nqr\t:  update query (i.e. >> qr Group_ID).\ngb\t:  group by topological attribute (i.e. >> gp Group_ID resnames).\nsl\t:  split group (i.e. >> sl Group_ID residue)\nadd\t:  merge two or more groups (i.e. >> add Group_ID1 Group_ID2 ... Group_IDn).\ndel\t:  delete a group (i.e. >> del Group_ID).\nlg\t:  print the groups.\nh\t:  print the list of action keys.\ne\t:  exit interactive selection mode.\nFor a more detailed description of the actions, please refer to the README.md file.
             """
         )
 
+    # function to print the groups for selections
     def print_list_groups():
         print("\nSelection groups:\n")
         for key, value in groups_dict.items():
             print("({}) : {} --> {} atoms".format(key, value[0], value[1].n_atoms))
 
+    # function to print the query and database selections
     def print_db_qr():
         print("\nDatabase and Query groups:\n")
         for key, value in db_qr.items():
             print("{} --> {} atoms".format(key, value.n_atoms))
         print("-----------------------------------------------------")
 
+    # function to print the help message
     def print_help_message():
         print(
             "You can type (lg) to list the groups, or (h) to review the available action keys with examples."
         )
 
+    # function to combine two or more AtomGroups
     def add_atomgroups(ag_list):
         combined = ag_list[0]
         for ag in ag_list[1:]:
             combined = mda.Merge(combined.atoms, ag)
         return combined
 
+    # calling print functions
     print_action_keys()
     print_db_qr()
     print_list_groups()
 
+    # stariting the interactive selection mode
     input_key = ""
+    # loop to keep the interactive selection mode open until the user decides to exit ("e")
     while input_key != "e":
-        # print_help_message()
         input_key = input(">> ")
         if input_key != "e" and len(input_key) > 0:
+            # splitting the input key into a list of strings
             input_list = input_key.split()
 
-            # updating database and query groups
+            # updating database action
             if input_list[0] == "db":
                 if len(input_list) > 2:
                     print("Error: Too many arguments.")
@@ -89,6 +101,8 @@ def interactive_selection(target_system):
                                 groups_dict[int(input_list[1])][1].n_atoms
                             )
                         )
+
+            # updating query action
             elif input_list[0] == "qr":
                 if len(input_list) > 2:
                     print("Error: Too many arguments.")
@@ -111,7 +125,7 @@ def interactive_selection(target_system):
                             )
                         )
 
-            # creating subgroups
+            # grouping by topological attribute action
             elif input_list[0] == "gb":
                 if len(input_list) > 3:
                     print("Error: Too many arguments.")
@@ -144,6 +158,8 @@ def interactive_selection(target_system):
                                 ),
                                 ag,
                             ]
+
+            # splitting group action
             elif input_list[0] == "sl":
                 if len(input_list) > 3:
                     print("Error: Too many arguments.")
@@ -178,7 +194,7 @@ def interactive_selection(target_system):
                                 ag,
                             ]
 
-            # logical operations with groups
+            # combining groups action
             elif input_list[0] == "add":
                 if len(input_list) < 3:
                     print("Error: Too few arguments.")
@@ -204,6 +220,7 @@ def interactive_selection(target_system):
                             combined,
                         ]
 
+            # removing group action
             elif input_list[0] == "del":
                 if len(input_list) > 2:
                     print("Error: Too many arguments.")
@@ -233,14 +250,17 @@ def interactive_selection(target_system):
                 else:
                     print_action_keys()
 
-            # exit actions
+            # unknown actions
             else:
                 print(
                     "Unknown action key. Please type (h) to see the available action keys."
                 )
 
+        # if no action key is given keep the loop going
         elif input_key != "e" and len(input_key) == 0:
             continue
+
+        # exiting the interactive selection mode
         else:
             print("Exiting interactive selection.")
             break
