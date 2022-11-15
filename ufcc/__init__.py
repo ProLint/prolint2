@@ -13,9 +13,8 @@ __version__ = versions["version"]
 __git_revision__ = versions["full-revisionid"]
 del get_versions, versions
 
-
+# to get the paths relative to the root of the package
 _ROOT = os.path.abspath(os.path.dirname(__file__))
-
 
 def get_data():
     return os.path.join(_ROOT, "data")
