@@ -28,18 +28,8 @@ def interactive_selection(target_system):
 
     def print_action_keys():
         print(
-            """\nActions keys:
-db  :  update database (i.e. >> db Group_ID).
-qr  :  update query (i.e. >> qr Group_ID).
-gb :   group by topological attribute (i.e. >> gp Group_ID resnames). 
-sl  :  split group (i.e. >> sl Group_ID residue)
-add:  merge two or more groups (i.e. >> add Group_ID1 Group_ID2 ... Group_IDn).
-del:  delete a group (i.e. >> del Group_ID).
-lg :  print the groups.
-h  :  print the list of action keys.
-e  :  exit interactive selection mode. 
-For a more detailed description of the actions, please refer to the README.md file.
-"""
+            """\nActions keys:\ndb\t:  update database (i.e. >> db Group_ID).\nqr\t:  update query (i.e. >> qr Group_ID).\ngb\t:  group by topological attribute (i.e. >> gp Group_ID resnames).\nsl\t:  split group (i.e. >> sl Group_ID residue)\nadd\t:  merge two or more groups (i.e. >> add Group_ID1 Group_ID2 ... Group_IDn).\ndel\t:  delete a group (i.e. >> del Group_ID).\nlg\t:  print the groups.\nh\t:  print the list of action keys.\ne\t:  exit interactive selection mode.\nFor a more detailed description of the actions, please refer to the README.md file.
+            """
         )
 
     def print_list_groups():
