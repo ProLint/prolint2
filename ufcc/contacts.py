@@ -187,7 +187,7 @@ class Runner(object):
         self.backend = "serial"
         self.n_jobs = -1
         # TODO
-        # add funcionalities to run analysis on HPC machines
+        # @daniel: add funcionalities to run analysis on HPC machines
 
 
 class Contacts(object):
