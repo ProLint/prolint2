@@ -5,6 +5,7 @@ r"""Contacts base classes --- :mod:`ufcc.contacts`
 :Copyright: MIT License
 """
 
+import os
 import pickle
 import numpy as np
 import MDAnalysis as mda
@@ -12,6 +13,12 @@ from collections import Counter
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from MDAnalysis.analysis import distances
+import configparser
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config.ini'))
+parameters_config = config["Parameters"]
 
 
 class SerialContacts(AnalysisBase):
@@ -184,8 +191,8 @@ class Runner(object):
     """
 
     def __init__(self):
-        self.backend = "serial"
-        self.n_jobs = -1
+        self.backend = parameters_config["backend"]
+        self.n_jobs = int(parameters_config["n_jobs"])
         # TODO
         # @daniel: add funcionalities to run analysis on HPC machines
 
@@ -229,7 +236,7 @@ class Contacts(object):
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
 
-    def compute(self, cutoff=7):
+    def compute(self, cutoff=int(parameters_config["cutoff"])):
         """
         Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
 
@@ -240,10 +247,12 @@ class Contacts(object):
         """
         self.cutoff = cutoff
         assert isinstance(
-            self.query.selected, (mda.core.groups.AtomGroup),
+            self.query.selected,
+            (mda.core.groups.AtomGroup),
         ), "the query has to be an AtomGroup"
         assert isinstance(
-            self.database.selected, (mda.core.groups.AtomGroup),
+            self.database.selected,
+            (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
         # TODO:
         # @bis: store backend list in the project config file.
@@ -352,11 +361,31 @@ class Contacts(object):
 
         # ganttApp toy data
         gantt_data = [
-            {"category": "Lipid 1", "startFrame": 0, "endFrame": 10,},
-            {"category": "Lipid 1", "startFrame": 45, "endFrame": 75,},
-            {"category": "Lipid 1", "startFrame": 90, "endFrame": 100,},
-            {"category": "Lipid 2", "startFrame": 10, "endFrame": 35,},
-            {"category": "Lipid 2", "startFrame": 30, "endFrame": 60,},
+            {
+                "category": "Lipid 1",
+                "startFrame": 0,
+                "endFrame": 10,
+            },
+            {
+                "category": "Lipid 1",
+                "startFrame": 45,
+                "endFrame": 75,
+            },
+            {
+                "category": "Lipid 1",
+                "startFrame": 90,
+                "endFrame": 100,
+            },
+            {
+                "category": "Lipid 2",
+                "startFrame": 10,
+                "endFrame": 35,
+            },
+            {
+                "category": "Lipid 2",
+                "startFrame": 30,
+                "endFrame": 60,
+            },
         ]
         top_10_lipids = ["Lipid 1", "Lipid 2"]
 

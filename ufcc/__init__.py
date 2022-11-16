@@ -18,3 +18,7 @@ _ROOT = os.path.abspath(os.path.dirname(__file__))
 
 def get_data():
     return os.path.join(_ROOT, "data")
+
+# to get the path to the config file
+def get_config():
+    return os.path.join(_ROOT, "config.ini")
