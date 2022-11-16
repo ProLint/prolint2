@@ -39,7 +39,6 @@ ufcc_parser.add_argument(
     "trajectory", action="store", type=str, help="path to the trajectory file."
 )
 
-
 # optional arguments
 ufcc_parser.add_argument("-v", "--version", action="version")
 ufcc_parser.add_argument(
@@ -54,10 +53,9 @@ ufcc_parser.add_argument(
 ufcc_parser.add_argument(
     "-al",
     "--add_lipid_types",
+    nargs="+",
     metavar="",
-    type=list,
     help="additional lipid types to be included in the membrane group, supported lipid types are POPC, DPPC, DOPC, CHOL, CHL1, POPS and POPE.",
-    default=[],
     dest="other_lipids",
 )
 ufcc_parser.add_argument(
@@ -77,6 +75,7 @@ args = ufcc_parser.parse_args()
 # print("args", type(args), args)
 start_server(payload=args, reloader=False, i_bool=args.i_bool)
 import sys
+
 sys.exit()
 
 # Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
@@ -104,9 +103,7 @@ if args.i_bool:
     target_system = interactive_selection(target_system)
 
 print("\n########### Starting calculation ##########")
-print(
-    "\n1- Getting the contacts between the groups over the frames in the trajectory:"
-)
+print("\n1- Getting the contacts between the groups over the frames in the trajectory:")
 payload = target_system.contacts.server_payload()
 
 print("\n################### Done! ##################")
