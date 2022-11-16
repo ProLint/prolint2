@@ -57,6 +57,7 @@ ufcc_parser.add_argument(
     metavar="",
     help="additional lipid types to be included in the membrane group, supported lipid types are POPC, DPPC, DOPC, CHOL, CHL1, POPS and POPE.",
     dest="other_lipids",
+    default=[],
 )
 ufcc_parser.add_argument(
     "-i",
@@ -78,40 +79,4 @@ import sys
 
 sys.exit()
 
-# Dealing with the MDAnalysis warnings, especially the ones about the mass, as this is quite common when loading Martini systems.
-mass_flag = 0
-mass_list = []
-with warnings.catch_warnings(record=True) as w:
-    target_system = UFCC(
-        args.structure, args.trajectory, add_lipid_types=args.other_lipids
-    )
-    for warn in w:
-        syl = str(warn.message).split()
-        if syl[:5] == ["Failed", "to", "guess", "the", "mass"]:
-            mass_flag = +1
-            mass_list.append(syl[-1])
-        else:
-            print(warn.message)
-    if mass_flag > 0:
-        mass_warn = "Warning: Please be aware that UFCC could NOT guess the mass for the following atomtypes: {}. If you are using Martini or you are sure that this is not due to an error in your system you can ignore this message.".format(
-            ", ".join(mass_list)
-        )
-        print(mass_warn)
 
-# For interactive selection of the groups for the contacts calculation
-if args.i_bool:
-    target_system = interactive_selection(target_system)
-
-print("\n########### Starting calculation ##########")
-print("\n1- Getting the contacts between the groups over the frames in the trajectory:")
-payload = target_system.contacts.server_payload()
-
-print("\n################### Done! ##################")
-
-
-# payload = target_system.contacts.server_payload()
-# TODO:
-# for the backend to carry out the calculations, the payload
-# has to include file paths + ufcc options. And it should be checked
-# very early on.
-start_server(payload=payload, reloader=False, i_bool=False)
