@@ -6,6 +6,7 @@ r"""Interactive selection of Database and Query
 """
 
 import MDAnalysis as mda
+from collections import OrderedDict
 
 # Function to select the query and the database groups interactively starting from a UFCC object. It returns a new UFCC object with the selected groups for the query and the database.
 def interactive_selection(target_system):
@@ -27,6 +28,7 @@ def interactive_selection(target_system):
     groups_to_add = target_system.database.whole.universe.select_atoms(
         "not protein"
     ).groupby("resnames")
+    groups_to_add = OrderedDict(sorted(groups_to_add.items()))
     for label, ag in groups_to_add.items():
         groups_dict[max(groups_dict.keys()) + 1] = ["{}".format(label), ag]
 
@@ -49,12 +51,6 @@ def interactive_selection(target_system):
         for key, value in db_qr.items():
             print("{} --> {} atoms".format(key, value.n_atoms))
         print("-----------------------------------------------------")
-
-    # function to print the help message
-    def print_help_message():
-        print(
-            "You can type (lg) to list the groups, or (h) to review the available action keys with examples."
-        )
 
     # function to combine two or more AtomGroups
     def add_atomgroups(ag_list):
@@ -149,6 +145,7 @@ def interactive_selection(target_system):
                         groups_to_add = groups_dict[int(input_list[1])][1].groupby(
                             input_list[2]
                         )
+                        groups_to_add = OrderedDict(sorted(groups_to_add.items()))
                         for label, ag in groups_to_add.items():
                             groups_dict[max(groups_dict.keys()) + 1] = [
                                 "{} grouped by {} from {}".format(
@@ -177,22 +174,53 @@ def interactive_selection(target_system):
                         "segment",
                         "residue",
                         "atom",
-                        "molecule",
                     ]:
                         print(
-                            "Error: Level must be a valid level: segment, residue, atom, molecule."
+                            "Error: Level must be a valid level: segment, residue, atom."
                         )
                     else:
                         groups_to_add = groups_dict[int(input_list[1])][1].split(
                             input_list[2]
                         )
-                        for ag in groups_to_add:
-                            groups_dict[max(groups_dict.keys()) + 1] = [
-                                "{} splitted from {}".format(
-                                    input_list[2], groups_dict[int(input_list[1])][0]
-                                ),
-                                ag,
-                            ]
+                        if input_list[2] == "atom":
+                            groups_to_add = sorted(
+                                groups_to_add, key=lambda x: x.atoms.ids[0]
+                            )
+                            for ag in groups_to_add:
+                                groups_dict[max(groups_dict.keys()) + 1] = [
+                                    "{} {} splitted from {}".format(
+                                        input_list[2],
+                                        ag.atoms.ids[0],
+                                        groups_dict[int(input_list[1])][0],
+                                    ),
+                                    ag,
+                                ]
+                        elif input_list[2] == "residue":
+                            groups_to_add = sorted(
+                                groups_to_add, key=lambda x: x.resids[0]
+                            )
+                            for ag in groups_to_add:
+                                groups_dict[max(groups_dict.keys()) + 1] = [
+                                    "{} {} splitted from {}".format(
+                                        input_list[2],
+                                        ag.resids[0],
+                                        groups_dict[int(input_list[1])][0],
+                                    ),
+                                    ag,
+                                ]
+                        elif input_list[2] == "segment":
+                            groups_to_add = sorted(
+                                groups_to_add, key=lambda x: x.segids[0]
+                            )
+                            for ag in groups_to_add:
+                                groups_dict[max(groups_dict.keys()) + 1] = [
+                                    "{} {} splitted from {}".format(
+                                        input_list[2],
+                                        ag.segids[0],
+                                        groups_dict[int(input_list[1])][0],
+                                    ),
+                                    ag,
+                                ]
 
             # combining groups action
             elif input_list[0] == "add":
