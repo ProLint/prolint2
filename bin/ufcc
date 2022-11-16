@@ -8,9 +8,6 @@ r"""Argument parser to use ufcc from the command-line
 
 import argparse
 import ufcc._version as vers
-from ufcc import UFCC
-from ufcc.interactive_sel import interactive_selection
-import warnings
 from ufcc.server.server import start_server
 import configparser
 from ufcc import get_config
@@ -23,7 +20,7 @@ parameters_config = config["Parameters"]
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(
     prog="ufcc",
-    #   usage='%(prog)s [optional-arguments] structure_file trajectory_file',
+    usage='%(prog)s [optional-arguments] structure_file trajectory_file',
     description="Argument parser to use the ufcc library directly from the command-line.",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     epilog="Have fun getting lipid-protein contacts! :)\n",
