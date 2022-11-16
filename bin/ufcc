@@ -12,6 +12,13 @@ from ufcc import UFCC
 from ufcc.interactive_sel import interactive_selection
 import warnings
 from ufcc.server.server import start_server
+import configparser
+from ufcc import get_config
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+parameters_config = config["Parameters"]
 
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(
@@ -41,7 +48,7 @@ ufcc_parser.add_argument(
     metavar="",
     type=int,
     help="distance cutoff to get the contacts (in angstroms).",
-    default=7,
+    default=int(parameters_config["cutoff"]),
     dest="cutoff",
 )
 ufcc_parser.add_argument(
