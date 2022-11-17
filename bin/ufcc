@@ -20,7 +20,7 @@ parameters_config = config["Parameters"]
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(
     prog="ufcc",
-    usage='%(prog)s [optional-arguments] structure_file trajectory_file',
+    usage="%(prog)s [optional-arguments] structure_file trajectory_file",
     description="Argument parser to use the ufcc library directly from the command-line.",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     epilog="Have fun getting lipid-protein contacts! :)\n",
@@ -29,15 +29,21 @@ ufcc_parser = argparse.ArgumentParser(
 ufcc_parser.version = vers.get_versions()["version"]
 
 # positional arguments
+# structure_file
 ufcc_parser.add_argument(
     "structure", action="store", type=str, help="path to the structure/topology file."
 )
+
+# trajectory_file
 ufcc_parser.add_argument(
     "trajectory", action="store", type=str, help="path to the trajectory file."
 )
 
 # optional arguments
+# version
 ufcc_parser.add_argument("-v", "--version", action="version")
+
+# Cut-off
 ufcc_parser.add_argument(
     "-c",
     "--cutoff",
@@ -47,6 +53,8 @@ ufcc_parser.add_argument(
     default=int(parameters_config["cutoff"]),
     dest="cutoff",
 )
+
+# add lipids
 ufcc_parser.add_argument(
     "-al",
     "--add_lipid_types",
@@ -56,6 +64,8 @@ ufcc_parser.add_argument(
     dest="other_lipids",
     default=[],
 )
+
+# interactive mode
 ufcc_parser.add_argument(
     "-i",
     "--interactive",
@@ -70,10 +80,8 @@ ufcc_parser.add_argument(
 # Executing the parse_args() method
 args = ufcc_parser.parse_args()
 
-# print("args", type(args), args)
+# Starting the server
 start_server(payload=args, reloader=False, i_bool=args.i_bool)
 import sys
 
 sys.exit()
-
-
