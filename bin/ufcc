@@ -28,6 +28,17 @@ ufcc_parser = argparse.ArgumentParser(
 
 ufcc_parser.version = vers.get_versions()["version"]
 
+# dealing with boolean arguments
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 # positional arguments
 # structure_file
 ufcc_parser.add_argument(
@@ -70,18 +81,32 @@ ufcc_parser.add_argument(
     "-i",
     "--interactive",
     metavar="",
-    action="store_const",
-    help="interactive selection of the groups for the calculation of the contacts.",
-    default=False,
+    type=str2bool,
+    nargs="?",
     const=True,
+    default=False,
+    help="interactive selection of the groups for the calculation of the contacts.",
     dest="i_bool",
+)
+
+# export contacts data
+ufcc_parser.add_argument(
+    "-e",
+    "--export",
+    metavar="",
+    type=str,
+    nargs="?",
+    help="exporting results of the contacts to a file.",
+    default=False,
+    const='contacts.csv',
+    dest="e_file",
 )
 
 # Executing the parse_args() method
 args = ufcc_parser.parse_args()
 
 # Starting the server
-start_server(payload=args, reloader=False, i_bool=args.i_bool)
+start_server(payload=args, reloader=False, i_bool=args.i_bool, e_file=args.e_file)
 import sys
 
 sys.exit()

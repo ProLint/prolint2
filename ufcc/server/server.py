@@ -3,6 +3,7 @@ from ufcc.interactive_sel import interactive_selection
 import os
 import ast
 import json
+import pickle
 
 from bottle import route, run, template, debug, static_file, request
 from ufcc.contacts import SerialDistances
@@ -297,7 +298,7 @@ def listener(metadata):
     return response
 
 
-def start_server(payload=None, debug_bool=False, reloader=True, port=8351, i_bool=True):
+def start_server(payload=None, debug_bool=False, reloader=True, port=8351, i_bool=True, e_file=False):
 
     global ARGS
     # UFCC calls:
@@ -309,6 +310,12 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351, i_boo
         ts = interactive_selection(ts)
     ts.contacts.runner.backend = "serial"
     ts.contacts.compute(cutoff=args.cutoff)
+
+    # for exporting the data
+    if e_file:
+        with open(e_file, "wb") as f:
+            pickle.dump(ts.contacts.contacts, f)
+
     payload = ts.contacts.server_payload()
 
     t, g = sort_lipids(ts)
