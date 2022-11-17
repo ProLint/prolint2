@@ -280,29 +280,17 @@ class Contacts(object):
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
 
-    def save(self, path="contacts.pkl"):
+    def export(self, filename):
         """
-        Store the contacts information in a pickle file for later usage.
+        Export the contacts array to a file.
 
         Parameters
         ----------
-        path : file
-            Path to file to save the contacts information. ('contacts.pkl')
+        filename : str
+            Name of the file to export the contacts array.
         """
-        with open(path, "wb") as f:
+        with open(filename, "wb") as f:
             pickle.dump(self.contacts, f)
-
-    def load(self, path="contacts.pkl"):
-        """
-        Load the contacts information from a pickle file.
-
-        Parameters
-        ----------
-        path : file
-            Path to file to load the contacts information from. ('contacts.pkl')
-        """
-        with open(path, "rb") as f:
-            self.contacts = pickle.load(f)
 
     def server_payload(self):
 

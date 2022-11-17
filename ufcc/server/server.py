@@ -3,7 +3,6 @@ from ufcc.interactive_sel import interactive_selection
 import os
 import ast
 import json
-import pickle
 
 from bottle import route, run, template, debug, static_file, request
 from ufcc.contacts import SerialDistances
@@ -313,8 +312,7 @@ def start_server(payload=None, debug_bool=False, reloader=True, port=8351, i_boo
 
     # for exporting the data
     if e_file:
-        with open(e_file, "wb") as f:
-            pickle.dump(ts.contacts.contacts, f)
+        ts.contacts.export(args.e_file)
 
     payload = ts.contacts.server_payload()
 
