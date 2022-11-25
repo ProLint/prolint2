@@ -175,28 +175,6 @@ class SerialDistances(AnalysisBase):
         del self.result_array
 
 
-class Runner(object):
-    """
-    Class to configure the runner for the calculations of distances. As the *parallel* routine uses
-    the parallel computing library **Dask**, that can be setted up to run on remotes machines. The aim of
-    this runner class is to define the variables needed for the Dask scheduler, but so far this a very
-    simple class that has the attributes below to run on a single local machine:
-
-    Attributes
-    ----------
-    backend : str (*serial*)
-        Backend to run the contacts calculation (can be either *serial* or *parallel*).
-    n_jobs : int (-1)
-        Number of cores to use with the *parallel* backend. By default **ufcc** will use all the cores.
-    """
-
-    def __init__(self):
-        self.backend = parameters_config["backend"]
-        self.n_jobs = int(parameters_config["n_jobs"])
-        # TODO
-        # @daniel: add funcionalities to run analysis on HPC machines
-
-
 class Contacts(object):
     """Stores information to run and analyze the distance-based contacts results
     between the :class:`.ufcc.QueryProteins` and :class:`.ufcc.MembraneDatabase` groups.
@@ -212,8 +190,6 @@ class Contacts(object):
         **Query** group to use during the calculation of the contacts.
     database : :class:`MembraneDatabase`
         **Database** group to use during the calculation of the contacts.
-    runner : :class:`Runner`
-        Runner object to define the backend (*serial* or *parallel*) and n_jobs to use during the calculation of the contacts.
     contacts : Array (None)
         Numpy uni-dimensional array of shape equal to the number of frames used during the calculation of the contacts.
         Each element of the array has a Scipy matrix with the pairs (i, j) defining the contacts, where *i* is the index
@@ -226,7 +202,6 @@ class Contacts(object):
     def __init__(self, query, database):
         self.query = query
         self.database = database
-        self.runner = Runner()
         self.cutoff = None
         self.contacts = None
 
@@ -254,55 +229,29 @@ class Contacts(object):
             self.database.selected,
             (mda.core.groups.AtomGroup),
         ), "the database has to be an AtomGroup"
-        # TODO:
-        # @bis: store backend list in the project config file.
-        if self.runner.backend == None or self.runner.backend not in [
-            "serial",
-            "parallel",
-        ]:
-            raise ValueError(
-                "You have to select a proper backend before running the contacts routine. \n Valid options: 'serial', 'parallel'"
+        temp_instance = SerialContacts(
+            self.query.selected.universe,
+            self.query.selected,
+            self.database.selected,
+            cutoff,
             )
-        if self.runner.backend == "serial":
-            temp_instance = SerialContacts(
-                self.query.selected.universe,
-                self.query.selected,
-                self.database.selected,
-                cutoff,
-            )
-            temp_instance.run(verbose=True)
-        elif self.runner.backend == "parallel":
-            print(
-                "The parallel routine is not included in this DEMO release of the software, as our main goal is to see how the software behaves with different types and how we can improve its capabilities. Please use the serial routine for now and let us now your feedback."
-            )
+        temp_instance.run(verbose=True)
 
         self.contacts = temp_instance.contacts
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
 
-    def save(self, path="contacts.pkl"):
+    def export(self, filename):
         """
-        Store the contacts information in a pickle file for later usage.
+        Export the contacts array to a file.
 
         Parameters
         ----------
-        path : file
-            Path to file to save the contacts information. ('contacts.pkl')
+        filename : str
+            Name of the file to export the contacts array.
         """
-        with open(path, "wb") as f:
+        with open(filename, "wb") as f:
             pickle.dump(self.contacts, f)
-
-    def load(self, path="contacts.pkl"):
-        """
-        Load the contacts information from a pickle file.
-
-        Parameters
-        ----------
-        path : file
-            Path to file to load the contacts information from. ('contacts.pkl')
-        """
-        with open(path, "rb") as f:
-            self.contacts = pickle.load(f)
 
     def server_payload(self):
 
@@ -402,20 +351,13 @@ class Contacts(object):
         return payload
 
     def __str__(self):
-        # TODO:
-        # @bis: This is not working with the 'prolint_serial' backend, bc
-        # it is not an isntance of ndarray.
-        if not isinstance(self.contacts, np.ndarray):
-            # TODO: should this say that contacts needs to be initialized?
-            # one edge case here would be cases when there really are no contacts
+        if self.contacts == None:
             return "<ufcc.Contacts containing 0 contacts>"
         else:
             return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
-        # TODO:
-        # @bis: same as above.
-        if not isinstance(self.contacts, np.ndarray):
+        if self.contacts == None:
             return "<ufcc.Contacts containing 0 contacts>"
         else:
             return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))

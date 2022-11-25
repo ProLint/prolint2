@@ -20,7 +20,7 @@ parameters_config = config["Parameters"]
 # Creating the parser
 ufcc_parser = argparse.ArgumentParser(
     prog="ufcc",
-    usage='%(prog)s [optional-arguments] structure_file trajectory_file',
+    usage="%(prog)s [optional-arguments] structure_file trajectory_file",
     description="Argument parser to use the ufcc library directly from the command-line.",
     formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     epilog="Have fun getting lipid-protein contacts! :)\n",
@@ -28,16 +28,33 @@ ufcc_parser = argparse.ArgumentParser(
 
 ufcc_parser.version = vers.get_versions()["version"]
 
+# dealing with boolean arguments
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
 # positional arguments
+# structure_file
 ufcc_parser.add_argument(
     "structure", action="store", type=str, help="path to the structure/topology file."
 )
+
+# trajectory_file
 ufcc_parser.add_argument(
     "trajectory", action="store", type=str, help="path to the trajectory file."
 )
 
 # optional arguments
+# version
 ufcc_parser.add_argument("-v", "--version", action="version")
+
+# Cut-off
 ufcc_parser.add_argument(
     "-c",
     "--cutoff",
@@ -47,6 +64,8 @@ ufcc_parser.add_argument(
     default=int(parameters_config["cutoff"]),
     dest="cutoff",
 )
+
+# add lipids
 ufcc_parser.add_argument(
     "-al",
     "--add_lipid_types",
@@ -56,24 +75,38 @@ ufcc_parser.add_argument(
     dest="other_lipids",
     default=[],
 )
+
+# interactive mode
 ufcc_parser.add_argument(
     "-i",
     "--interactive",
     metavar="",
-    action="store_const",
-    help="interactive selection of the groups for the calculation of the contacts.",
-    default=False,
+    type=str2bool,
+    nargs="?",
     const=True,
+    default=False,
+    help="interactive selection of the groups for the calculation of the contacts.",
     dest="i_bool",
+)
+
+# export contacts data
+ufcc_parser.add_argument(
+    "-e",
+    "--export",
+    metavar="",
+    type=str,
+    nargs="?",
+    help="exporting results of the contacts to a file.",
+    default=False,
+    const='contacts.csv',
+    dest="e_file",
 )
 
 # Executing the parse_args() method
 args = ufcc_parser.parse_args()
 
-# print("args", type(args), args)
-start_server(payload=args, reloader=False, i_bool=args.i_bool)
+# Starting the server
+start_server(payload=args, reloader=False, i_bool=args.i_bool, e_file=args.e_file)
 import sys
 
 sys.exit()
-
-
