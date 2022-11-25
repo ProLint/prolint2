@@ -6,7 +6,7 @@ r"""Contacts base classes --- :mod:`ufcc.contacts`
 """
 
 import os
-import pickle
+import pandas as pd
 import numpy as np
 import MDAnalysis as mda
 from collections import Counter
@@ -241,6 +241,30 @@ class Contacts(object):
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
 
+    def contacts_to_dataframe(self):
+        """
+        Convert the contacts dictionary to a Pandas DataFrame with different metrics.
+
+        Returns
+        -------
+        Pandas DataFrame
+            Pandas DataFrame with different metrics for the contacts.
+        """
+        RESULTS = {'Protein': [], 'Residue ID': [], 'Residue Name': [], 'Lipid Type': [], 'Lipid ID': [], 'Frame': []} 
+
+        for idx, protein_resi in enumerate(self.contacts.keys()):
+            for lip_type in self.contacts[protein_resi].keys():
+                for lip_res, frame in self.contacts[protein_resi][lip_type].items():
+                    # TODO: modify the protein label to work with multiple proteins
+                    RESULTS['Protein'].append('Protein1') 
+                    RESULTS['Residue ID'].append(protein_resi)
+                    RESULTS['Residue Name'].append(self.query.selected[idx].resname)
+                    RESULTS['Lipid Type'].append(lip_type)
+                    RESULTS['Lipid ID'].append(lip_res)
+                    RESULTS['Frame'].append(frame)
+
+        return pd.DataFrame(RESULTS)
+
     def export(self, filename):
         """
         Export the contacts array to a file.
@@ -250,8 +274,8 @@ class Contacts(object):
         filename : str
             Name of the file to export the contacts array.
         """
-        with open(filename, "wb") as f:
-            pickle.dump(self.contacts, f)
+        contacts_df = self.contacts_to_dataframe()
+        contacts_df.to_csv(filename, index=False)
 
     def server_payload(self):
 
