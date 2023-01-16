@@ -271,14 +271,14 @@ class Contacts(object):
                         # TODO: modify the protein label to work with multiple proteins
                         RESULTS['Protein'].append('Protein1') 
                         RESULTS['Residue ID'].append(protein_resi)
-                        RESULTS['Residue Name'].append(self.query.selected[idx].resname)
+                        RESULTS['Residue Name'].append(self.query.selected.residues[idx].resname)
                         RESULTS['Lipid Type'].append(lip_type)
                         RESULTS['Lipid ID'].append(lip_res)
                         RESULTS['Frame'].append(fr)
                     # TODO: modify the protein label to work with multiple proteins
                     METRICS['Protein'].append('Protein1')
                     METRICS['Residue ID'].append(protein_resi)
-                    METRICS['Residue Name'].append(self.query.selected[idx].resname)
+                    METRICS['Residue Name'].append(self.query.selected.residues[idx].resname)
                     METRICS['Lipid Type'].append(lip_type)
                     METRICS['Lipid ID'].append(lip_res)
                     METRICS['Sum of all contacts'].append(t_frames)
