@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import MDAnalysis as mda
 from collections import Counter
+from itertools import groupby
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
 from MDAnalysis.analysis import distances
@@ -241,6 +242,15 @@ class Contacts(object):
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
 
+    def ranges(self, lst):
+        pos = (j - i for i, j in enumerate(lst))
+        t = 0
+        for i, els in groupby(pos):
+            l = len(list(els))
+            el = lst[t]
+            t += l
+            yield len(range(el, el+l))
+
     def contacts_to_dataframe(self):
         """
         Convert the contacts dictionary to a Pandas DataFrame with different metrics.
@@ -252,18 +262,32 @@ class Contacts(object):
         """
         RESULTS = {'Protein': [], 'Residue ID': [], 'Residue Name': [], 'Lipid Type': [], 'Lipid ID': [], 'Frame': []} 
 
+        METRICS = {'Protein': [], 'Residue ID': [], 'Residue Name': [], 'Lipid Type': [], 'Lipid ID': [], 'Sum of all contacts': [], 'Occupancy': [], 'Longest Duration': [], 'Mean Duration': []}
+
         for idx, protein_resi in enumerate(self.contacts.keys()):
             for lip_type in self.contacts[protein_resi].keys():
-                for lip_res, frame in self.contacts[protein_resi][lip_type].items():
+                for lip_res, t_frames in self.contacts[protein_resi][lip_type].items():
+                    for fr in self.contact_frames['{},{}'.format(protein_resi, lip_res)]:
+                        # TODO: modify the protein label to work with multiple proteins
+                        RESULTS['Protein'].append('Protein1') 
+                        RESULTS['Residue ID'].append(protein_resi)
+                        RESULTS['Residue Name'].append(self.query.selected.residues[idx].resname)
+                        RESULTS['Lipid Type'].append(lip_type)
+                        RESULTS['Lipid ID'].append(lip_res)
+                        RESULTS['Frame'].append(fr)
                     # TODO: modify the protein label to work with multiple proteins
-                    RESULTS['Protein'].append('Protein1') 
-                    RESULTS['Residue ID'].append(protein_resi)
-                    RESULTS['Residue Name'].append(self.query.selected[idx].resname)
-                    RESULTS['Lipid Type'].append(lip_type)
-                    RESULTS['Lipid ID'].append(lip_res)
-                    RESULTS['Frame'].append(frame)
+                    METRICS['Protein'].append('Protein1')
+                    METRICS['Residue ID'].append(protein_resi)
+                    METRICS['Residue Name'].append(self.query.selected.residues[idx].resname)
+                    METRICS['Lipid Type'].append(lip_type)
+                    METRICS['Lipid ID'].append(lip_res)
+                    METRICS['Sum of all contacts'].append(t_frames)
+                    METRICS['Occupancy'].append(t_frames/self.query.selected.universe.trajectory.n_frames)
+                    temp = list(self.ranges(self.contact_frames['{},{}'.format(protein_resi, lip_res)]))
+                    METRICS['Longest Duration'].append(max(temp))
+                    METRICS['Mean Duration'].append(np.mean(temp))
 
-        return pd.DataFrame(RESULTS)
+        return pd.DataFrame(RESULTS), pd.DataFrame(METRICS)
 
     def export(self, filename):
         """
@@ -274,8 +298,9 @@ class Contacts(object):
         filename : str
             Name of the file to export the contacts array.
         """
-        contacts_df = self.contacts_to_dataframe()
+        contacts_df, metrics_df = self.contacts_to_dataframe()
         contacts_df.to_csv(filename, index=False)
+        metrics_df.to_csv(filename.replace('.csv', '_metrics.csv'), index=False)
 
     def server_payload(self):
 
