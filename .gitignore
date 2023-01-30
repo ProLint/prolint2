@@ -110,3 +110,7 @@ ENV/
 ufcc/data/.*
 .DS_Store
 ufcc/.DS_Store
+ufcc/data/results_metrics.csv
+ufcc/data/results.csv
+.gitignore
+ufcc/data/test.ipynb
