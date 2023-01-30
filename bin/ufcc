@@ -11,6 +11,7 @@ import ufcc._version as vers
 from ufcc.server.server import start_server
 import configparser
 from ufcc import get_config
+import os
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
@@ -32,12 +33,13 @@ ufcc_parser.version = vers.get_versions()["version"]
 def str2bool(v):
     if isinstance(v, bool):
         return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+    if v.lower() in ("yes", "true", "t", "y", "1"):
         return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+    elif v.lower() in ("no", "false", "f", "n", "0"):
         return False
     else:
-        raise argparse.ArgumentTypeError('Boolean value expected.')
+        raise argparse.ArgumentTypeError("Boolean value expected.")
+
 
 # positional arguments
 # structure_file
@@ -89,16 +91,26 @@ ufcc_parser.add_argument(
     dest="i_bool",
 )
 
+
+def file_extension(choices, fname):
+    ext = os.path.splitext(fname)[1][1:]
+    if ext not in choices:
+        ufcc_parser.error(
+            "Filename for exporting contacts doesn't end with {}.".format(choices)
+        )
+    return fname
+
+
 # export contacts data
 ufcc_parser.add_argument(
     "-e",
     "--export",
     metavar="",
-    type=str,
+    type=lambda s: file_extension(("csv"), s),
     nargs="?",
     help="exporting results of the contacts to a file.",
     default=False,
-    const='contacts.csv',
+    const="contacts.csv",
     dest="e_file",
 )
 

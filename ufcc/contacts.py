@@ -281,7 +281,7 @@ class Contacts(object):
                         )
 
                     key = "{},{}".format(protein_resi, lip_res)
-                    temp = self.ranges(self.contact_frames[key])
+                    temp = list(self.ranges(self.contact_frames[key]))
                     metrics.append(
                         (
                             "Protein1",
