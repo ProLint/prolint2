@@ -18,7 +18,7 @@ import configparser
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
-config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config.ini'))
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini"))
 parameters_config = config["Parameters"]
 
 
@@ -235,7 +235,7 @@ class Contacts(object):
             self.query.selected,
             self.database.selected,
             cutoff,
-            )
+        )
         temp_instance.run(verbose=True)
 
         self.contacts = temp_instance.contacts
@@ -249,7 +249,7 @@ class Contacts(object):
             l = len(list(els))
             el = lst[t]
             t += l
-            yield len(range(el, el+l))
+            yield len(range(el, el + l))
 
     def contacts_to_dataframe(self):
         """
@@ -260,36 +260,69 @@ class Contacts(object):
         Pandas DataFrame
             Pandas DataFrame with different metrics for the contacts.
         """
-        RESULTS = {'Protein': [], 'Residue ID': [], 'Residue Name': [], 'Lipid Type': [], 'Lipid ID': [], 'Frame': []} 
-
-        METRICS = {'Protein': [], 'Residue ID': [], 'Residue Name': [], 'Lipid Type': [], 'Lipid ID': [], 'Sum of all contacts': [], 'Occupancy': [], 'Longest Duration': [], 'Mean Duration': []}
-
-        for idx, protein_resi in enumerate(self.contacts.keys()):
+        results = []
+        metrics = []
+        keys = self.contacts.keys()
+        for idx, protein_resi in enumerate(keys):
             for lip_type in self.contacts[protein_resi].keys():
                 for lip_res, t_frames in self.contacts[protein_resi][lip_type].items():
-                    for fr in self.contact_frames['{},{}'.format(protein_resi, lip_res)]:
-                        # TODO: modify the protein label to work with multiple proteins
-                        RESULTS['Protein'].append('Protein1') 
-                        RESULTS['Residue ID'].append(protein_resi + 1)
+                    for fr in self.contact_frames[
+                        "{},{}".format(protein_resi, lip_res)
+                    ]:
+                        results.append(
+                            (
+                                "Protein1",
+                                protein_resi + 1,
+                                self.query.selected.residues[idx].resname,
+                                lip_type,
+                                lip_res + 1,
+                                fr,
+                            )
+                        )
 
-                        RESULTS['Residue Name'].append(self.query.selected.residues[idx].resname)
-                        RESULTS['Lipid Type'].append(lip_type)
-                        RESULTS['Lipid ID'].append(lip_res)
-                        RESULTS['Frame'].append(fr)
-                    # TODO: modify the protein label to work with multiple proteins
-                    METRICS['Protein'].append('Protein1')
-                    METRICS['Residue ID'].append(protein_resi + 1)
+                    key = "{},{}".format(protein_resi, lip_res)
+                    temp = self.ranges(self.contact_frames[key])
+                    metrics.append(
+                        (
+                            "Protein1",
+                            protein_resi + 1,
+                            self.query.selected.residues[idx].resname,
+                            lip_type,
+                            lip_res + 1,
+                            t_frames,
+                            t_frames / self.query.selected.universe.trajectory.n_frames,
+                            max(temp),
+                            np.mean(temp),
+                        )
+                    )
 
-                    METRICS['Residue Name'].append(self.query.selected.residues[idx].resname)
-                    METRICS['Lipid Type'].append(lip_type)
-                    METRICS['Lipid ID'].append(lip_res)
-                    METRICS['Sum of all contacts'].append(t_frames)
-                    METRICS['Occupancy'].append(t_frames/self.query.selected.universe.trajectory.n_frames)
-                    temp = list(self.ranges(self.contact_frames['{},{}'.format(protein_resi, lip_res)]))
-                    METRICS['Longest Duration'].append(max(temp))
-                    METRICS['Mean Duration'].append(np.mean(temp))
+        results_df = pd.DataFrame(
+            results,
+            columns=[
+                "Protein",
+                "Residue ID",
+                "Residue Name",
+                "Lipid Type",
+                "Lipid ID",
+                "Frame",
+            ],
+        )
+        metrics_df = pd.DataFrame(
+            metrics,
+            columns=[
+                "Protein",
+                "Residue ID",
+                "Residue Name",
+                "Lipid Type",
+                "Lipid ID",
+                "Sum of all contacts",
+                "Occupancy",
+                "Longest Duration",
+                "Mean Duration",
+            ],
+        )
 
-        return pd.DataFrame(RESULTS), pd.DataFrame(METRICS)
+        return results_df, metrics_df
 
     def export(self, filename):
         """
@@ -302,7 +335,7 @@ class Contacts(object):
         """
         contacts_df, metrics_df = self.contacts_to_dataframe()
         contacts_df.to_csv(filename, index=False)
-        metrics_df.to_csv(filename.replace('.csv', '_metrics.csv'), index=False)
+        metrics_df.to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
 
     def server_payload(self):
 

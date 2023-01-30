@@ -14,7 +14,7 @@ import configparser
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
-config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config.ini'))
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini"))
 parameters_config = config["Parameters"]
 
 
@@ -109,7 +109,7 @@ class UFCC(object):
         self.atoms.universe.add_TopologyAttr("macros")
 
         # adding the macros to the membrane residues
-        lipid_types = parameters_config["lipid_types"].split(', ')
+        lipid_types = parameters_config["lipid_types"].split(", ")
         lipid_types = lipid_types + add_lipid_types
         not_protein_restypes = np.unique(
             self.atoms.select_atoms("not protein").residues.resnames

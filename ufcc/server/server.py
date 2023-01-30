@@ -297,7 +297,9 @@ def listener(metadata):
     return response
 
 
-def start_server(payload=None, debug_bool=False, reloader=True, port=8351, i_bool=True, e_file=False):
+def start_server(
+    payload=None, debug_bool=False, reloader=True, port=8351, i_bool=True, e_file=False
+):
 
     global ARGS
     # UFCC calls:
@@ -352,11 +354,31 @@ def independent_execution():
 
     # ganttApp data input requirement
     gantt_data = [
-        {"category": "Lipid 1", "startFrame": 0, "endFrame": 10,},
-        {"category": "Lipid 1", "startFrame": 45, "endFrame": 75,},
-        {"category": "Lipid 1", "startFrame": 90, "endFrame": 100,},
-        {"category": "Lipid 2", "startFrame": 10, "endFrame": 35,},
-        {"category": "Lipid 2", "startFrame": 45, "endFrame": 60,},
+        {
+            "category": "Lipid 1",
+            "startFrame": 0,
+            "endFrame": 10,
+        },
+        {
+            "category": "Lipid 1",
+            "startFrame": 45,
+            "endFrame": 75,
+        },
+        {
+            "category": "Lipid 1",
+            "startFrame": 90,
+            "endFrame": 100,
+        },
+        {
+            "category": "Lipid 2",
+            "startFrame": 10,
+            "endFrame": 35,
+        },
+        {
+            "category": "Lipid 2",
+            "startFrame": 45,
+            "endFrame": 60,
+        },
     ]
     top_10_lipids = ["Lipid 1", "Lipid 2"]
 
