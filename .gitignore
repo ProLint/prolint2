@@ -114,3 +114,4 @@ ufcc/data/results_metrics.csv
 ufcc/data/results.csv
 .gitignore
 ufcc/data/test.ipynb
+ufcc/data/test_pylipid.ipynb
