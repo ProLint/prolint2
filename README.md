@@ -1,5 +1,5 @@
-Ultra-Fast Contacts Calculation (UFCC)
-=====================================
+ProLint v2: an optimized tool for the analysis of lipid protein interactions.
+=============================================================================
 
 [//]: # (Badges)
 [![PyPI](https://img.shields.io/pypi/v/ufcc?color=blue)](https://pypi.org/project/ufcc/)
@@ -7,8 +7,6 @@ Ultra-Fast Contacts Calculation (UFCC)
 [![GitHub Actions Build Status](https://github.com/ProLint/ufcc/workflows/CI/badge.svg)](https://github.com/ProLint/ufcc/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/ProLint/ufcc/graph/badge.svg)](https://app.codecov.io/gh/ProLint/ufcc)
 [![docs](https://readthedocs.org/projects/ufcc/badge/?version=latest)](https://ufcc.readthedocs.io/en/latest/)
-
-
 
 
 The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is a *demo* version with a reduced number of features to test how it behaves with different use cases.
