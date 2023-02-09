@@ -1,19 +1,19 @@
 """
-ProLint: Protein-Ligand Interaction Analysis
+ProLint2: Lipid-Protein Interaction Analysis
 ============================================
 
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
 :Copyright: MIT License
 
-UFCC calculates de distance-based contacts between two references.
+ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories.
 """
 
 import sys
 from setuptools import setup, find_packages
 import versioneer
 
-short_description = "Ultra-Fast Contacts Calculation.".split("\n")[0]
+short_description = "ProLint2: Lipid-Protein Interaction Analysis.".split("\n")[0]
 
 # from https://github.com/pytest-dev/pytest-runner#conditional-requirement
 needs_pytest = {'pytest', 'test', 'ptr'}.intersection(sys.argv)
@@ -52,13 +52,12 @@ setup(
     scripts=['bin/ufcc', ],
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
-    url='https://github.com/ProLint/ufcc',  # Website
+    url='https://github.com/ProLint/prolint2',  # Website
 
     install_requires=['mdanalysis', 'bottle'],              # Required packages, pulls from pip if needed; do not use for Conda deployment
     platforms=[
         'Linux',
         'Mac OS-X',
-        #    'Unix',
         'Windows'
     ],  # Valid platforms your code works on, adjust to your flavor
     python_requires=">=3.8",  # Python version restrictions
