@@ -22,7 +22,7 @@ import ufcc
 
 # -- Project information -----------------------------------------------------
 
-project = 'UFCC'
+project = 'ProLint2'
 copyright = ("2022, Daniel P. Ramirez & Besian I. Sejdiu")
 author = 'Daniel P. Ramirez & Besian I. Sejdiu'
 
@@ -117,7 +117,7 @@ html_logo = '_static/logo.png'
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'ufccdoc'
+htmlhelp_basename = 'prolint2doc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -143,14 +143,14 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'ufcc.tex', 'UFCC Documentation', 'ufcc', 'manual'),
+    (master_doc, 'prolint2.tex', 'ProLint2 Documentation', 'prolint2', 'manual'),
 ]
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'ufcc', 'UFCC Documentation', [author], 1)]
+man_pages = [(master_doc, 'prolint2', 'ProLint2 Documentation', [author], 1)]
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -158,7 +158,7 @@ man_pages = [(master_doc, 'ufcc', 'UFCC Documentation', [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'ufcc', 'UFCC Documentation', author, 'ufcc', 'Ultrafast contacts calculation.', 'Miscellaneous'),
+    (master_doc, 'prolint2', 'ProLint2 Documentation', author, 'prolint2', 'Lipid-protein interaction nalysis.', 'Miscellaneous'),
 ]
 
 # -- Extension configuration -------------------------------------------------
