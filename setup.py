@@ -1,6 +1,6 @@
 """
-Ultra-Fast Contacts Calculation (UFCC)
-=======================================
+ProLint: Protein-Ligand Interaction Analysis
+============================================
 
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
@@ -27,7 +27,7 @@ except:
 
 setup(
     # Self-descriptive entries which should always be present
-    name='ufcc',
+    name='prolint2',
     author='Daniel P. Ramirez & Besian I. Sejdiu',
     author_email='daniel.ramirezecheme@ucalgary.ca',
     description=short_description,
