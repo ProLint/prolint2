@@ -66,7 +66,7 @@ jobs:
       shell: bash -l {0}
 
       run: |
-        pytest -v --cov=ufcc --cov-report=xml --color=yes ufcc/tests/
+        pytest -v --cov=prolint2 --cov-report=xml --color=yes prolint2/tests/
 
     - name: CodeCov
       uses: codecov/codecov-action@v2
