@@ -34,8 +34,7 @@ Welcome to the ProLint2's documentation!
           
 .. end-badges
 
-ProLint2 calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **prolint2** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
-of the Canadian Chemistry Conference and Exhibition 2022, but is aimed also to include other types of interactions in the future (i.e. protein-protein, protein-ligand, and membrane-ligand interactions).
+ProLint2 calculates the distance-based contacts between two references from molecular dynamics simulations. 
 
 .. ..  figure:: _static/logo.png
 ..     :align: center
