@@ -1,45 +1,44 @@
 ProLint v2: an optimized tool for the analysis of lipid protein interactions.
 =============================================================================
 
-[//]: # (Badges)
-[![PyPI](https://img.shields.io/pypi/v/ufcc?color=blue)](https://pypi.org/project/ufcc/)
+[//]: # (Badges)  
+[![PyPI](https://img.shields.io/pypi/v/prolint2?color=blue)](https://pypi.org/project/prolint2/)
 [![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/)
-[![GitHub Actions Build Status](https://github.com/ProLint/ufcc/workflows/CI/badge.svg)](https://github.com/ProLint/ufcc/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/ProLint/ufcc/graph/badge.svg)](https://app.codecov.io/gh/ProLint/ufcc)
-[![docs](https://readthedocs.org/projects/ufcc/badge/?version=latest)](https://ufcc.readthedocs.io/en/latest/)
+[![GitHub Actions Build Status](https://github.com/ProLint/prolint2/workflows/CI/badge.svg)](https://github.com/ProLint/prolint2/actions?query=workflow%3ACI)
+[![codecov](https://codecov.io/gh/ProLint/prolint2/graph/badge.svg)](https://app.codecov.io/gh/ProLint/prolint2)
+[![docs](https://readthedocs.org/projects/prolint2/badge/?version=latest)](https://prolint2.readthedocs.io/en/latest/?badge=latest)
 
-
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is a *demo* version with a reduced number of features to test how it behaves with different use cases.
+ProLint2 calculates the distance-based contacts between two references from molecular dynamics simulations. 
 
 Installation
 ============
-To install **ufcc** we recommend creating a new conda environment as follows:
+To install **prolint2** we recommend creating a new conda environment as follows:
 
 ``` bash
-   conda create -n ufcc python=3.8 #(or higher)
-   conda activate ufcc
+   conda create -n prolint2 python=3.8 
+   conda activate prolint2
 ```
 
-Then you can install **ufcc** via pip:
+Then you can install **prolint2** via pip:
 
 ``` bash
-   pip install ufcc==0.0.7
+   pip install prolint2
 ```
 
 Basic example (from the command-line):
 ======================================
 ``` bash 
-   ufcc coordinates.gro trajectory.xtc -c 7 
+   prolint2 coordinates.gro trajectory.xtc -c 7 
 ```
 
 The previous line calculates the contacts using a cutoff of 7 Angstroms between all lipids and proteins in the system, and give you a link to launch the visualization dashboard on a browser.
 
-**ufcc** selection interface: 
+**prolint2** selection interface: 
 =============================
 You can enter in the interactive selection mode by selecting the `-i` option.
 
-**ufcc** operates on atom selection called groups. **ufcc** defines two refence groups: the *Query* and the *Database*.
-**ufcc** calculates contacts between the atoms in the *Query* group and the atoms in the *Database* group at the level of residue. By default, **ufcc** will extract proteins into the *Query* groups, and lipids into the *Database* group (if your membrane has lipids with resnames different to those recognized by default by **ufcc** [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE] you can add them using the `-al` option). The current interface allows you to customize these selections based on your needs. We have created a few default selections and user-friendly actions that you can perform on them to reach a high level of especificity in the selections. Note that when you have created a group with the especific selection that you need, you can update either the *Database* or *Query* groups, as follow:
+**prolint2** operates on atom selection called groups. **prolint2** defines two refence groups: the *Query* and the *Database*.
+**prolint2** calculates contacts between the atoms in the *Query* group and the atoms in the *Database* group at the level of residue. By default, **prolint2** will extract proteins into the *Query* groups, and lipids into the *Database* group (if your membrane has lipids with resnames different to those recognized by default by **prolint2** [POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE] you can add them using the `-al` option). The current interface allows you to customize these selections based on your needs. We have created a few default selections and user-friendly actions that you can perform on them to reach a high level of especificity in the selections. Note that when you have created a group with the especific selection that you need, you can update either the *Database* or *Query* groups, as follow:
 ``` 
 db Group_ID
 ```
@@ -207,7 +206,7 @@ e
 
 How to contribute?
 ==================
-If you find a bug in the source code, you can help us by submitting an issue to our [GitHub repo](https://github.com/ProLint/ufcc/tree/demo). Even better, you can submit a Pull Request with a fix. 
+If you find a bug in the source code, you can help us by submitting an issue to our [GitHub repo](https://github.com/ProLint/prolint2/tree/demo). Even better, you can submit a Pull Request with a fix. 
 
 We really appreciate your feedback!
 
@@ -223,4 +222,4 @@ Copyright (c) 2022, Daniel P. Ramirez & Besian I. Sejdiu
 
 Acknowledgements
 ================ 
-The respository structure of **UFCC** is based on the [Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.6.
+The respository structure of **ProLint2** is based on the [Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.6.

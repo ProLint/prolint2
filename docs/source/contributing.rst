@@ -16,7 +16,7 @@ Requesting Changes
 * Add some really awesome code to your local fork.  It's usually a `good idea`_
   to make changes on a `branch`_ with the branch name relating to the feature you are going to add.
 * When you are ready for others to examine and comment on your new feature,
-  navigate to your fork of **ufcc** on GitHub and open a `pull request`_ (PR). Note that
+  navigate to your fork of **prolint2** on GitHub and open a `pull request`_ (PR). Note that
   after you launch a PR from one of your fork's branches, all
   subsequent commits to that branch will be added to the open pull request
   automatically.  Each commit added to the PR will be validated for
@@ -25,7 +25,7 @@ Requesting Changes
 * If you're providing a new feature, you must add test cases and documentation.
 * When the code is ready to go, make sure you run the test suite using pytest.
 * When you're ready to be considered for merging, check the "Ready to go"
-  box on the PR page to let the **ufcc** devs know that the changes are complete.
+  box on the PR page to let the **prolint2** devs know that the changes are complete.
   The code will not be merged until this box is checked, the continuous
   integration returns checkmarks, and core developers give "Approved" reviews.
 

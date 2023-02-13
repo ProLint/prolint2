@@ -1,2 +1,0 @@
-.. automodule:: ufcc.ufcc
-    :members:

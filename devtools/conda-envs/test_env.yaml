@@ -18,6 +18,7 @@ dependencies:
   - mdanalysis  
   - dask
   - fpdf
+  - pandas
 
     # Pip-only installs
   - pip:

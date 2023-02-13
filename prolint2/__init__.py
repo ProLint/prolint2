@@ -1,8 +1,8 @@
-"""Ultrafast contacts calculation."""
+"""ProLint2: Lipid-Protein Interaction Analysis"""
 
 # Add imports here
 import os
-from .ufcc import *
+from .prolint2 import *
 from .interactive_sel import *
 from .visualization import *
 

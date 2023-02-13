@@ -1,4 +1,4 @@
-r"""Contacts base classes --- :mod:`ufcc.contacts`
+r"""Contacts base classes --- :mod:`prolint2.contacts`
 ======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
@@ -178,7 +178,7 @@ class SerialDistances(AnalysisBase):
 
 class Contacts(object):
     """Stores information to run and analyze the distance-based contacts results
-    between the :class:`.ufcc.QueryProteins` and :class:`.ufcc.MembraneDatabase` groups.
+    between the :class:`.prolint2.QueryProteins` and :class:`.prolint2.MembraneDatabase` groups.
 
     Parameters
     ----------
@@ -436,12 +436,12 @@ class Contacts(object):
 
     def __str__(self):
         if self.contacts == None:
-            return "<ufcc.Contacts containing 0 contacts>"
+            return "<prolint2.Contacts containing 0 contacts>"
         else:
-            return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
+            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
         if self.contacts == None:
-            return "<ufcc.Contacts containing 0 contacts>"
+            return "<prolint2.Contacts containing 0 contacts>"
         else:
-            return "<ufcc.Contacts containing {} contacts>".format(len(self.contacts))
+            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))

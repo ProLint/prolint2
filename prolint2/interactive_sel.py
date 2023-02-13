@@ -8,7 +8,7 @@ r"""Interactive selection of Database and Query
 import MDAnalysis as mda
 from collections import OrderedDict
 
-# Function to select the query and the database groups interactively starting from a UFCC object. It returns a new UFCC object with the selected groups for the query and the database.
+# Function to select the query and the database groups interactively starting from a PL2 object. It returns a new PL2 object with the selected groups for the query and the database.
 def interactive_selection(target_system):
 
     # default selections for query and database

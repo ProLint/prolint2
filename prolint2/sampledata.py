@@ -8,7 +8,7 @@ r"""UFCC sample data
 import os
 
 # to get the paths relative to the root of the package
-from ufcc import get_data
+from prolint2 import get_data
 
 
 class GIRKDataSample:

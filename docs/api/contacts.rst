@@ -1,2 +1,2 @@
-.. automodule:: ufcc.contacts
+.. automodule:: prolint2.contacts
     :members:

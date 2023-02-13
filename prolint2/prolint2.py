@@ -1,4 +1,4 @@
-r"""UFCC base classes --- :mod:`ufcc.ufcc`
+r"""PL2 base classes --- :mod:`prolint2.PL2`
 ======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
 :Year: 2022
@@ -39,17 +39,17 @@ class MacrosClass(ResidueStringAttr):
         i. If the format file used includes segment (or chain) information, then the *macro* metadata will
         be set with the name specified in each segment (or chain). #TODO
 
-        ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`UFCC`
+        ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`PL2`
         will assume that proteins are ordered and the start residue of the next protein is always smaller than
         the last residue of the previous protein.
 
     Example
     -------
-    All these assignation are done automatically by **ufcc**, so you do not need to use this
+    All these assignation are done automatically by **prolint2**, so you do not need to use this
     class for anything. But you can access the information of the *macros* metadata as follows::
 
-        from ufcc import UFCC
-        target_system = UFCC('coordinates.gro', 'trajectory.xtc')
+        from prolint2 import PL2
+        target_system = PL2('coordinates.gro', 'trajectory.xtc')
 
         target_system.query.selected.residues.macros
 
@@ -66,8 +66,8 @@ class MacrosClass(ResidueStringAttr):
         return np.array(["other"] * n_residues, dtype=object)
 
 
-class UFCC(object):
-    """Base class for managing the distance-based contacts calculation routines done by the **UFCC**
+class PL2(object):
+    """Base class for managing the distance-based contacts calculation routines done by the **PL2**
     package. It reads a structure/topology file and a trajectory file in any of the MDAnalysis-supported
     formats.
 
@@ -78,7 +78,7 @@ class UFCC(object):
     trajectory : any MDAnalysis-supported trajectory file.
 
     add_lipid_types : list
-        list of strings with the residue name of lipids not included in the **ufcc** list of supported residues.
+        list of strings with the residue name of lipids not included in the **prolint2** list of supported residues.
 
     Attributes
     ----------
@@ -185,10 +185,10 @@ class UFCC(object):
         self.dt = md.trajectory.dt
 
     def __str__(self):
-        return "Base class to handle the calculation of the contacts in UFCC."
+        return "Base class to handle the calculation of the contacts in prolint2."
 
     def __repr__(self):
-        return "Base class to handle the calculation of the contacts in UFCC."
+        return "Base class to handle the calculation of the contacts in prolint2."
 
 
 class BasicGroup(object):
@@ -287,17 +287,17 @@ class MembraneDatabase(BasicGroup):
 
     def __str__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
-            return "<ufcc.MembraneDatabase containing 0 atoms>"
+            return "<prolint2.MembraneDatabase containing 0 atoms>"
         else:
-            return "<ufcc.MembraneDatabase containing {} atoms>".format(
+            return "<prolint2.MembraneDatabase containing {} atoms>".format(
                 self.selected.n_atoms
             )
 
     def __repr__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
-            return "<ufcc.MembraneDatabase containing 0 atoms>"
+            return "<prolint2.MembraneDatabase containing 0 atoms>"
         else:
-            return "<ufcc.MembraneDatabase containing {} atoms>".format(
+            return "<prolint2.MembraneDatabase containing {} atoms>".format(
                 self.selected.n_atoms
             )
 
@@ -325,16 +325,16 @@ class QueryProteins(BasicGroup):
 
     def __str__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
-            return "<ufcc.QueryProteins containing 0 atoms>"
+            return "<prolint2.QueryProteins containing 0 atoms>"
         else:
-            return "<ufcc.QueryProteins containing {} atoms>".format(
+            return "<prolint2.QueryProteins containing {} atoms>".format(
                 self.selected.n_atoms
             )
 
     def __repr__(self):
         if not isinstance(self.selected, mda.core.groups.AtomGroup):
-            return "<ufcc.QueryProteins containing 0 atoms>"
+            return "<prolint2.QueryProteins containing 0 atoms>"
         else:
-            return "<ufcc.QueryProteins containing {} atoms>".format(
+            return "<prolint2.QueryProteins containing {} atoms>".format(
                 self.selected.n_atoms
             )

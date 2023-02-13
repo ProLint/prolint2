@@ -50,10 +50,10 @@ version of **prolintpy** include: i- high memory usage as it needs to load all t
 ii- need to modify the trajectories previous to the setup of the Lipid and Protein groups for the calculation of the contacts; and
 iii- core dependencies no longer mantained for the handling of the molecular dynamic trajectories (**MDTraj**).
 
-How **ufcc** is able to solve the limitations of **prolintpy**?
+How **prolint2** is able to solve the limitations of **prolintpy**?
 ---------------------------------------------------------------
 
-The major changes in **ufcc** compared with **prolintpy** that allows it to overpass the previously mentioned limitations are the migration
+The major changes in **prolint2** compared with **prolintpy** that allows it to overpass the previously mentioned limitations are the migration
 to the `MDAnalysis`_ ecosystem, the use of a **Cython** version of a cell list algorithm greatly inspired by the
 neighbors grid search implemented in **GROMACS** (including the capacity to handle PBC), and the use of highly optimized data structures 
 (**Scipy** matrices and **Pandas** dataframes) to store the contacts.

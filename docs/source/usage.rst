@@ -1,34 +1,34 @@
 Usage Documentation
 ===================
 
-This page details how to get started with **ufcc** to work with lipid-protein systems. On the `Prolint's resources page`_ you can get some simple lipid-protein systems to test the tools before moving on with your own systems.
+This page details how to get started with **prolint2** to work with lipid-protein systems. On the `Prolint's resources page`_ you can get some simple lipid-protein systems to test the tools before moving on with your own systems.
 
-Creating the UFCC object:
+Creating the PL2 object:
 -------------------------
-The first step to use the **ufcc** tool is to create a *UFCC* object using a structure/topology file and a trajectory file.
+The first step to use the **prolint2** tool is to create a *PL2* object using a structure/topology file and a trajectory file.
 All the supported formats are listed `here`_.
 
 .. code-block:: python
 
-      from ufcc import UFCC
+      from prolint2 import PL2
 
-      target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
+      target_system = PL2('coordinates.gro', 'trajectory.xtc') 
 
-By default, **ufcc** will automatically identify the proteins and the membrane in the systems. For the proteins **ufcc** will identify all atoms that belong 
+By default, **prolint2** will automatically identify the proteins and the membrane in the systems. For the proteins **prolint2** will identify all atoms that belong 
 to a standard set of residues based on a hard-coded set of residue names (it may not work for esoteric residues). For the membrane it will identify all the lipids 
 listed below:
 
 Supported lipid types: `POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE`.
 
-But if you have other lipid types in your membrane, you can also add them at the time of initializing the *UFCC* instance.
+But if you have other lipid types in your membrane, you can also add them at the time of initializing the *PL2* instance.
 
 .. code-block:: python
 
-      from ufcc import UFCC
+      from prolint2 import PL2
 
-      target_system = UFCC('coordinates.gro', 'trajectory.xtc', add_lipid_types = ['POPI', 'PSM']) 
+      target_system = PL2('coordinates.gro', 'trajectory.xtc', add_lipid_types = ['POPI', 'PSM']) 
 
-Once you have initialized the *UFCC* instance you will be able to access information in your query proteins and your membrane database, 
+Once you have initialized the *PL2* instance you will be able to access information in your query proteins and your membrane database, 
 including an additional label that is automatically added to each residue and that we called *macros*.
 
 The *macros* metadata is going to be useful for the selection of the query and the database groups. If the residue is included in the MembraneDatabase group, 
@@ -39,7 +39,7 @@ depending on the number of segments (or chains) in the system; otherwise the *ma
 
     ###################### Query proteins ########################
 
-    target_system.query # ufcc.QueryProteins object
+    target_system.query # prolint2.QueryProteins object
 
     target_system.query.whole 
     # This is the whole AtomGroup from where you can select the
@@ -62,7 +62,7 @@ depending on the number of segments (or chains) in the system; otherwise the *ma
 
     ##################### Membrane Database ######################
 
-    target_system.database # ufcc.MembraneDatabase object
+    target_system.database # prolint2.MembraneDatabase object
 
     target_system.database.whole 
     # This is the whole AtomGroup from where you can select the
@@ -109,7 +109,7 @@ All the information of the contacts between the **query** and the **database** w
 
 .. code-block:: python
 
-    target_system.contacts # ufcc.Contacts object
+    target_system.contacts # prolint2.Contacts object
 
     target_system.contacts.contacts 
     # This is None if you have not computed or loaded any contact.

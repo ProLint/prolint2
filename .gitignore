@@ -107,6 +107,6 @@ ENV/
 
 
 # data for tests
-ufcc/data/.*
+prolint2/data/.*
 .DS_Store
-ufcc/.DS_Store
+prolint2/.DS_Store

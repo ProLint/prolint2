@@ -49,12 +49,12 @@ setup(
 
     # Allows `setup.py test` to work correctly with pytest
     setup_requires=[] + pytest_runner,
-    scripts=['bin/ufcc', ],
+    scripts=['bin/prolint2', ],
 
     # Additional entries you may want simply uncomment the lines you want and fill in the data
     url='https://github.com/ProLint/prolint2',  # Website
 
-    install_requires=['mdanalysis', 'bottle'],              # Required packages, pulls from pip if needed; do not use for Conda deployment
+    install_requires=['pandas', 'mdanalysis', 'bottle'],              # Required packages, pulls from pip if needed; do not use for Conda deployment
     platforms=[
         'Linux',
         'Mac OS-X',

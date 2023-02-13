@@ -20,13 +20,13 @@ Welcome to the ProLint2's documentation!
     :alt: license
     :target: https://opensource.org/
 
-.. |actions| image:: https://github.com/ProLint/ufcc/workflows/CI/badge.svg
+.. |actions| image:: https://github.com/ProLint/prolint2/workflows/CI/badge.svg
     :alt: GitHub Actions Build Status
-    :target: https://github.com/ProLint/ufcc/actions?query=workflow%3ACI
+    :target: https://github.com/ProLint/prolint2/actions?query=workflow%3ACI
 
-.. |codecov| image:: https://codecov.io/gh/ProLint/ufcc/graph/badge.svg
+.. |codecov| image:: https://codecov.io/gh/ProLint/prolint2/graph/badge.svg
     :alt: codecov
-    :target: https://app.codecov.io/gh/ProLint/ufcc
+    :target: https://app.codecov.io/gh/ProLint/prolint2
 
 .. |docs| image:: https://readthedocs.org/projects/prolint2/badge/?version=latest
     :target: https://prolint2.readthedocs.io/en/latest/?badge=latest
@@ -34,7 +34,7 @@ Welcome to the ProLint2's documentation!
           
 .. end-badges
 
-The **Ultra-Fast Contact Calculation (UFCC)** tool calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **ufcc** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
+ProLint2 calculates the distance-based contacts between two references from molecular dynamics simulations. This release of **prolint2** is done as a concept test covering only the analysis of lipid-protein interactions on the framework 
 of the Canadian Chemistry Conference and Exhibition 2022, but is aimed also to include other types of interactions in the future (i.e. protein-protein, protein-ligand, and membrane-ligand interactions).
 
 .. ..  figure:: _static/logo.png
@@ -42,18 +42,18 @@ of the Canadian Chemistry Conference and Exhibition 2022, but is aimed also to i
 
 Installation
 ============
-To install **ufcc** we recommend creating a new conda environment as follows:
+To install **prolint2** we recommend creating a new conda environment as follows:
 
 .. code-block:: bash
 
-   conda create -n ufcc python=3.7 #(or higher)
-   conda activate ufcc
+   conda create -n prolint2 python=3.8
+   conda activate prolint2
 
-Then you can install **ufcc** via pip:
+Then you can install **prolint2** via pip:
 
 .. code-block:: bash
 
-   pip install ufcc
+   pip install prolint2
 
 Basic examples:
 ===============
@@ -62,9 +62,9 @@ For serial contacts calculation:
 
 .. code-block:: python
 
-      from ufcc import UFCC
+      from prolint2 import PL2
 
-      target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
+      target_system = PL2('coordinates.gro', 'trajectory.xtc') 
 
       target_system.contacts.compute()
       target_system.contacts.count_contacts()
@@ -75,16 +75,16 @@ For parallel contacts calculation:
 
 .. code-block:: python
 
-      from ufcc import UFCC
+      from prolint2 import PL2
 
-      target_system = UFCC('coordinates.gro', 'trajectory.xtc') 
+      target_system = PL2('coordinates.gro', 'trajectory.xtc') 
       target_system.contacts.runner.backend = 'parallel'
       
       target_system.contacts.compute()
       target_system.contacts.count_contacts()
       target_system.contacts.counts
 
-You can find more details on how to use **ufcc** in the `usage page`_.
+You can find more details on how to use **prolint2** in the `usage page`_.
 
 .. Contents
 .. ========
@@ -124,5 +124,5 @@ The respository structure of **ProLint2** is based on the `Computational Molecul
 
 
 .. _`MIT License`: https://opensource.org/licenses/MIT
-.. _`github.com/Prolint/ufcc`: https://github.com/ProLint/ufcc
+.. _`github.com/Prolint/prolint2`: https://github.com/ProLint/prolint2
 .. _`usage page`: source/usage.html

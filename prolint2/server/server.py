@@ -1,14 +1,14 @@
 from collections import Counter
-from ufcc.interactive_sel import interactive_selection
+from prolint2.interactive_sel import interactive_selection
 import os
 import ast
 import json
 
 from bottle import route, run, template, debug, static_file, request
-from ufcc.contacts import SerialDistances
+from prolint2.contacts import SerialDistances
 
 import MDAnalysis as mda
-from ufcc.ufcc import UFCC
+from prolint2.prolint2 import PL2
 from io import StringIO
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
@@ -126,8 +126,8 @@ def app():
     return static_file("index.html", root=SERVER_PATH)
 
 
-@route("/ufcc")
-def ufcc():
+@route("/prolint2")
+def prolint2():
     import sys
 
     print(request.body.getvalue().decode("utf-8"), file=sys.stdout)
@@ -302,10 +302,10 @@ def start_server(
 ):
 
     global ARGS
-    # UFCC calls:
+    # ProLint2 calls:
     args = payload
     ARGS = args
-    ts = UFCC(args.structure, args.trajectory, add_lipid_types=args.other_lipids)
+    ts = PL2(args.structure, args.trajectory, add_lipid_types=args.other_lipids)
     # For interactive selection of the groups for the contacts calculation
     if i_bool:
         ts = interactive_selection(ts)
@@ -333,7 +333,7 @@ def start_server(
 
 def independent_execution():
     """
-    If we are not calling the server through the ufcc executable, but
+    If we are not calling the server through the prolint2 executable, but
     independently, locally for testing purposes, we will load local data file
     and serve that to the dashboard.
     """
