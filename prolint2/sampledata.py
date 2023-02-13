@@ -19,12 +19,12 @@ class GIRKDataSample:
 
     Example
     -------
-    Import the ufcc library and use the sample data as follows::
+    Import the prolint2 library and use the sample data as follows::
 
-        from ufcc import UFCC
-        from ufcc.sampledata import GIRK
+        from prolint2 import PL2
+        from prolint2.sampledata import GIRK
 
-        target_system = UFCC(GIRK.coordinates, GIRK.trajectory)
+        target_system = PL2(GIRK.coordinates, GIRK.trajectory)
 
     """
 

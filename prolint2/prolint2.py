@@ -264,10 +264,10 @@ class MembraneDatabase(BasicGroup):
         -------
         array of lipid names
         """
-        if not isinstance(self.selected, mda.core.groups.AtomGroup):
+        if not isinstance(self.selected, mda.core.universe.Universe):
             return np.array([])
         else:
-            return np.unique(self.selected.resnames)
+            return np.unique(self.selected.residues.resnames)
 
     def lipid_count(self):
         """Get the name and count of each lipid that will be analyzed.
@@ -286,19 +286,19 @@ class MembraneDatabase(BasicGroup):
         return lc
 
     def __str__(self):
-        if not isinstance(self.selected, mda.core.groups.AtomGroup):
+        if not isinstance(self.selected, mda.core.universe.Universe):
             return "<prolint2.MembraneDatabase containing 0 atoms>"
         else:
             return "<prolint2.MembraneDatabase containing {} atoms>".format(
-                self.selected.n_atoms
+                self.selected.atoms.n_atoms
             )
 
     def __repr__(self):
-        if not isinstance(self.selected, mda.core.groups.AtomGroup):
+        if not isinstance(self.selected, mda.core.universe.Universe):
             return "<prolint2.MembraneDatabase containing 0 atoms>"
         else:
             return "<prolint2.MembraneDatabase containing {} atoms>".format(
-                self.selected.n_atoms
+                self.selected.atoms.n_atoms
             )
 
 
@@ -324,17 +324,17 @@ class QueryProteins(BasicGroup):
         return np.unique(self.whole.residues.macros)
 
     def __str__(self):
-        if not isinstance(self.selected, mda.core.groups.AtomGroup):
+        if not isinstance(self.selected, mda.core.universe.Universe):
             return "<prolint2.QueryProteins containing 0 atoms>"
         else:
             return "<prolint2.QueryProteins containing {} atoms>".format(
-                self.selected.n_atoms
+                self.selected.atoms.n_atoms
             )
 
     def __repr__(self):
-        if not isinstance(self.selected, mda.core.groups.AtomGroup):
+        if not isinstance(self.selected, mda.core.universe.Universe):
             return "<prolint2.QueryProteins containing 0 atoms>"
         else:
             return "<prolint2.QueryProteins containing {} atoms>".format(
-                self.selected.n_atoms
+                self.selected.atoms.n_atoms
             )
