@@ -159,7 +159,7 @@ class SerialDistances(AnalysisBase):
 
     def _prepare(self):
         self.result_array = np.zeros(
-            (self.n_frames, self.lipid_atomgroup.n_atoms, self.resid_atomgroup.n_atoms)
+            (len(self.frame_filter), self.lipid_atomgroup.n_atoms, self.resid_atomgroup.n_atoms)
         )
 
     def _single_frame(self):
