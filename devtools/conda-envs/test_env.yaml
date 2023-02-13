@@ -16,9 +16,7 @@ dependencies:
 
     # Package dependencies
   - mdanalysis  
-  - dask
-  - fpdf
-  - pandas
+  - plotly
 
     # Pip-only installs
   - pip:
