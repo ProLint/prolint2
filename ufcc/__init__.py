@@ -4,6 +4,7 @@
 import os
 from .ufcc import *
 from .interactive_sel import *
+from .visualization import *
 
 # Handle versioneer
 from ._version import get_versions
