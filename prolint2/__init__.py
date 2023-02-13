@@ -4,7 +4,6 @@
 import os
 from .prolint2 import *
 from .interactive_sel import *
-from .visualization import *
 
 # Handle versioneer
 from ._version import get_versions
