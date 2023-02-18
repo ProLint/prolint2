@@ -43,14 +43,14 @@ Installation
 ============
 To install **prolint2** we recommend creating a new conda environment as follows:
 
-.. code-block:: bash
+.. code-block:: none
 
    conda create -n prolint2 python=3.8
    conda activate prolint2
 
 Then you can install **prolint2** via pip:
 
-.. code-block:: bash
+.. code-block:: none
 
    pip install prolint2
 
@@ -72,7 +72,7 @@ Using the Prolint2's API:
       
 Using the Prolint2's command-line interface:
 
-.. code-block:: bash
+.. code-block:: none
 
       prolint2 coordinates.gro trajectory.xtc -c 7 -e results.csv
 
