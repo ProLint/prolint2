@@ -42,18 +42,18 @@ where you can usually deal with a very large number of points.
     
 |
 
-The current neighbors search implementation in **prolintpy** involves the brute-force computation of distances between 
+The current neighbors search implementation in the old version of **prolint** involves the brute-force computation of distances between 
 all pairs of points in the dataset, which is very inefficient for lipid-protein systems with very high number of atoms. 
-Furthermore, the current implementation only looks for the neighbors based in raw distances, whitout taking into account 
-the periodic boundary conditions (PBC) present in most molecular dynamic simulations. Other limitations in the current 
-version of **prolintpy** include: i- high memory usage as it needs to load all the trajectory at once to run the calculation of the contacts;
+Furthermore, the old implementation only looked for the neighbors based in raw distances, whitout taking into account 
+the periodic boundary conditions (PBC) present in most molecular dynamic simulations. Other limitations in the old
+version of **prolint** included: i- high memory usage as it needs to load all the trajectory at once to run the calculation of the contacts;
 ii- need to modify the trajectories previous to the setup of the Lipid and Protein groups for the calculation of the contacts; and
 iii- core dependencies no longer mantained for the handling of the molecular dynamic trajectories (**MDTraj**).
 
 How **prolint2** is able to solve the limitations of **prolintpy**?
----------------------------------------------------------------
+-------------------------------------------------------------------
 
-The major changes in **prolint2** compared with **prolintpy** that allows it to overpass the previously mentioned limitations are the migration
+The major changes in **prolint2** compared to the old version that allow them to overpass the previously mentioned limitations are the migration
 to the `MDAnalysis`_ ecosystem, the use of a **Cython** version of a cell list algorithm greatly inspired by the
 neighbors grid search implemented in **GROMACS** (including the capacity to handle PBC), and the use of highly optimized data structures 
 (**Scipy** matrices and **Pandas** dataframes) to store the contacts.
@@ -61,15 +61,15 @@ neighbors grid search implemented in **GROMACS** (including the capacity to hand
 Features
 --------
 
-* *Serial* and *parallel* routines to calculate the distance-based contacts using a cell list fixed radius neighbors search algorithm. Both routines are able to scale lineally with the number of atoms, and in the case of the *parallel* routine it uses a *split-apply-combine* approach to deal with the analysis of very large trajectories, so there are practically no limitations in size and time of the simulations that can be handled. 
+    #. Routine to calculate the distance-based contacts using a cell list fixed radius neighbors search algorithm. 
 
-* It reads the frames of the trajectory completely *on-the-fly*, so it does not overload memory.
+    #. It reads the frames of the trajectory completely *on-the-fly*, so it does not overload memory.
 
-* It takes into account the PBC in both orthorhombic and triclinic types of simulation boxes.
+    #. It takes into account the PBC in both orthorhombic and triclinic types of simulation boxes.
 
-* It automatically identifies the Protein and Lipid groups for the calculation of the contacts, so you do not need to make any previous cleaning steps in your system.
+    #. It automatically identifies the Protein and Lipid groups for the calculation of the contacts, so you do not need to make any previous cleaning steps in your system.
 
-* User-friendly, easy-to-install and well-documented tool, based on the actively-maintained `MDAnalysis`_ package.
+    #. User-friendly, easy-to-install and well-documented tool, based on the actively-maintained `MDAnalysis`_ package.
 
 
 .. _MDAnalysis: https://www.mdanalysis.org
