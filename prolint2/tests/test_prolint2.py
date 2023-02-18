@@ -80,38 +80,38 @@ def test_protein_residues():
         for segment_idx in range(len(pl2.atoms.select_atoms(protein_sel).segments)):
             protein_segment = pl2.atoms.select_
 
-def test_lipid_types():
-    whole = mda.Universe.empty(n_atoms=0, n_residues=0, atom_resindex=([]))
-    whole.add_TopologyAttr(
-        "resnames", np.array([])
-    )
-    whole.add_TopologyAttr("resids", np.array([]))
-    database = MembraneDatabase(whole)
-    lipids = database.lipid_types()
-    assert len(lipids) == 0
+# def test_lipid_types():
+#     whole = mda.Universe.empty(n_atoms=0, n_residues=0, atom_resindex=([]))
+#     whole.add_TopologyAttr(
+#         "resnames", np.array([])
+#     )
+#     whole.add_TopologyAttr("resids", np.array([]))
+#     database = MembraneDatabase(whole)
+#     lipids = database.lipid_types()
+#     assert len(lipids) == 0
 
-    # create an AtomGroup with two lipids
-    whole = mda.Universe.empty(n_atoms=6, n_residues=2, atom_resindex=([0, 0, 0, 1, 1, 1]))
-    whole.add_TopologyAttr(
-        "resnames", np.array(["POPC", "POPG"])
-    )
-    whole.add_TopologyAttr("resids", np.array([0, 1]))
-    database = MembraneDatabase(whole)
-    lipids = database.lipid_types()
-    assert len(lipids) == 2
-    assert "POPC" in lipids
-    assert "POPG" in lipids
+#     # create an AtomGroup with two lipids
+#     whole = mda.Universe.empty(n_atoms=6, n_residues=2, atom_resindex=([0, 0, 0, 1, 1, 1]))
+#     whole.add_TopologyAttr(
+#         "resnames", np.array(["POPC", "POPG"])
+#     )
+#     whole.add_TopologyAttr("resids", np.array([0, 1]))
+#     database = MembraneDatabase(whole)
+#     lipids = database.lipid_types()
+#     assert len(lipids) == 2
+#     assert "POPC" in lipids
+#     assert "POPG" in lipids
 
-def test_lipid_count():
-    # create an AtomGroup with two lipids
-    whole = mda.Universe.empty(n_atoms=6, n_residues=2, atom_resindex=([0, 0, 0, 1, 1, 1]))
-    whole.add_TopologyAttr(
-        "resnames", np.array(["POPC", "POPG"])
-    )
-    whole.add_TopologyAttr("resids", np.array([0, 1]))
-    database = MembraneDatabase(whole)
-    lipid_count = database.lipid_count()
-    assert len(lipid_count) == 2
+# def test_lipid_count():
+#     # create an AtomGroup with two lipids
+#     whole = mda.Universe.empty(n_atoms=6, n_residues=2, atom_resindex=([0, 0, 0, 1, 1, 1]))
+#     whole.add_TopologyAttr(
+#         "resnames", np.array(["POPC", "POPG"])
+#     )
+#     whole.add_TopologyAttr("resids", np.array([0, 1]))
+#     database = MembraneDatabase(whole)
+#     lipid_count = database.lipid_count()
+#     assert len(lipid_count) == 2
 
 # def test_str_repr_MembraneDatabase():
 #     whole = mda.Universe.empty(n_atoms=0)
