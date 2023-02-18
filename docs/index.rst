@@ -34,7 +34,7 @@ Welcome to the ProLint2's documentation!
           
 .. end-badges
 
-ProLint2 calculates the distance-based contacts between two references from molecular dynamics simulations. 
+ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories of membrane protein systems. 
 
 .. ..  figure:: _static/logo.png
 ..     :align: center
@@ -57,31 +57,24 @@ Then you can install **prolint2** via pip:
 Basic examples:
 ===============
 
-For serial contacts calculation:
+Using the Prolint2's API:
 
 .. code-block:: python
 
       from prolint2 import PL2
+      from prolint2.sampledata import GIRK
 
-      target_system = PL2('coordinates.gro', 'trajectory.xtc') 
+      target_system = PL2(GIRK.coordinates, GIRK.trajectory) 
 
-      target_system.contacts.compute()
-      target_system.contacts.count_contacts()
-      target_system.contacts.counts
+      target_system.contacts.compute(cutoff=7)
+      target_system.contacts.export('results.csv')
 
       
-For parallel contacts calculation:
+Using the Prolint2's command-line interface:
 
-.. code-block:: python
+.. code-block:: bash
 
-      from prolint2 import PL2
-
-      target_system = PL2('coordinates.gro', 'trajectory.xtc') 
-      target_system.contacts.runner.backend = 'parallel'
-      
-      target_system.contacts.compute()
-      target_system.contacts.count_contacts()
-      target_system.contacts.counts
+      prolint2 coordinates.gro trajectory.xtc -c 7 -e results.csv
 
 You can find more details on how to use **prolint2** in the `usage page`_.
 
@@ -94,7 +87,6 @@ You can find more details on how to use **prolint2** in the `usage page`_.
    
    source/intro.rst
    source/usage.rst
-   source/connecting_with_prolint.rst
    api
    source/contributing.rst
 
