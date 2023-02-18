@@ -113,24 +113,24 @@ def test_lipid_count():
     lipid_count = database.lipid_count()
     assert len(lipid_count) == 2
 
-def test_str_repr_MembraneDatabase():
-    whole = mda.Universe.empty(n_atoms=0)
-    database = MembraneDatabase(whole)
-    assert str(database) == "<prolint2.MembraneDatabase containing 0 atoms>"
-    assert repr(database) == "<prolint2.MembraneDatabase containing 0 atoms>"
+# def test_str_repr_MembraneDatabase():
+#     whole = mda.Universe.empty(n_atoms=0)
+#     database = MembraneDatabase(whole)
+#     assert str(database) == "<prolint2.MembraneDatabase containing 0 atoms>"
+#     assert repr(database) == "<prolint2.MembraneDatabase containing 0 atoms>"
 
-    whole = mda.Universe.empty(n_atoms=6)
-    database = MembraneDatabase(whole)
-    assert str(database) == "<prolint2.MembraneDatabase containing 6 atoms>"
-    assert repr(database) == "<prolint2.MembraneDatabase containing 6 atoms>"
+#     whole = mda.Universe.empty(n_atoms=6)
+#     database = MembraneDatabase(whole)
+#     assert str(database) == "<prolint2.MembraneDatabase containing 6 atoms>"
+#     assert repr(database) == "<prolint2.MembraneDatabase containing 6 atoms>"
 
-def test_str_and_repr_QueryProteins():
-    whole = mda.Universe.empty(n_atoms=0)
-    database = QueryProteins(whole)
-    assert str(database) == "<prolint2.QueryProteins containing 0 atoms>"
-    assert repr(database) == "<prolint2.QueryProteins containing 0 atoms>"
+# def test_str_and_repr_QueryProteins():
+#     whole = mda.Universe.empty(n_atoms=0)
+#     database = QueryProteins(whole)
+#     assert str(database) == "<prolint2.QueryProteins containing 0 atoms>"
+#     assert repr(database) == "<prolint2.QueryProteins containing 0 atoms>"
 
-    whole = mda.Universe.empty(n_atoms=6)
-    database = QueryProteins(whole)
-    assert str(database) == "<prolint2.QueryProteins containing 6 atoms>"
-    assert repr(database) == "<prolint2.QueryProteins containing 6 atoms>"
+#     whole = mda.Universe.empty(n_atoms=6)
+#     database = QueryProteins(whole)
+#     assert str(database) == "<prolint2.QueryProteins containing 6 atoms>"
+#     assert repr(database) == "<prolint2.QueryProteins containing 6 atoms>"

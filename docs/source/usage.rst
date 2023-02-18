@@ -11,22 +11,24 @@ All the supported formats are listed `here`_.
 .. code-block:: python
 
       from prolint2 import PL2
+      from prolint2.sampledata import GIRK
 
-      target_system = PL2('coordinates.gro', 'trajectory.xtc') 
+      target_system = PL2(GIRK.coordinates, GIRK.trajectory) 
 
 By default, **prolint2** will automatically identify the proteins and the membrane in the systems. For the proteins **prolint2** will identify all atoms that belong 
 to a standard set of residues based on a hard-coded set of residue names (it may not work for esoteric residues). For the membrane it will identify all the lipids 
 listed below:
 
-Supported lipid types: `POPC, DPPC, DOPC, CHOL, CHL1, POPS, POPE`.
+Supported lipid types: `DLPC, DPPC, DOPC, DIPC, POPC, DPPE, DOPE, POPE, DPPS, DOPS, POPS, DPPG, DOPG, POPG, DPPA, DOPA, POPA, DPPI, POPI, DPP1, POP1, DPP2, POP2, PODG, LPC, PPC, OPC, DPSM, POSM, DPCE, DPGS, DPG1, DPG3, DPMG, CHOL, CHL1`.
 
 But if you have other lipid types in your membrane, you can also add them at the time of initializing the *PL2* instance.
 
 .. code-block:: python
 
       from prolint2 import PL2
+      from prolint2.sampledata import GIRK
 
-      target_system = PL2('coordinates.gro', 'trajectory.xtc', add_lipid_types = ['POPI', 'PSM']) 
+      target_system = PL2(GIRK.coordinates, GIRK.trajectory, add_lipid_types = ['TOG']) 
 
 Once you have initialized the *PL2* instance you will be able to access information in your query proteins and your membrane database, 
 including an additional label that is automatically added to each residue and that we called *macros*.
@@ -115,20 +117,6 @@ All the information of the contacts between the **query** and the **database** w
     # This is None if you have not computed or loaded any contact.
     # Otherwise it is a numpy array of scipy.sparse matrices.
 
-Previous to the computation of the contacts you can define the backend that you prefer using 
-the *runner* attribute of the **Contacts** class, which is an instance of the **Runner** class.
-For now, the **Runner** class has only two attributes *backend* and *n_jobs*, but the idea is to make 
-it more complex to be able to configure the *distributed* scheduler of **Dask** to run parallel jobs 
-on remote machines and HPC.
-
-.. code-block:: python
-
-    target_system.contacts.runner.backend 
-    # 'serial' or 'parallel'. ('serial' by default)
-
-    target_system.contacts.runner.n_jobs 
-    # number of CPU cores to use. (-1 by default, all CPU cores)
-
 To compute the contacts you can use the **compute()** method defining the distance cutoff (in Angstroms) that you want to use 
 for the determination of the contact (by default 7 Angstroms).
 
@@ -137,36 +125,16 @@ for the determination of the contact (by default 7 Angstroms).
     target_system.contacts.compute(cutoff=7) 
     # this will populate target_system.contacts.contacts
 
-Save/load contacts:
+Export contacts:
 -------------------
-You can save/load contacts information using the **save()** and **load()** methods as below:
+You can export contacts information using the **export** method as below:
 
 .. code-block:: python
 
-    target_system.contacts.save('contacts.pkl') 
-    # this will save a pkl file with the contacts information 
-    # stored in target_system.contacts.contacts (useful when 
-    # you want to use the contacts information for later usage).
-
-    target_system.contacts.load('old_contacts.pkl') 
-    # this will load the contacts information in a pkl file  
-    # to target_system.contacts.contacts (useful when you have
-    # precomputed the contacts information).
-
-
-Counting contacts:
--------------------
-To count the contacts from the **numpy array of scipy.sparse matrices** stored in the *contacts* attribute
-you can use the **count_contacts()** method, which populates the *counts* attribute.
-
-.. code-block:: python
-
-    target_system.count_contacts() 
-    # populates the target_system.contacts.counts attribute
-
-    target_system.counts 
-    # None if you have not used the count_contacts() method.
-    # Otherwise it is a pandas DataFrame with the counted contacts.
+    target_system.contacts.export('results.csv') 
+    # this will export two csv files, one with the contacts information 
+    # stored in target_system.contacts.contacts and a second one 
+    # ('results_metrics.csv') with the metrics information.
 
 .. _`here`: https://userguide.mdanalysis.org/stable/formats/index.html
 .. _`Prolint's resources page`: https://www.prolint.ca/resources/data

@@ -264,7 +264,7 @@ class MembraneDatabase(BasicGroup):
         -------
         array of lipid names
         """
-        if not isinstance(self.selected, mda.core.universe.Universe):
+        if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return np.array([])
         else:
             return np.unique(self.selected.residues.resnames)
@@ -286,7 +286,7 @@ class MembraneDatabase(BasicGroup):
         return lc
 
     def __str__(self):
-        if not isinstance(self.selected, mda.core.universe.Universe):
+        if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<prolint2.MembraneDatabase containing 0 atoms>"
         else:
             return "<prolint2.MembraneDatabase containing {} atoms>".format(
@@ -294,7 +294,7 @@ class MembraneDatabase(BasicGroup):
             )
 
     def __repr__(self):
-        if not isinstance(self.selected, mda.core.universe.Universe):
+        if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<prolint2.MembraneDatabase containing 0 atoms>"
         else:
             return "<prolint2.MembraneDatabase containing {} atoms>".format(
@@ -324,7 +324,7 @@ class QueryProteins(BasicGroup):
         return np.unique(self.whole.residues.macros)
 
     def __str__(self):
-        if not isinstance(self.selected, mda.core.universe.Universe):
+        if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<prolint2.QueryProteins containing 0 atoms>"
         else:
             return "<prolint2.QueryProteins containing {} atoms>".format(
@@ -332,7 +332,7 @@ class QueryProteins(BasicGroup):
             )
 
     def __repr__(self):
-        if not isinstance(self.selected, mda.core.universe.Universe):
+        if not isinstance(self.selected, mda.core.groups.AtomGroup):
             return "<prolint2.QueryProteins containing 0 atoms>"
         else:
             return "<prolint2.QueryProteins containing {} atoms>".format(
