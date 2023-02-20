@@ -148,6 +148,9 @@ class SerialDistances(AnalysisBase):
         self.query = query
         self.database = database
         self.frame_filter = frame_filter
+        frame_range = np.arange(len(self.frame_filter))
+        self.frame_mapping = {k: v for k, v in zip(self.frame_filter, frame_range)}
+
         self.lipid_atomgroup = self.database.select_atoms(f"resid {lipid_id+1}")
         self.resid_atomgroup = self.query.select_atoms(f"resid {residue_id+1}")
         self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
@@ -169,7 +172,8 @@ class SerialDistances(AnalysisBase):
                 self.resid_atomgroup.positions,
                 box=self.database.universe.dimensions,
             )
-            self.result_array[self._frame_index] = r
+            # print ('frame iterator: ', self._frame_index)
+            self.result_array[self.frame_mapping[self._frame_index]] = r
 
     def _conclude(self):
         self.distance_array = np.mean(self.result_array, axis=0)
@@ -357,6 +361,9 @@ class Contacts(object):
                 metric = (
                     contact_sum * self.dt
                 ) / self.totaltime  # TODO: do we have to substract 1 frame here?
+                if not metric > 0:
+                    continue
+
                 js[protein][lipid].append(
                     {
                         "residue": f"{resnames[residue]} {residue+1}",
