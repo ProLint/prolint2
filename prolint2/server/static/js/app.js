@@ -342,16 +342,34 @@ fetch('/data/' + JSON.stringify(obj))
             // series.appear(100);
             // chart.appear(100);
 
-            var button = chart.plotContainer.children.push(am5.Button.new(root, {
+            var circularAppButton = chart.plotContainer.children.push(am5.Button.new(root, {
                 dx: 0,
                 dy: 0,
+                width: 100,
+                height: 30,
                 label: am5.Label.new(root, {
                     text: "Shared Contacts",
-                    fontSize: 10,
+                    position: "absolute",
+                    textBaseline: "middle",
+                    paddingLeft: 15,
                 })
             }));
 
-            button.events.on("click", function (ev) {
+            var timeSeriesAppButton = chart.plotContainer.children.push(am5.Button.new(root, {
+                dx: 100,
+                dy: 0,
+                width: 75,
+                height: 30,
+                label: am5.Label.new(root, {
+                    text: "Time Series",
+                    position: "absolute",
+                    textBaseline: "middle",
+                    paddingLeft: 10,
+                })
+            }));
+
+
+            circularAppButton.events.on("click", function (ev) {
                 root.dispose();
 
                 am5.array.each(subSeries.dataItems, function (dataItem, ix) {
@@ -1574,12 +1592,16 @@ fetch('/data/' + JSON.stringify(obj))
             // Make stuff animate on load
             series.appear(1000, 100);
 
-
             var button2 = series.children.push(am5.Button.new(root, {
                 dx: 0,
                 dy: 0,
+                width: 100,
+                height: 30,
                 label: am5.Label.new(root, {
-                    text: "Circular Application",
+                    text: "Contacts Wheel",
+                    position: "absolute",
+                    textBaseline: "middle",
+                    paddingLeft: 15,
                     fontSize: 10,
                 })
             }));
