@@ -542,7 +542,7 @@ fetch('/data/' + JSON.stringify(obj))
                     // TODO:
                     // get correct protein
                     // Update Circular App Data
-                    obj.protein = "GIRK"
+                    obj.protein = "Protein"
                     obj.lipid = lipid
                     fetch('/data/' + JSON.stringify(obj))
                         .then(response => response.json())
@@ -1588,7 +1588,7 @@ fetch('/data/' + JSON.stringify(obj))
                 root.dispose();
                 fetch('/data/' + JSON.stringify({
                         lipid: lipid,
-                        protein: "GIRK",
+                        protein: "Protein",
                     }))
                     .then(response => response.json())
                     .then(cirData => {
