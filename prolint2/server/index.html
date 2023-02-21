@@ -23,125 +23,7 @@
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link rel="stylesheet" type="text/css" href="static/css/pdbe-molstar-3.1.0_vendor.css">
-
-    <style>
-        .container {
-            width: 1200px;
-        }
-        #chartdiv {
-            height: 700px;
-            background-color: white;
-        }
-
-        #chartdiv2 {
-            height: 250px;
-            width: 650px;
-            background-color: white;
-        }
-
-        #chartdiv3 {
-            height: 300px;
-            background-color: white;
-        }
-
-        #lipid-table {
-            height: 300px;
-            background-color: white;
-
-        }
-
-        #chartdiv4 {
-            height: 300px;
-        }
-
-      .msp-plugin ::-webkit-scrollbar-thumb {
-          background-color: #474748 !important;
-      }
-      .viewerSection {
-        padding-top: 40px;
-      }
-      .controlsSection {
-        width: 100px;
-        height: 100px;
-        float: left;
-        padding: 40px 0 0 0;
-        margin-right: 30px;
-      }
-      .controlBox {
-        border: 1px solid lightgray;
-        padding: 10px;
-        margin-bottom: 20px;
-      }
-      #myViewer{
-        float:left;
-        width:500px;
-        height: 700px;
-        position:relative;
-        /* margin-top: 50px; */
-        /* z-index: -1 !important; */
-      }
-
-      .tabulator-col-title {
-        text-align: center;
-      }
-
-    .tabulator-tableholder {
-        -ms-overflow-style: none;  /* Internet Explorer 10+ */
-        scrollbar-width: none;  /* Firefox */
-    }
-    .tabulator-tableholder::-webkit-scrollbar {
-        display: none;  /* Safari and Chrome */
-    }
-    .tabulator-col-title {
-        font-size: 12px;
-    }
-
-        /* body {
-        height: 100vh;
-        margin: 0;
-        display: grid;
-        grid-template-columns: auto auto;
-        gap: 20px;
-        place-content: center;
-        background: #DAEDFB;
-    } */
-
-    button {
-    --b: 1.5px;   /* border thickness */
-    --s: .02em; /* size of the corner */
-    --c: #BD5532;
-    
-    padding: calc(.05em + var(--s)) calc(.3em + var(--s));
-    color: var(--c);
-    --_p: var(--s);
-    background:
-        conic-gradient(from 90deg at var(--b) var(--b),#0000 90deg,var(--c) 0)
-        var(--_p) var(--_p)/calc(100% - var(--b) - 2*var(--_p)) calc(100% - var(--b) - 2*var(--_p));
-    transition: .3s linear, color 0s, background-color 0s;
-    outline: var(--b) solid #0000;
-    outline-offset: .2em;
-    }
-    button:hover,
-    button:focus-visible{
-    --_p: 0px;
-    outline-color: var(--c);
-    outline-offset: .05em;
-    } 
-    button:active {
-    background: var(--c);
-    color: #fff;
-    }
-
-    button {
-    font-family: system-ui, sans-serif;
-    font-weight: bold;
-    font-size: 1.5rem;
-    cursor: pointer;
-    border: none;
-    margin: .1em;
-    }
-
-    </style>
+    <link rel="stylesheet" type="text/css" href="static/css/main.css">
 </head>
 
 <body>
@@ -231,7 +113,6 @@
             bringDivToFront("chartdiv_z", "button_z");
         });
 
-        // bringDivToFront("chartdiv_y", "button_y");
         bringDivToFront("chartdiv_z", "button_z");
 
 
@@ -242,21 +123,21 @@
     <script>
         var viewerInstance = new PDBeMolstarPlugin();
 
-    obj = {"abc": 1}
-    var options = {
-        customData: { url: '/pdb/' + JSON.stringify(obj), format: 'pdb', binary:false },
-        hideControls: true,
-        // hideCanvasControls: ['selection', 'animation', 'controlToggle'],
-        hideCanvasControls: ['animation'],
-        // visualStyle: 'molecular-surface'
-        // lighting: 'matte',
-        }
+        obj = {"abc": 1}
+        var options = {
+            customData: { url: '/pdb/' + JSON.stringify(obj), format: 'pdb', binary:false },
+            hideControls: true,
+            // hideCanvasControls: ['selection', 'animation', 'controlToggle'],
+            hideCanvasControls: ['animation'],
+            // visualStyle: 'molecular-surface'
+            // lighting: 'matte',
+            }
 
-        //Get element from HTML/Template to place the viewer
-        var viewerContainer = document.getElementById('myViewer');
+            //Get element from HTML/Template to place the viewer
+            var viewerContainer = document.getElementById('myViewer');
 
-        //Call render method to display the 3D view
-        viewerInstance.render(viewerContainer, options);
+            //Call render method to display the 3D view
+            viewerInstance.render(viewerContainer, options);
 
     </script>
 
