@@ -31,7 +31,7 @@ export function networkApp(lipid = "CHOL") {
 
     series.nodes.bullets.push(function (_root, _series, dataItem) {
         var bulletCircle = am5.Circle.new(root, {
-            radius: 2.5,
+            radius: 3.5,
             fill: am5.color("#8E8A8A"),
             fillOpacity: 1,
         });
@@ -64,7 +64,7 @@ export function networkApp(lipid = "CHOL") {
 
     series.children.moveValue(series.bulletsContainer, 0);
 
-    var hoverColor = am5.color(0xff0000);
+    var hoverColor = am5.color(0x393D47); 
     // am5.array.each(subSeries.dataItems, function (dataItem, ix) {
     //     if (dataItem.dataContext.category == lipid) {
     //         hoverColor = subSeries.get("colors").getIndex(ix)
@@ -204,6 +204,7 @@ export function networkApp(lipid = "CHOL") {
 
             var data = responseData['chordElements']
             var posRes = responseData['positionResidues']
+            
             series.data.setAll(data);
             series.lipidNodes = responseData['lipidNodes'];
 
@@ -253,51 +254,7 @@ export function networkApp(lipid = "CHOL") {
             });
         });
 
-    // Make stuff animate on load
     series.appear(1000, 100);
-
-    // var button2 = series.children.push(am5.Button.new(root, {
-    //     dx: 0,
-    //     dy: 0,
-    //     width: 100,
-    //     height: 30,
-    //     label: am5.Label.new(root, {
-    //         text: "Contacts Wheel",
-    //         position: "absolute",
-    //         textBaseline: "middle",
-    //         paddingLeft: 15,
-    //         fontSize: 10,
-    //     })
-    // }));
-
-    // button2.events.on("click", function (ev) {
-    //     root.dispose();
-    //     fetch('/data/' + JSON.stringify({
-    //             lipid: lipid,
-    //             protein: "Protein",
-    //         }))
-    //         .then(response => response.json())
-    //         .then(cirData => {
-
-    //             var rootReferenceObjects = radarApp(subSeries)
-
-    //             var updateData = cirData['data']
-    //             rootReferenceObjects["series"].data.setAll(updateData);
-    //             rootReferenceObjects["categoryAxis"].data.setAll(updateData);
-    //             // rootReferenceObjects["createRange"]("POPE", updateData, 0);
-
-    //             am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-    //                 if (dataItem._settings.slice._settings.active) {
-    //                     var col = subSeries.get("colors").getIndex(ix)
-    //                     rootReferenceObjects["createRange"](dataItem.dataContext.category, updateData, 0);
-    //                     rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
-    //                 }
-    //             })
-
-    //         });
-
-    //     // radialRoot["series"].appear(100);
-    // });
 
     return {
         "series": series,
