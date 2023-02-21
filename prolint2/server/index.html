@@ -152,18 +152,12 @@
         function bringDivToFront(divId, buttonId) {
         // Get the div element and its z-index
         const div = document.getElementById(divId);
-        const zIndex = parseInt(div.style.zIndex) || 0;
 
-        // Set the z-index of all the chartdiv divs to the same value
         const chartdivs = document.querySelectorAll("#chartdiv > div");
         chartdivs.forEach((chartdiv) => {
-            // chartdiv.style.zIndex = 0;
-            // change visibility of the div 
             chartdiv.style.visibility = "hidden";
         });
 
-        // Bring the selected div to the front
-        // div.style.zIndex = -100;
         div.style.visibility = "visible";
 
         // Set the active/inactive classes on the buttons
@@ -182,15 +176,15 @@
         }
 
         document.getElementById("button_x").addEventListener("click", function() {
-        bringDivToFront("chartdiv_x", "button_x");
+            bringDivToFront("chartdiv_x", "button_x");
         });
 
         document.getElementById("button_y").addEventListener("click", function() {
-        bringDivToFront("chartdiv_y", "button_y");
+            bringDivToFront("chartdiv_y", "button_y");
         });
 
         document.getElementById("button_z").addEventListener("click", function() {
-        bringDivToFront("chartdiv_z", "button_z");
+            bringDivToFront("chartdiv_z", "button_z");
         });
 
         // bringDivToFront("chartdiv_y", "button_y");

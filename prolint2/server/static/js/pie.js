@@ -224,9 +224,14 @@ export function pieApp(table, ganttReturnValue, heatmap, timeSeries, networkRoot
                                 "lipidID": lipid_id,
                                 "residueID": ganttData[0]['category']
                             }
+            
                             fetch('/distance/' + JSON.stringify(obj))
                                 .then(response => response.json())
                                 .then(heatmapResponseData => {
+
+                                    var text = `ResidueID: ${ganttData[0]['category']} and LipidID: ${lipid_id} Interactions`
+                                    am5.registry.entitiesById["besiTest"].set("text", text)
+        
                                     heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
                                     hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
                                     hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
