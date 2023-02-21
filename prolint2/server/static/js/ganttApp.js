@@ -2,9 +2,10 @@
 ///////////////////////////////////////////
 /////////////// GanttApp //////////////////
 ///////////////////////////////////////////
-export function ganttApp(responseData) {
+export function ganttApp(responseData, heatmap) {
 
     var frameNumber = responseData["frameNumber"];
+    var [heatmapRoot, heatmapChart, heatmapSeries, hmYAxis, hmXAxis, heatLegend] = heatmap;
 
     var ganttRoot = am5.Root.new("chartdiv3");
 

@@ -6,10 +6,6 @@ export function radarApp() {
     
     var root = am5.Root.new("chartdiv_x");
 
-    var rootReferenceObjects = {
-        "active": true,
-    }
-
     const theme = am5.Theme.new(root);
     theme.rule("Label").set("fontSize", 10);
     theme.rule("Grid").set("strokeOpacity", 0.06);
@@ -19,13 +15,7 @@ export function radarApp() {
         theme
     ]);
 
-    root.fps = 60;
-
-    var startFrameGroup = 0;
-    var endFrameGroup = 1;
-    var currentFrameGroup = 1;
-
-    var colorSet = am5.ColorSet.new(root, {});
+    root.fps = 30;
 
     // Params
     var innerRadius = 50;
@@ -279,54 +269,6 @@ export function radarApp() {
             }
         });
     }
-
-    // series.data.setAll(contactData);
-    // categoryAxis.data.setAll(contactData);
-    // createRange(lipid, contactData, 0);
-
-    // series.appear(100);
-    // chart.appear(100);
-
-    // var circularAppButton = chart.plotContainer.children.push(am5.Button.new(root, {
-    //     dx: 0,
-    //     dy: 0,
-    //     width: 100,
-    //     height: 30,
-    //     label: am5.Label.new(root, {
-    //         text: "Shared Contacts",
-    //         position: "absolute",
-    //         textBaseline: "middle",
-    //         paddingLeft: 15,
-    //     })
-    // }));
-
-    // var timeSeriesAppButton = chart.plotContainer.children.push(am5.Button.new(root, {
-    //     dx: 100,
-    //     dy: 0,
-    //     width: 75,
-    //     height: 30,
-    //     label: am5.Label.new(root, {
-    //         text: "Time Series",
-    //         position: "absolute",
-    //         textBaseline: "middle",
-    //         paddingLeft: 10,
-    //     })
-    // }));
-
-
-    // circularAppButton.events.on("click", function (ev) {
-    //     root.dispose();
-
-    //     am5.array.each(subSeries.dataItems, function (dataItem, ix) {
-    //         if (dataItem._settings.slice._settings.active) {
-    //             var lipid = dataItem.dataContext.category
-    //             var col = subSeries.get("colors").getIndex(ix)
-    //             var networkRootReference = networkApp(subSeries, lipid = lipid)
-    //             rootReferenceObjects["active"] = false
-    //         }
-    //     })
-
-    // });
 
     return {
         root: root,

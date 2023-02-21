@@ -16,6 +16,7 @@ import { ganttApp } from "./ganttApp.js";
 import { heatmapApp } from "./heatmapApp.js";
 import { pieApp } from "./pie.js";
 import { tableApp } from "./table.js";
+import { timeSeriesApp } from "./timeseries.js";
 // NOTES (and TODO:)
 // 1.
 // The network app is always redrawn (rather than updated)
@@ -31,35 +32,10 @@ import { tableApp } from "./table.js";
 // 3. Data fetching is not optimized to the scope of the different objects. The JSON.stringify
 // calls can also be avoided.
 
-var rootReferenceObjects;
-// var networkRootReference;
-var globalLipidReference;
-
-var networkRootReference = {
-    "active": false
-}
-
 // Fetch the data from the backend
 var obj = {
     "lipid": "",
     "protein": ""
-}
-
-function createButton(root) {
-    var Button = am5.Button.new(root, {
-        dx: 0,
-        dy: 0,
-        width: 100,
-        height: 30,
-        label: am5.Label.new(root, {
-            text: "Shared Contacts",
-            position: "absolute",
-            textBaseline: "middle",
-            paddingLeft: 15,
-        })
-    });
-
-    return Button;
 }
 
 fetch('/data/' + JSON.stringify(obj))
@@ -68,46 +44,26 @@ fetch('/data/' + JSON.stringify(obj))
 
         console.log('responseData', responseData)
 
-        // var frameNumber = responseData["frameNumber"];
-
         var contactData = responseData['data'];
         var lipids = responseData['lipids'];
-        var proteins = responseData['proteins'];
-
-
-        var systemHasOneProtein = false;
-        if (proteins.length == 1) {
-            systemHasOneProtein = true
-        }
 
         var rootReferenceObjects = radarApp()
 
-        var heatmap = heatmapApp(responseData); 
-        var ganttReturnValue = ganttApp(responseData);
-        var table = tableApp(responseData, ganttReturnValue, networkRootReference)
+        var heatmap = heatmapApp(responseData);
+        var timeSeries = timeSeriesApp(contactData); 
+        var ganttReturnValue = ganttApp(responseData, heatmap);
         var networkRootReference = networkApp(subSeries, lipids[0])
+        var table = tableApp(responseData, ganttReturnValue, networkRootReference)
 
         rootReferenceObjects["series"].data.setAll(contactData);
         rootReferenceObjects["categoryAxis"].data.setAll(contactData);
         rootReferenceObjects["createRange"](lipids[0], contactData, 0);
-        globalLipidReference = lipids[0]
 
         rootReferenceObjects["series"].appear(100);
         rootReferenceObjects["chart"].appear(100);
 
-        var [pieRoot, subSeries] = pieApp(table, ganttReturnValue, heatmap, networkRootReference, responseData, rootReferenceObjects);
+        var [pieRoot, subSeries] = pieApp(table, ganttReturnValue, heatmap, timeSeries, networkRootReference, responseData, rootReferenceObjects);
    
-
-
-
-
-
-
-
-
-
-
-
         ///////////////////////////////////////////
         ////////////// Hide Logos /////////////////
         ///////////////////////////////////////////

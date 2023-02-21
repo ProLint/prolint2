@@ -1,5 +1,6 @@
 import { networkApp } from "../js/network.js";
-export function pieApp(table, ganttReturnValue, heatmap, networkRootReference, responseData, rootReferenceObjects) {
+import { getTimeData  } from "./timeseries.js";
+export function pieApp(table, ganttReturnValue, heatmap, timeSeries, networkRootReference, responseData, rootReferenceObjects) {
 
 
     var [ganttChart, ganttSeries, ganttXAxis, ganttYAxis] = ganttReturnValue; 
@@ -176,6 +177,12 @@ export function pieApp(table, ganttReturnValue, heatmap, networkRootReference, r
                             rootReferenceObjects["axisRange"].get("axisFill").set("fill", col)
                         }
                     })
+
+                    var [xAxis, series] = timeSeries
+                    var timeData = getTimeData(updateData);
+                    xAxis.data.setAll(timeData);
+                    series.data.setAll(timeData);
+                
                 });
         }
 
