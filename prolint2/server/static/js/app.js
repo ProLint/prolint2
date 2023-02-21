@@ -67,7 +67,11 @@ fetch('/data/' + JSON.stringify(obj))
         ///////////////////////////////////////////
         ////////////// Hide Logos /////////////////
         ///////////////////////////////////////////
+        const logos_to_keep_for_ids = ["chartdiv_x", "chartdiv_y", "chartdiv_z"]
         am5.array.each(am5.registry.rootElements, function (rootElement) {
+            if (logos_to_keep_for_ids.includes(rootElement.dom.id)) {
+                return
+            }
             rootElement.events.on("framestarted", function () {
                 var rootChildren = rootElement.tooltipContainer.allChildren()
                 for (let ix = 0; ix < rootChildren.length; ix++) {
