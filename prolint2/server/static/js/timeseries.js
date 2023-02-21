@@ -135,6 +135,26 @@ export function timeSeriesApp(contactData) {
     
     series.children.moveValue(series.bulletsContainer, 0);
 
+
+    series.on("tooltipDataItem", function (tooltipDataItem) {
+
+        var residueID = tooltipDataItem.dataContext.category.split(' ')[1]
+        residueID = parseInt(residueID)
+
+        var selectSections = [{
+            residue_number: residueID,
+            color: {
+                r: 255,
+                g: 0,
+                b: 255
+            },
+        }]
+        viewerInstance.visual.highlight({
+            data: selectSections,
+        })
+    })
+
+
     series.set("heatRules", [{
         target: series.columns.template,
         key: "fill",
