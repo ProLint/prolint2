@@ -9,7 +9,7 @@ export function tableApp(responseData, ganttReturnValue, heatmap, networkRootRef
 
     var table = new Tabulator("#lipid-table", {
         data: responseData['tableData'],
-        height: "300px",
+        height: "290px",
         layout: "fitColumns",
         // autoResize:false,
         resizableRows: false,

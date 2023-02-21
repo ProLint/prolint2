@@ -58,6 +58,13 @@ export function timeSeriesApp(contactData) {
         renderer: am5xy.AxisRendererY.new(root, {})
     }));
 
+    yAxis.children.moveValue(am5.Label.new(root, {
+        rotation: -90,
+        text: "Contact Metric",
+        y: am5.p50,
+        centerX: am5.p50
+      }), 0);
+      
     var modGridxAxis = xAxis.get("renderer");
     modGridxAxis.grid.template.setAll({
         strokeDasharray: [2, 2]

@@ -96,6 +96,51 @@
         font-size: 12px;
     }
 
+        /* body {
+        height: 100vh;
+        margin: 0;
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 20px;
+        place-content: center;
+        background: #DAEDFB;
+    } */
+
+    button {
+    --b: 1.5px;   /* border thickness */
+    --s: .02em; /* size of the corner */
+    --c: #BD5532;
+    
+    padding: calc(.05em + var(--s)) calc(.3em + var(--s));
+    color: var(--c);
+    --_p: var(--s);
+    background:
+        conic-gradient(from 90deg at var(--b) var(--b),#0000 90deg,var(--c) 0)
+        var(--_p) var(--_p)/calc(100% - var(--b) - 2*var(--_p)) calc(100% - var(--b) - 2*var(--_p));
+    transition: .3s linear, color 0s, background-color 0s;
+    outline: var(--b) solid #0000;
+    outline-offset: .2em;
+    }
+    button:hover,
+    button:focus-visible{
+    --_p: 0px;
+    outline-color: var(--c);
+    outline-offset: .05em;
+    } 
+    button:active {
+    background: var(--c);
+    color: #fff;
+    }
+
+    button {
+    font-family: system-ui, sans-serif;
+    font-weight: bold;
+    font-size: 1.5rem;
+    cursor: pointer;
+    border: none;
+    margin: .1em;
+    }
+
     </style>
 </head>
 
@@ -125,9 +170,9 @@
               <div id="chartdiv_z" style="width: 100%; height: 100%; position: absolute; padding-top: 30px;"></div>
               <div id="chartdiv_y" style="width: 100%; height: 100%; position: absolute; padding-top: 20px"></div>
               <div id="chartdiv_x" style="width: 100%; height: 100%; position: absolute; padding-top: 15px;"></div>
-              <button id="button_x" style="position: absolute; top: 10; left: 45%;" data-app="app_x">Radial App</button>
-              <button id="button_y" style="position: absolute; top: 10; right: 0;" data-app="app_y">Shared Contacts</button>
-              <button id="button_z" style="position: absolute; top: 10; left: 0;" data-app="app_z">Time Series</button>
+              <button id="button_x" style="position: absolute; top: 20; left: 45%; --c: #373B44; --s:3px" data-app="app_x">Radial App</button>
+              <button id="button_y" style="position: absolute; top: 20; right: 0; --c: #373B44; --s:3px" data-app="app_y">Shared Contacts</button>
+              <button id="button_z" style="position: absolute; top: 20; left: 0; --c: #373B44; --s:3px" data-app="app_z">Time Series</button>
 
             </div>
             <div id="viewerContainer" class="col-sm-4" style="background-color: white;">
@@ -160,10 +205,15 @@
             if (button.id === buttonId) {
             button.classList.add("active");
             button.classList.remove("inactive");
+            button.style.setProperty("--s", ".02em");
+            button.style.setProperty("--c", "#BD5532");
             // change visibility of the div 
             } else {
             button.classList.remove("active");
             button.classList.add("inactive");
+            button.style.setProperty("--s", "3px");
+            button.style.setProperty("--c", "#373B44");
+
             }
         });
 
