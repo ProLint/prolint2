@@ -53,7 +53,7 @@ fetch('/data/' + JSON.stringify(obj))
         var timeSeries = timeSeriesApp(contactData); 
         var ganttReturnValue = ganttApp(responseData, heatmap);
         var networkRootReference = networkApp(subSeries, lipids[0])
-        var table = tableApp(responseData, ganttReturnValue, networkRootReference)
+        var table = tableApp(responseData, ganttReturnValue, heatmap, networkRootReference)
 
         rootReferenceObjects["series"].data.setAll(contactData);
         rootReferenceObjects["categoryAxis"].data.setAll(contactData);

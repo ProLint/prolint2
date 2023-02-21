@@ -2,9 +2,10 @@ import { sortCategoryAxis } from './ganttApp.js';
 ///////////////////////////////////////////
 ////////////// Lipid Table ////////////////
 ///////////////////////////////////////////
-export function tableApp(responseData, ganttReturnValue, networkRootReference) {
+export function tableApp(responseData, ganttReturnValue, heatmap, networkRootReference) {
 
-    var [ganttChart, ganttSeries, ganttXAxis, ganttYAxis] = ganttReturnValue; 
+    var [ganttChart, ganttSeries, ganttXAxis, ganttYAxis] = ganttReturnValue;
+    var [heatmapRoot, heatmapChart, heatmapSeries, hmYAxis, hmXAxis, heatLegend] = heatmap;
 
     var table = new Tabulator("#lipid-table", {
         data: responseData['tableData'],
@@ -73,6 +74,24 @@ export function tableApp(responseData, ganttReturnValue, networkRootReference) {
                             representationColor: residueColor
                         })
                     }
+                    obj = {
+                        "lipidID": lipidID,
+                        "residueID": ganttData[0].category
+                    }
+            
+                    fetch('/distance/' + JSON.stringify(obj))
+                    .then(response => response.json())
+                    .then(heatmapResponseData => {
+        
+                        // Update title
+                        var text = `ResidueID: ${lipidID} and LipidID: ${ganttData[0].category} Interactions`
+                        am5.registry.entitiesById["besiTest"].set("text", text)
+        
+                        heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
+                        hmYAxis.data.setAll(heatmapResponseData['residueAtomsData']);
+                        hmXAxis.data.setAll(heatmapResponseData['lipidAtomsData']);
+                    });
+        
 
                     viewerInstance.visual.select({
                         data: selectSections,
