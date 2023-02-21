@@ -95,6 +95,17 @@
     .tabulator-col-title {
         font-size: 12px;
     }
+
+    .active {
+    background-color: blue;
+    color: white;
+    }
+
+    .inactive {
+    background-color: white;
+    color: black;
+    }
+
     </style>
 </head>
 
@@ -120,16 +131,74 @@
             </div>
         </div>
         <div class="row">
-        <div id="chartdiv" class="col-sm-7" style="background-color: white;">
-            <!-- <div id="chartdiv"></div> -->
-        </div>
-        <div id="myViewer" class="col-sm-4" style="background-color: white;">
-        </div>
+            <div id="chartdiv" class="col-sm-7" style="background-color: white; position: relative;">
+              <div id="chartdiv_x" style="width: 100%; height: 100%; position: absolute;"></div>
+              <div id="chartdiv_y" style="width: 100%; height: 100%; position: absolute;"></div>
+              <button id="button_x" style="position: absolute; top: 0; left: 0;" data-app="app_x">X</button>
+              <button id="button_y" style="position: absolute; top: 0; left: 33%;" data-app="app_y">Y</button>
+              <!-- <button id="button_z" style="position: absolute; top: 0; left: 66%;" data-app="app_z">Z</button> -->
+
+            </div>
+            <div id="myViewer_xx" class="col-sm-4" style="background-color: white;">
+                <div id="myViewer" class="col-sm-4" style="background-color: white;"></div>
+                <!-- <button id="button_x" style="position: absolute; top: 0; left: 0;" data-app="app_x">X</button>
+                <button id="button_y" style="position: absolute; top: 0; left: 33%;" data-app="app_y">Y</button>
+                <button id="button_z" style="position: absolute; top: 0; left: 66%;" data-app="app_z">Z</button> -->
+  
+            </div>
+          </div>
+          
         </div>
     </div>
 
+    <script>
+        function bringDivToFront(divId, buttonId) {
+        // Get the div element and its z-index
+        const div = document.getElementById(divId);
+        const zIndex = parseInt(div.style.zIndex) || 0;
+
+        // Set the z-index of all the chartdiv divs to the same value
+        const chartdivs = document.querySelectorAll("#chartdiv > div");
+        chartdivs.forEach((chartdiv) => {
+            chartdiv.style.zIndex = 0;
+            // add a class to the button
+        });
+
+        // Bring the selected div to the front
+        div.style.zIndex = -100;
+
+        // Set the active/inactive classes on the buttons
+        const buttons = document.querySelectorAll("#chartdiv button");
+        buttons.forEach((button) => {
+            if (button.id === buttonId) {
+            button.classList.add("active");
+            button.classList.remove("inactive");
+            } else {
+            button.classList.remove("active");
+            button.classList.add("inactive");
+            }
+        });
+
+        }
+
+        document.getElementById("button_x").addEventListener("click", function() {
+        bringDivToFront("chartdiv_x", "button_x");
+        });
+
+        document.getElementById("button_y").addEventListener("click", function() {
+        bringDivToFront("chartdiv_y", "button_y");
+        });
+
+        // document.getElementById("button_z").addEventListener("click", function() {
+        // bringDivToFront("chartdiv_z", "button_z");
+        // });
+
+        bringDivToFront("chartdiv_x", "button_x");
+
+
+    </script>
     <script src="static/js/pdbe-molstar-plugin-3.1.0_vendor.js"></script>
-    <script src="static/js/app.js"></script>
+    <script type="module" src="static/js/app.js"></script>
 
     <script>
         var viewerInstance = new PDBeMolstarPlugin();
