@@ -96,16 +96,6 @@
         font-size: 12px;
     }
 
-    .active {
-    background-color: blue;
-    color: white;
-    }
-
-    .inactive {
-    background-color: white;
-    color: black;
-    }
-
     </style>
 </head>
 
@@ -155,10 +145,14 @@
 
         const chartdivs = document.querySelectorAll("#chartdiv > div");
         chartdivs.forEach((chartdiv) => {
-            chartdiv.style.visibility = "hidden";
+            // chartdiv.style.pointerEvents = "none";
+            // chartdiv.style.visibility = "hidden";
+            chartdiv.style.display = "none";
         });
 
-        div.style.visibility = "visible";
+        // div.style.pointerEvents = "auto";
+        // div.style.visibility = "visible";
+        div.style.display = "block";
 
         // Set the active/inactive classes on the buttons
         const buttons = document.querySelectorAll("#chartdiv button");
