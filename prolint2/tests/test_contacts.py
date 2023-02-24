@@ -55,8 +55,8 @@ def test_prepare(universe):
     contacts._prepare()
     q_resids = contacts.q_resids
     dp_resnames_unique = contacts.dp_resnames_unique
-    assert contacts.contacts == {k: {v: [] for v in dp_resnames_unique} for k in q_resids}
-    assert contacts.contacts_sum == {k: {v: 0 for v in dp_resnames_unique} for k in q_resids}
+    assert contacts.contacts == {k: {v: [] for v in dp_resnames_unique} for k in [x + 1 for x in contacts.query.resindices.tolist()]}
+    assert contacts.contacts_sum == {k: {v: 0 for v in dp_resnames_unique} for k in [x + 1 for x in contacts.query.resindices.tolist()]}
     assert contacts.contact_frames == {}
 
 def test_single_frame(universe):
