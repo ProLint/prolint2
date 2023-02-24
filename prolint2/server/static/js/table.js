@@ -84,7 +84,7 @@ export function tableApp(responseData, ganttReturnValue, heatmap, networkRootRef
                     .then(heatmapResponseData => {
         
                         // Update title
-                        var text = `ResidueID: ${lipidID} and LipidID: ${ganttData[0].category} Interactions`
+                        var text = `Interactions between ResidueID: ${ganttData[0].category} and LipidID: ${lipidID}`
                         am5.registry.entitiesById["besiTest"].set("text", text)
         
                         heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);

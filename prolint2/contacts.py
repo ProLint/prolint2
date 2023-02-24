@@ -56,10 +56,10 @@ class SerialContacts(AnalysisBase):
 
     def _prepare(self):
         self.contacts = {
-            k: {v: [] for v in self.dp_resnames_unique} for k in self.q_resids
+            k: {v: [] for v in self.dp_resnames_unique} for k in [x + 1 for x in self.q_resids]
         }
         self.contacts_sum = {
-            k: {v: 0 for v in self.dp_resnames_unique} for k in self.q_resids
+            k: {v: 0 for v in self.dp_resnames_unique} for k in [x + 1 for x in self.q_resids]
         }
         self.contact_frames = {}
 
@@ -72,8 +72,8 @@ class SerialContacts(AnalysisBase):
 
         existing_pairs = {}
         for p in pairs:
-            residue_id = self.q_resids[p[0]]
-            lipid_id = self.db_resids[p[1]]
+            residue_id = self.q_resids[p[0]] + 1
+            lipid_id = self.db_resids[p[1]] + 1
             string = f"{residue_id},{lipid_id}"
 
             # if self._frame_index == 0 and residue_id < 200:
@@ -151,8 +151,8 @@ class SerialDistances(AnalysisBase):
         frame_range = np.arange(len(self.frame_filter))
         self.frame_mapping = {k: v for k, v in zip(self.frame_filter, frame_range)}
 
-        self.lipid_atomgroup = self.database.select_atoms(f"resid {lipid_id+1}")
-        self.resid_atomgroup = self.query.select_atoms(f"resid {residue_id+1}")
+        self.lipid_atomgroup = self.database.select_atoms(f"resid {lipid_id}")
+        self.resid_atomgroup = self.query.select_atoms(f"resid {residue_id}")
         self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
         self.resid_atomnames = self.resid_atomgroup.names.tolist()
 
@@ -276,10 +276,10 @@ class Contacts(object):
                         results.append(
                             (
                                 "Protein1",
-                                protein_resi + 1,
+                                protein_resi,
                                 self.query.selected.residues[idx].resname,
                                 lip_type,
-                                lip_res + 1,
+                                lip_res,
                                 fr,
                             )
                         )
@@ -289,10 +289,10 @@ class Contacts(object):
                     metrics.append(
                         (
                             "Protein1",
-                            protein_resi + 1,
+                            protein_resi,
                             self.query.selected.residues[idx].resname,
                             lip_type,
-                            lip_res + 1,
+                            lip_res,
                             t_frames,
                             t_frames / self.query.selected.universe.trajectory.n_frames,
                             max(temp),
@@ -347,7 +347,7 @@ class Contacts(object):
         # protein name is hardcoded -> read protein name(s) dynamically
         # update code to handle multiple identical proteins
         # update code to handle multiple copies of different proteins
-        resnames = self.query.selected.resnames
+        resnames = self.query.selected.residues.resnames
         protein_name = "Protein"
         protein = protein_name  # TODO: we'll need to update this into a list and iterate over it
         lipids = list(np.unique(self.database.selected.resnames))
@@ -366,7 +366,7 @@ class Contacts(object):
 
                 js[protein][lipid].append(
                     {
-                        "residue": f"{resnames[residue]} {residue+1}",
+                        "residue": f"{resnames[residue-1]} {residue}",
                         "value": float("{:.2f}".format(metric)),
                     }
                 )

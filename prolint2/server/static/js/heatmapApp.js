@@ -24,10 +24,10 @@ export function heatmapApp(responseData) {
     }));
 
     heatmapChart.children.unshift(am5.Label.new(heatmapRoot, {
-        text: `ResidueID: ${startResidueID} and LipidID: ${startLipidID} Interactions`,
+        text: `Interactions between ResidueID: ${startResidueID} and LipidID: ${startLipidID}`,
         id: "besiTest",
         x: am5.p50,
-        centerX: am5.percent(40),
+        centerX: am5.percent(47),
         centerY: am5.percent(25),
         position: "absolute",
         fontWeight: "500",

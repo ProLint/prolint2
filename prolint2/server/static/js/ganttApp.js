@@ -161,7 +161,7 @@ export function ganttApp(responseData, heatmap) {
             .then(heatmapResponseData => {
 
                 // Update title
-                var text = `ResidueID: ${ctx.category} and LipidID: ${ctx.lipid_id} Interactions`
+                var text = `Interactions between ResidueID: ${ctx.category} and LipidID: ${ctx.lipid_id}`
                 am5.registry.entitiesById["besiTest"].set("text", text)
 
                 heatmapSeries.data.setAll(heatmapResponseData['heatmapData']);
