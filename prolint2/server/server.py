@@ -11,6 +11,8 @@ import MDAnalysis as mda
 from prolint2.prolint2 import PL2
 from io import StringIO
 
+from .chord_utils import contact_chord
+
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
 BACKEND_DATA = None
@@ -104,6 +106,9 @@ def get_gantt_app_data(g, lipid_id, residues_to_show=15, intervals_to_filter_out
                 }
             )
 
+    # TODO:
+    # `categories` is now just the `gantt_data` keys.
+    # replace with: `list(gantt_data.keys())` or remove entirely
     categories = []
     for y in [x["category"] for x in gantt_data]:
         if y not in categories:
@@ -217,8 +222,29 @@ def blob(metadata):
 
     return pstream.read()
 
+@route('/network/:metadata')
+def network_listener(metadata):
+    global BACKEND_DATA
+    global TS
 
-@route("/data/:metadata")
+    metadata = ast.literal_eval(metadata)
+    lipid = metadata['lipid']
+
+    top_lipid_ids = [x[0] for x in BACKEND_DATA['top_lipids'][lipid]]
+    chord_elements, hidden_node_indices, per_lipid_nodes = contact_chord(
+        TS,
+        top_lipid_ids,
+        BACKEND_DATA['lipid_contact_frames'],
+        cutoff=100
+        )
+
+    return {
+        "chordElements": chord_elements,
+        "positionResidues": hidden_node_indices,
+        "lipidNodes": per_lipid_nodes
+    }
+
+@route('/data/:metadata')
 def listener(metadata):
 
     global data_loaded
