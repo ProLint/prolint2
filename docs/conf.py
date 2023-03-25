@@ -171,7 +171,24 @@ def setup(app):
 # 'searchbox.html']``.
 #
 html_sidebars = {
-    "**": ["sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
+    "community/index": [
+        "sidebar-nav-bs",
+        "custom-template",
+    ],  # This ensures we test for custom sidebars
+    "examples/no-sidebar": [],  # Test what page looks like with no sidebar items
+    "examples/persistent-search-field": ["search-field"],
+    # Blog sidebars
+    # ref: https://ablog.readthedocs.io/manual/ablog-configuration-options/#blog-sidebars
+    "examples/blog/*": [
+        "ablog/postcard.html",
+        "ablog/recentposts.html",
+        "ablog/tagcloud.html",
+        "ablog/categories.html",
+        "ablog/authors.html",
+        "ablog/languages.html",
+        "ablog/locations.html",
+        "ablog/archives.html",
+    ],
 }
 # html_context = {
 #     "github_user": "prolint",
@@ -181,6 +198,7 @@ html_sidebars = {
 # }
 
 html_logo = '_static/logo.png'
+html_favicon = "_static/logo.png"
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
