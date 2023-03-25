@@ -130,7 +130,7 @@ html_theme_options = {
     ],
     "logo": {
         "text": "ProLint2",
-        "image_dark": "_static/logo.png",
+        "image_dark": "logo.png",
         "alt_text": "ProLint2",
     },
     #"use_edit_page_button": True,
@@ -197,8 +197,8 @@ html_sidebars = {
 #     "doc_path": "docs",
 # }
 
-html_logo = 'logo.png'
-html_favicon = "logo.png"
+html_logo = '_static/logo.png'
+html_favicon = "_static/logo.png"
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
