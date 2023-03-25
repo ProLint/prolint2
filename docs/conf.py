@@ -139,8 +139,8 @@ html_theme_options = {
     "navbar_align": "content",  # [left, content, right] For testing that the navbar items align properly
     "navbar_center": ["navbar-nav"],
     # "navbar_start": ["navbar-logo"],
-    # "navbar_end": ["theme-switcher", "navbar-icon-links"],
-    "navbar_end": ["navbar-icon-links.html"],
+    "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    # "navbar_end": ["navbar-icon-links.html"],
     # "navbar_persistent": ["search-button"],
     # "primary_sidebar_end": ["custom-template.html", "sidebar-ethical-ads.html"],
     # "article_footer_items": ["prev-next.html", "test.html", "test.html"],
