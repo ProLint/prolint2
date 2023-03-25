@@ -34,7 +34,7 @@ Welcome to the ProLint2's documentation!
           
 .. end-badges
 
-ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories of membrane protein systems. 
+ProLint2 is an efficient and user-friendly framework for the automated analysis and interactive visualization of distance-based lipid-protein interactions from molecular dynamics simulations. 
 
 .. ..  figure:: _static/logo.png
 ..     :align: center
@@ -54,8 +54,8 @@ Then you can install **prolint2** via pip:
 
    pip install prolint2
 
-Basic examples:
-===============
+Basic examples
+==============
 
 Using the Prolint2's API:
 
@@ -85,18 +85,18 @@ You can find more details on how to use **prolint2** in the `usage page`_.
    :maxdepth: 1
    :caption: Contents:
    
-   source/intro.rst
-   source/usage.rst
+   source/user_guide.rst
    api
-   source/contributing.rst
+   source/contributor_guide.rst
+   source/tutorials.rst
+   source/database.rst
 
+.. Indices and tables
+.. ==================
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
 
 
 License 

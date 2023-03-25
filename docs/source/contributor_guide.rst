@@ -1,5 +1,5 @@
-Contributing
-============
+Contributor Guide
+=================
 
 We welcome contributions from external contributors!!
 

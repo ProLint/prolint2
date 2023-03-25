@@ -1,6 +1,5 @@
-=====================================
-ProLint2's API Documentation
-=====================================
+API 
+===
 
 See the following pages for the full API of each module:
 
