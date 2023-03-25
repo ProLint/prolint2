@@ -34,7 +34,7 @@ Welcome to the ProLint2's documentation!
           
 .. end-badges
 
-ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories of membrane protein systems. 
+ProLint2 is an efficient and user-friendly framework for the automated analysis and interactive visualization of distance-based lipid-protein interactions from molecular dynamics simulations. 
 
 .. ..  figure:: _static/logo.png
 ..     :align: center
@@ -54,10 +54,11 @@ Then you can install **prolint2** via pip:
 
    pip install prolint2
 
-Basic examples:
-===============
+Basic examples
+==============
 
 Using the Prolint2's API:
+-------------------------
 
 .. code-block:: python
 
@@ -71,6 +72,7 @@ Using the Prolint2's API:
 
       
 Using the Prolint2's command-line interface:
+--------------------------------------------
 
 .. code-block:: none
 
@@ -78,25 +80,24 @@ Using the Prolint2's command-line interface:
 
 You can find more details on how to use **prolint2** in the `usage page`_.
 
-.. Contents
-.. ========
+Contents
+========
 
 .. toctree::
    :maxdepth: 1
-   :caption: Contents:
    
-   source/intro.rst
-   source/usage.rst
+   source/user_guide.rst
    api
-   source/contributing.rst
+   source/contributor_guide.rst
+   source/tutorials.rst
+   source/database.rst
 
+.. Indices and tables
+.. ==================
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. * :ref:`genindex`
+.. * :ref:`modindex`
+.. * :ref:`search`
 
 
 License 
@@ -116,4 +117,4 @@ The respository structure of **ProLint2** is based on the `Computational Molecul
 
 .. _`MIT License`: https://opensource.org/licenses/MIT
 .. _`github.com/Prolint/prolint2`: https://github.com/ProLint/prolint2
-.. _`usage page`: source/usage.html
+.. _`usage page`: source/user_guide.html

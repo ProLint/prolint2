@@ -72,7 +72,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = 'en'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -87,13 +87,73 @@ pygments_style = 'default'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+#html_theme = 'sphinx_rtd_theme'
+html_theme = 'pydata_sphinx_theme'
+
+# Define the json_url for our version switcher.
+# # json_url = "https://prolint2.readthedocs.io/en/latest/_static/switcher.json"
+
+# # Define the version we use for matching in the version switcher.
+# version_match = os.environ.get("READTHEDOCS_VERSION")
+# # If READTHEDOCS_VERSION doesn't exist, we're not on RTD
+# # If it is an integer, we're in a PR build and the version isn't correct.
+# if not version_match or version_match.isdigit():
+#     # For local development, infer the version to match from the package.
+#     release = prolint2.__version__
+#     if "dev" in release or "rc" in release:
+#         version_match = "latest"
+#         # We want to keep the relative reference if we are in dev mode
+#         # but we want the whole url if we are effectively in a released version
+#         json_url = "_static/switcher.json"
+#     else:
+#         version_match = "v" + release
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_theme_options = {}
+html_theme_options = {
+    "github_url": "https://github.com/ProLint/prolint2",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/prolint2/",
+            "icon": "fa-solid fa-box",
+        },
+        {
+            "name": "ProLint",
+            "url": "https://prolint.ca",
+            "icon": "_static/logo.png",
+            "type": "local",
+            "attributes": {"target": "_blank"},
+        },
+    ],
+    "logo": {
+        "text": "ProLint2",
+        "image_dark": "_static/logo.png",
+        "alt_text": "ProLint2",
+    },
+    #"use_edit_page_button": True,
+    "show_toc_level": 2,
+    "show_nav_level": 2,
+    "navbar_align": "content",  # [left, content, right] For testing that the navbar items align properly
+    "navbar_center": ["navbar-nav"],
+    # "navbar_start": ["navbar-logo"],
+    # "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "navbar_end": ["navbar-icon-links.html"],
+    # "navbar_persistent": ["search-button"],
+    # "primary_sidebar_end": ["custom-template.html", "sidebar-ethical-ads.html"],
+    # "article_footer_items": ["prev-next.html", "test.html", "test.html"],
+    # "content_footer_items": ["prev-next.html", "test.html", "test.html"],
+    # "footer_start": ["test.html", "test.html"],
+    "secondary_sidebar_items": ["page-toc.html"],  # Remove the source buttons
+    "search_bar_text": "Search",
+
+    #"switcher": {
+    #    "json_url": json_url,
+    #    "version_match": version_match,
+    #},
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -110,7 +170,15 @@ def setup(app):
 # default: ``['localtoc.html', 'relations.html', 'sourcelink.html',
 # 'searchbox.html']``.
 #
-# html_sidebars = {}
+html_sidebars = {
+    "**": ["sidebar-nav-bs.html", "sidebar-ethical-ads.html"]
+}
+# html_context = {
+#     "github_user": "prolint",
+#     "github_repo": "prolint2",
+#     "github_version": "main",
+#     "doc_path": "docs",
+# }
 
 html_logo = '_static/logo.png'
 
