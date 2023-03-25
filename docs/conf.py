@@ -197,8 +197,8 @@ html_sidebars = {
 #     "doc_path": "docs",
 # }
 
-html_logo = '_static/logo.png'
-html_favicon = "_static/logo.png"
+html_logo = 'logo.png'
+html_favicon = "logo.png"
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
