@@ -216,6 +216,7 @@ class Contacts(object):
         self.database = database
         self.cutoff = None
         self.contacts = None
+        self.contacts_df = None
         self.contacts_sum = None
         self.contact_frames = None
 
@@ -230,7 +231,7 @@ class Contacts(object):
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
 
-    def compute(self, cutoff=int(parameters_config["cutoff"])):
+    def compute(self, cutoff=int(parameters_config["cutoff"]), get_metrics=False):
         """
         Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
 
@@ -256,9 +257,11 @@ class Contacts(object):
         )
         temp_instance.run(verbose=True)
 
+        self.contacts = temp_instance.contacts
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
-        self.contacts, self.metrics = self.contacts_to_dataframe(temp_instance.contacts)
+        if get_metrics:
+            self.contacts_df, self.metrics = self.contacts_to_dataframe(temp_instance.contacts)
 
     # this functions allows the definition of chunks of frames with uninterrupted interactions
     # i.e. it takes a list of frames as [9, 11, 12] and it returns [1, 2]
@@ -389,7 +392,7 @@ class Contacts(object):
         filename : str
             Name of the file to export the contacts array.
         """
-        self.contacts.to_csv(filename, index=False)
+        self.contacts_df.to_csv(filename, index=False)
         self.metrics.to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
 
     def filter_by_percentile(self, percentile=0.75, metric="Sum of all contacts"):
@@ -511,17 +514,17 @@ class Contacts(object):
         return payload
 
     def __str__(self):
-        if not isinstance(self.contacts, pd.DataFrame):
+        if not isinstance(self.contacts_df, pd.DataFrame):
             return "<prolint2.Contacts containing 0 contacts>"
         else:
             return "<prolint2.Contacts containing {} contacts>".format(
-                len(self.contacts.index)
+                len(self.contacts_df.index)
             )
 
     def __repr__(self):
-        if not isinstance(self.contacts, pd.DataFrame):
+        if not isinstance(self.contacts_df, pd.DataFrame):
             return "<prolint2.Contacts containing 0 contacts>"
         else:
             return "<prolint2.Contacts containing {} contacts>".format(
-                len(self.contacts.index)
+                len(self.contacts_df.index)
             )
