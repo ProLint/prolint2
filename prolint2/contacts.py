@@ -214,20 +214,19 @@ class Contacts(object):
     def __init__(self, query, database):
         self.query = query
         self.database = database
+        self.residue_names = self.query.selected.residues.resnames
+        self.residue_ids = self.query.selected.residues.resids
         self.cutoff = None
         self.contacts = None
-        self.contacts_df = None
         self.contacts_sum = None
         self.contact_frames = None
-
-        ## Metrics
+        self.contacts_df = None
         self.metrics = None
-        self.occupancy = []
-        self.residence = []
 
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
         # What's the best way here? Include trajectory as an initialization argument?
+        self.n_frames = query.selected.universe.trajectory.n_frames
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
 
@@ -311,47 +310,17 @@ class Contacts(object):
                         temp = list(self.ranges(self.contact_frames[key]))
 
                         # calculating metrics
-                        Occupancy = namedtuple(
-                            "Residence", ["resid", "lipid", "all_contacts", "occupancy"]
-                        )
-                        self.occupancy.append(
-                            Occupancy(
-                                protein_resi,
-                                lip_res,
-                                t_frames,
-                                t_frames / self.query.selected.universe.trajectory.n_frames,
-                            )
-                        )
-
-                        Residence = namedtuple(
-                            "Residence",
-                            [
-                                "resid",
-                                "lipid",
-                                "longest_duration",
-                                "mean_duration",
-                            ],
-                        )
-                        self.residence.append(
-                            Residence(
-                                protein_resi,
-                                lip_res,
-                                max(temp),
-                                np.mean(temp),
-                            )
-                        )
-
                         metrics.append(
                             (
                                 "Protein1",
                                 protein_resi,
-                                self.query.selected.residues[idx].resname,
+                                self.residue_names[idx],
                                 lip_type,
                                 lip_res,
-                                self.occupancy[-1].all_contacts,
-                                self.occupancy[-1].occupancy,
-                                self.residence[-1].longest_duration,
-                                self.residence[-1].mean_duration,
+                                t_frames,
+                                t_frames / self.n_frames,
+                                max(temp),
+                                np.mean(temp),
                             )
                         )
 
@@ -421,8 +390,6 @@ class Contacts(object):
         # protein name is hardcoded -> read protein name(s) dynamically
         # update code to handle multiple identical proteins
         # update code to handle multiple copies of different proteins
-        resnames = self.query.selected.residues.resnames
-        resids = list(self.contacts_sum.keys())
         protein_name = "Protein"
         protein = protein_name  # TODO: we'll need to update this into a list and iterate over it
         lipids = list(np.unique(self.database.selected.resnames))
@@ -441,7 +408,7 @@ class Contacts(object):
 
                 js[protein][lipid].append(
                     {
-                        "residue": f"{resnames[idx]} {resids[idx]}",
+                        "residue": f"{self.residue_names[idx]} {self.residue_ids[idx]}",
                         "value": float("{:.2f}".format(metric)),
                     }
                 )
