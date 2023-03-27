@@ -10,6 +10,7 @@ import pandas as pd
 import numpy as np
 import MDAnalysis as mda
 from collections import Counter
+from collections import namedtuple
 from itertools import groupby
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
@@ -56,10 +57,12 @@ class SerialContacts(AnalysisBase):
 
     def _prepare(self):
         self.contacts = {
-            k: {v: [] for v in self.dp_resnames_unique} for k in [x + 1 for x in self.q_resids]
+            k: {v: [] for v in self.dp_resnames_unique}
+            for k in [x + 1 for x in self.q_resids]
         }
         self.contacts_sum = {
-            k: {v: 0 for v in self.dp_resnames_unique} for k in [x + 1 for x in self.q_resids]
+            k: {v: 0 for v in self.dp_resnames_unique}
+            for k in [x + 1 for x in self.q_resids]
         }
         self.contact_frames = {}
 
@@ -162,7 +165,11 @@ class SerialDistances(AnalysisBase):
 
     def _prepare(self):
         self.result_array = np.zeros(
-            (len(self.frame_filter), self.lipid_atomgroup.n_atoms, self.resid_atomgroup.n_atoms)
+            (
+                len(self.frame_filter),
+                self.lipid_atomgroup.n_atoms,
+                self.resid_atomgroup.n_atoms,
+            )
         )
 
     def _single_frame(self):
@@ -209,6 +216,13 @@ class Contacts(object):
         self.database = database
         self.cutoff = None
         self.contacts = None
+        self.contacts_sum = None
+        self.contact_frames = None
+
+        ## Metrics
+        self.metrics = None
+        self.occupancy = []
+        self.residence = []
 
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
@@ -242,10 +256,12 @@ class Contacts(object):
         )
         temp_instance.run(verbose=True)
 
-        self.contacts = temp_instance.contacts
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
+        self.contacts, self.metrics = self.contacts_to_dataframe(temp_instance.contacts)
 
+    # this functions allows the definition of chunks of frames with uninterrupted interactions
+    # i.e. it takes a list of frames as [9, 11, 12] and it returns [1, 2]
     def ranges(self, lst):
         pos = (j - i for i, j in enumerate(lst))
         t = 0
@@ -255,7 +271,7 @@ class Contacts(object):
             t += l
             yield len(range(el, el + l))
 
-    def contacts_to_dataframe(self):
+    def contacts_to_dataframe(self, contacts):
         """
         Convert the contacts dictionary to a Pandas DataFrame with different metrics.
 
@@ -264,69 +280,105 @@ class Contacts(object):
         Pandas DataFrame
             Pandas DataFrame with different metrics for the contacts.
         """
-        results = []
-        metrics = []
-        keys = self.contacts.keys()
-        for idx, protein_resi in enumerate(keys):
-            for lip_type in self.contacts[protein_resi].keys():
-                for lip_res, t_frames in self.contacts[protein_resi][lip_type].items():
-                    for fr in self.contact_frames[
-                        "{},{}".format(protein_resi, lip_res)
-                    ]:
-                        results.append(
+        if not contacts:
+            raise ValueError("The contacts dictionary is empty.")
+        else:
+            results = []
+            metrics = []
+            keys = contacts.keys()
+            for idx, protein_resi in enumerate(keys):
+                for lip_type in contacts[protein_resi].keys():
+                    for lip_res, t_frames in contacts[protein_resi][lip_type].items():
+                        for fr in self.contact_frames[
+                            "{},{}".format(protein_resi, lip_res)
+                        ]:
+                            results.append(
+                                (
+                                    "Protein1",
+                                    protein_resi,
+                                    self.query.selected.residues[idx].resname,
+                                    lip_type,
+                                    lip_res,
+                                    fr,
+                                )
+                            )
+
+                        # getting chunks of frames with uninterrupted interactions
+                        key = "{},{}".format(protein_resi, lip_res)
+                        temp = list(self.ranges(self.contact_frames[key]))
+
+                        # calculating metrics
+                        Occupancy = namedtuple(
+                            "Residence", ["resid", "lipid", "all_contacts", "occupancy"]
+                        )
+                        self.occupancy.append(
+                            Occupancy(
+                                protein_resi,
+                                lip_res,
+                                t_frames,
+                                t_frames / self.query.selected.universe.trajectory.n_frames,
+                            )
+                        )
+
+                        Residence = namedtuple(
+                            "Residence",
+                            [
+                                "resid",
+                                "lipid",
+                                "longest_duration",
+                                "mean_duration",
+                            ],
+                        )
+                        self.residence.append(
+                            Residence(
+                                protein_resi,
+                                lip_res,
+                                max(temp),
+                                np.mean(temp),
+                            )
+                        )
+
+                        metrics.append(
                             (
                                 "Protein1",
                                 protein_resi,
                                 self.query.selected.residues[idx].resname,
                                 lip_type,
                                 lip_res,
-                                fr,
+                                self.occupancy[-1].all_contacts,
+                                self.occupancy[-1].occupancy,
+                                self.residence[-1].longest_duration,
+                                self.residence[-1].mean_duration,
                             )
                         )
 
-                    key = "{},{}".format(protein_resi, lip_res)
-                    temp = list(self.ranges(self.contact_frames[key]))
-                    metrics.append(
-                        (
-                            "Protein1",
-                            protein_resi,
-                            self.query.selected.residues[idx].resname,
-                            lip_type,
-                            lip_res,
-                            t_frames,
-                            t_frames / self.query.selected.universe.trajectory.n_frames,
-                            max(temp),
-                            np.mean(temp),
-                        )
-                    )
+            results_df = pd.DataFrame(
+                results,
+                columns=[
+                    "Protein",
+                    "Residue ID",
+                    "Residue Name",
+                    "Lipid Type",
+                    "Lipid ID",
+                    "Frame",
+                ],
+            )
+            metrics_df = pd.DataFrame(
+                metrics,
+                columns=[
+                    "Protein",
+                    "Residue ID",
+                    "Residue Name",
+                    "Lipid Type",
+                    "Lipid ID",
+                    "Sum of all contacts",
+                    "Occupancy",
+                    "Longest Duration",
+                    "Mean Duration",
+                ],
+            )
 
-        results_df = pd.DataFrame(
-            results,
-            columns=[
-                "Protein",
-                "Residue ID",
-                "Residue Name",
-                "Lipid Type",
-                "Lipid ID",
-                "Frame",
-            ],
-        )
-        metrics_df = pd.DataFrame(
-            metrics,
-            columns=[
-                "Protein",
-                "Residue ID",
-                "Residue Name",
-                "Lipid Type",
-                "Lipid ID",
-                "Sum of all contacts",
-                "Occupancy",
-                "Longest Duration",
-                "Mean Duration",
-            ],
-        )
-
-        return results_df, metrics_df
+            return results_df, metrics_df
 
     def export(self, filename):
         """
@@ -337,9 +389,26 @@ class Contacts(object):
         filename : str
             Name of the file to export the contacts array.
         """
-        contacts_df, metrics_df = self.contacts_to_dataframe()
-        contacts_df.to_csv(filename, index=False)
-        metrics_df.to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
+        self.contacts.to_csv(filename, index=False)
+        self.metrics.to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
+
+    def filter_by_percentile(self, percentile=0.75, metric="Sum of all contacts"):
+        """
+        Filter the contacts by percentile.
+
+        Parameters
+        ----------
+        percentile : float (0.75)
+            Percentile to be used for filtering the contacts array.
+        """
+        if metric not in ["Sum of all contacts", "Occupancy", "Longest Duration", "Mean Duration"]:
+            raise ValueError("The metric is not valid.")
+        else:
+            return self.metrics[
+                self.metrics[metric] > self.metrics[metric].quantile(
+                    percentile
+                )
+            ]
 
     def server_payload(self):
 
@@ -442,13 +511,17 @@ class Contacts(object):
         return payload
 
     def __str__(self):
-        if self.contacts == None:
+        if not isinstance(self.contacts, pd.DataFrame):
             return "<prolint2.Contacts containing 0 contacts>"
         else:
-            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
+            return "<prolint2.Contacts containing {} contacts>".format(
+                len(self.contacts.index)
+            )
 
     def __repr__(self):
-        if self.contacts == None:
+        if not isinstance(self.contacts, pd.DataFrame):
             return "<prolint2.Contacts containing 0 contacts>"
         else:
-            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
+            return "<prolint2.Contacts containing {} contacts>".format(
+                len(self.contacts.index)
+            )
