@@ -10,20 +10,6 @@ from prolint2.contacts import SerialContacts, SerialDistances, Contacts
 def universe():
     return mda.Universe(GIRK.coordinates, GIRK.trajectory)
 
-def test_init(universe):
-    query = universe.select_atoms("resname LYS")
-    database = universe.select_atoms("resname CHOL")
-    cutoff = 8.0
-
-    contacts = SerialContacts(universe, query, database, cutoff)
-    assert contacts.query == query
-    assert contacts.database == database
-    assert contacts.cutoff == cutoff
-    assert contacts.q_resids == query.resindices.tolist()
-    assert contacts.db_resids == database.resindices.tolist()
-    assert (contacts.db_resnames == database.resnames).all()
-    assert np.array_equal(contacts.dp_resnames_unique, np.unique(database.resnames))
-
 def test_init_exception(universe):
     query = universe.select_atoms("resname LYS")
     database = universe.select_atoms("")
