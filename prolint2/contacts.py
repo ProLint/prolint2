@@ -43,8 +43,8 @@ class SerialContacts(AnalysisBase):
         self.cutoff = cutoff
 
         # We need to convert to list to allow for JSON serialization
-        self.q_resids = self.query.resindices.tolist()
-        self.db_resids = self.database.resindices.tolist()
+        self.q_resids = self.query.resids.tolist()
+        self.db_resids = self.database.resids.tolist()
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 
@@ -58,11 +58,11 @@ class SerialContacts(AnalysisBase):
     def _prepare(self):
         self.contacts = {
             k: {v: [] for v in self.dp_resnames_unique}
-            for k in [x + 1 for x in self.q_resids]
+            for k in [x for x in self.q_resids]
         }
         self.contacts_sum = {
             k: {v: 0 for v in self.dp_resnames_unique}
-            for k in [x + 1 for x in self.q_resids]
+            for k in [x for x in self.q_resids]
         }
         self.contact_frames = {}
 
@@ -75,8 +75,8 @@ class SerialContacts(AnalysisBase):
 
         existing_pairs = {}
         for p in pairs:
-            residue_id = self.q_resids[p[0]] + 1
-            lipid_id = self.db_resids[p[1]] + 1
+            residue_id = self.q_resids[p[0]]
+            lipid_id = self.db_resids[p[1]]
             string = f"{residue_id},{lipid_id}"
 
             # if self._frame_index == 0 and residue_id < 200:
@@ -422,6 +422,7 @@ class Contacts(object):
         # update code to handle multiple identical proteins
         # update code to handle multiple copies of different proteins
         resnames = self.query.selected.residues.resnames
+        resids = list(self.contacts_sum.keys())
         protein_name = "Protein"
         protein = protein_name  # TODO: we'll need to update this into a list and iterate over it
         lipids = list(np.unique(self.database.selected.resnames))
@@ -429,7 +430,7 @@ class Contacts(object):
             k: {"category": k, "value": 0} for k in lipids
         }  # TODO: we need to generate sub_data for each protein.
         js = {protein: {k: [] for k in lipids}}
-        for residue, contact_counter in self.contacts_sum.items():
+        for idx, contact_counter in enumerate(self.contacts_sum.values()):
             for lipid, contact_sum in contact_counter.items():
                 sub_data[lipid]["value"] += contact_sum
                 metric = (
@@ -440,7 +441,7 @@ class Contacts(object):
 
                 js[protein][lipid].append(
                     {
-                        "residue": f"{resnames[residue-1]} {residue}",
+                        "residue": f"{resnames[idx]} {resids[idx]}",
                         "value": float("{:.2f}".format(metric)),
                     }
                 )
