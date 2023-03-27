@@ -261,7 +261,7 @@ class Contacts(object):
         self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
         if get_metrics:
-            self.contacts_df, self.metrics = self.contacts_to_dataframe(temp_instance.contacts)
+            self.contacts_df, self.metrics = self.contacts_to_dataframe()
 
     # this functions allows the definition of chunks of frames with uninterrupted interactions
     # i.e. it takes a list of frames as [9, 11, 12] and it returns [1, 2]
@@ -274,7 +274,7 @@ class Contacts(object):
             t += l
             yield len(range(el, el + l))
 
-    def contacts_to_dataframe(self, contacts):
+    def contacts_to_dataframe(self):
         """
         Convert the contacts dictionary to a Pandas DataFrame with different metrics.
 
@@ -283,15 +283,15 @@ class Contacts(object):
         Pandas DataFrame
             Pandas DataFrame with different metrics for the contacts.
         """
-        if not contacts:
+        if not self.contacts:
             raise ValueError("The contacts dictionary is empty.")
         else:
             results = []
             metrics = []
-            keys = contacts.keys()
+            keys = self.contacts.keys()
             for idx, protein_resi in enumerate(keys):
-                for lip_type in contacts[protein_resi].keys():
-                    for lip_res, t_frames in contacts[protein_resi][lip_type].items():
+                for lip_type in self.contacts[protein_resi].keys():
+                    for lip_res, t_frames in self.contacts[protein_resi][lip_type].items():
                         for fr in self.contact_frames[
                             "{},{}".format(protein_resi, lip_res)
                         ]:
@@ -392,6 +392,8 @@ class Contacts(object):
         filename : str
             Name of the file to export the contacts array.
         """
+        if not isinstance(self.contacts_df, pd.DataFrame):
+            self.contacts_df, self.metrics = self.contacts_to_dataframe()
         self.contacts_df.to_csv(filename, index=False)
         self.metrics.to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
 
