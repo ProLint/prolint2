@@ -283,7 +283,9 @@ class Contacts(object):
             keys = self.contacts.keys()
             for idx, protein_resi in enumerate(keys):
                 for lip_type in self.contacts[protein_resi].keys():
-                    for lip_res, t_frames in self.contacts[protein_resi][lip_type].items():
+                    for lip_res, t_frames in self.contacts[protein_resi][
+                        lip_type
+                    ].items():
                         for fr in self.contact_frames[
                             "{},{}".format(protein_resi, lip_res)
                         ]:
@@ -368,13 +370,16 @@ class Contacts(object):
         percentile : float (0.75)
             Percentile to be used for filtering the contacts array.
         """
-        if metric not in ["Sum of all contacts", "Occupancy", "Longest Duration", "Mean Duration"]:
+        if metric not in [
+            "Sum of all contacts",
+            "Occupancy",
+            "Longest Duration",
+            "Mean Duration",
+        ]:
             raise ValueError("The metric is not valid.")
         else:
             return self.metrics[
-                self.metrics[metric] > self.metrics[metric].quantile(
-                    percentile
-                )
+                self.metrics[metric] > self.metrics[metric].quantile(percentile)
             ]
 
     def server_payload(self, metric="Sum of all contacts"):
@@ -392,16 +397,23 @@ class Contacts(object):
         js = {protein: {k: [] for k in lipids}}
 
         # get dictionary metrics
-        metric_dict = self.metrics.groupby(['Residue ID', 'Lipid Type'])[metric].count().reset_index()
-        metric_dict = pd.pivot_table(metric_dict, 
-                        index=['Residue ID'], 
-                        values= metric, 
-                       columns=['Lipid Type']).fillna(0).to_dict('index')
-        
+        metric_dict = (
+            self.metrics.groupby(["Residue ID", "Lipid Type"])[metric]
+            .count()
+            .reset_index()
+        )
+        metric_dict = (
+            pd.pivot_table(
+                metric_dict, index=["Residue ID"], values=metric, columns=["Lipid Type"]
+            )
+            .fillna(0)
+            .to_dict("index")
+        )
+
         for res in self.residue_ids:
             if res not in metric_dict.keys():
                 metric_dict[res] = {k: 0 for k in lipids}
-        
+
         metric_dict = dict(OrderedDict(sorted(metric_dict.items(), key=lambda x: x[0])))
 
         for idx, contact_counter in enumerate(metric_dict.values()):

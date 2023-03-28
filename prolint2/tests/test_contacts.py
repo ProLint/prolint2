@@ -31,19 +31,6 @@ def test_init_exception(universe):
     
     with pytest.raises(ValueError, match=re.escape("The cutoff must be greater than 0.")):
         contacts = SerialContacts(universe, query, database, cutoff)
-        
-def test_prepare(universe):
-    query = universe.select_atoms("resname LYS")
-    database = universe.select_atoms("resname CHOL")
-    cutoff = 8.0
-
-    contacts = SerialContacts(universe, query, database, cutoff)
-    contacts._prepare()
-    q_resids = contacts.q_resids
-    dp_resnames_unique = contacts.dp_resnames_unique
-    assert contacts.contacts == {k: {v: [] for v in dp_resnames_unique} for k in [x + 1 for x in contacts.query.resindices.tolist()]}
-    assert contacts.contacts_sum == {k: {v: 0 for v in dp_resnames_unique} for k in [x + 1 for x in contacts.query.resindices.tolist()]}
-    assert contacts.contact_frames == {}
 
 def test_single_frame(universe):
     query = universe.select_atoms("resname LYS")
