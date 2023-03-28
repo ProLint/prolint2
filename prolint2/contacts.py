@@ -381,7 +381,7 @@ class Contacts(object):
             return self.metrics[
                 self.metrics[metric] > self.metrics[metric].quantile(percentile)
             ]
-
+        
     def server_payload(self, metric="Sum of all contacts"):
 
         # TODO:
@@ -414,6 +414,7 @@ class Contacts(object):
             if res not in metric_dict.keys():
                 metric_dict[res] = {k: 0 for k in lipids}
 
+        # [Resid: {'Lip A': 2, 'Lip B': 3}]
         metric_dict = dict(OrderedDict(sorted(metric_dict.items(), key=lambda x: x[0])))
 
         for idx, contact_counter in enumerate(metric_dict.values()):
