@@ -11,6 +11,7 @@ import numpy as np
 import MDAnalysis as mda
 from collections import Counter
 from collections import namedtuple
+from collections import OrderedDict
 from itertools import groupby
 from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis.base import AnalysisBase
@@ -60,10 +61,6 @@ class SerialContacts(AnalysisBase):
             k: {v: [] for v in self.dp_resnames_unique}
             for k in [x for x in self.q_resids]
         }
-        self.contacts_sum = {
-            k: {v: 0 for v in self.dp_resnames_unique}
-            for k in [x for x in self.q_resids]
-        }
         self.contact_frames = {}
 
     def _single_frame(self):
@@ -104,7 +101,6 @@ class SerialContacts(AnalysisBase):
             # For systems containing multiple proteins
             # For very large systems with duplicate lipid residue IDs (e.g. two instances of 1234CHOL)
             lipid_name = self.db_resnames[p[1]]
-            self.contacts_sum[residue_id][lipid_name] += 1
             self.contacts[residue_id][lipid_name].append(lipid_id)
 
             # NOTE:
@@ -119,7 +115,6 @@ class SerialContacts(AnalysisBase):
                 self.contact_frames[string] = [self._frame_index]
 
     def _conclude(self):
-        # self.contacts_sum = dict(map(lambda x: (x[0], Counter(x[1])), self.contacts_sum.items()))
         self.contacts = dict(
             map(
                 lambda x: (
@@ -218,7 +213,6 @@ class Contacts(object):
         self.residue_ids = self.query.selected.residues.resids
         self.cutoff = None
         self.contacts = None
-        self.contacts_sum = None
         self.contact_frames = None
         self.contacts_df = None
         self.metrics = None
@@ -257,7 +251,6 @@ class Contacts(object):
         temp_instance.run(verbose=True)
 
         self.contacts = temp_instance.contacts
-        self.contacts_sum = temp_instance.contacts_sum
         self.contact_frames = temp_instance.contact_frames
         if get_metrics:
             self.contacts_df, self.metrics = self.contacts_to_dataframe()
@@ -384,7 +377,7 @@ class Contacts(object):
                 )
             ]
 
-    def server_payload(self):
+    def server_payload(self, metric="Sum of all contacts"):
 
         # TODO:
         # protein name is hardcoded -> read protein name(s) dynamically
@@ -397,19 +390,33 @@ class Contacts(object):
             k: {"category": k, "value": 0} for k in lipids
         }  # TODO: we need to generate sub_data for each protein.
         js = {protein: {k: [] for k in lipids}}
-        for idx, contact_counter in enumerate(self.contacts_sum.values()):
+
+        # get dictionary metrics
+        metric_dict = self.metrics.groupby(['Residue ID', 'Lipid Type'])[metric].count().reset_index()
+        metric_dict = pd.pivot_table(metric_dict, 
+                        index=['Residue ID'], 
+                        values= metric, 
+                       columns=['Lipid Type']).fillna(0).to_dict('index')
+        
+        for res in self.residue_ids:
+            if res not in metric_dict.keys():
+                metric_dict[res] = {k: 0 for k in lipids}
+        
+        metric_dict = dict(OrderedDict(sorted(metric_dict.items(), key=lambda x: x[0])))
+
+        for idx, contact_counter in enumerate(metric_dict.values()):
             for lipid, contact_sum in contact_counter.items():
                 sub_data[lipid]["value"] += contact_sum
-                metric = (
+                metric_transformation = (
                     contact_sum * self.dt
                 ) / self.totaltime  # TODO: do we have to substract 1 frame here?
-                if not metric > 0:
+                if not metric_transformation > 0:
                     continue
 
                 js[protein][lipid].append(
                     {
                         "residue": f"{self.residue_names[idx]} {self.residue_ids[idx]}",
-                        "value": float("{:.2f}".format(metric)),
+                        "value": float("{:.2f}".format(metric_transformation)),
                     }
                 )
 
