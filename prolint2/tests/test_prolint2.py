@@ -7,7 +7,6 @@ import sys
 import configparser
 import numpy as np
 from prolint2 import get_config
-from pandas.util.testing import assert_frame_equal
 import MDAnalysis as mda
 from prolint2 import PL2
 from prolint2 import MembraneDatabase
