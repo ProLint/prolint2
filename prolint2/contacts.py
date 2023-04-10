@@ -247,7 +247,9 @@ class Contacts(object):
             self.database.selected,
             cutoff,
         )
+        print("Computing contacts...")
         temp_instance.run(verbose=True)
+        print("Contacts sucessfully calculated!")
 
         self.contacts = temp_instance.contacts
         self.contact_frames = temp_instance.contact_frames
