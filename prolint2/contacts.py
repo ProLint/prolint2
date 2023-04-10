@@ -214,7 +214,6 @@ class Contacts(object):
         self.cutoff = None
         self.contacts = None
         self.contact_frames = None
-        self.contacts_df = None
         self.metrics = None
 
         # TODO:
@@ -253,7 +252,7 @@ class Contacts(object):
         self.contacts = temp_instance.contacts
         self.contact_frames = temp_instance.contact_frames
         if get_metrics:
-            self.contacts_df, self.metrics = self.contacts_to_dataframe()
+            self.metrics = self.contacts_to_metrics()
 
     # this functions allows the definition of chunks of frames with uninterrupted interactions
     # i.e. it takes a list of frames as [9, 11, 12] and it returns [1, 2]
@@ -268,18 +267,17 @@ class Contacts(object):
 
     def contacts_to_dataframe(self):
         """
-        Convert the contacts dictionary to a Pandas DataFrame with different metrics.
+        Convert the contacts dictionary to a Pandas DataFrame.
 
         Returns
         -------
         Pandas DataFrame
-            Pandas DataFrame with different metrics for the contacts.
+            Pandas DataFrame with all the contacts.
         """
         if not self.contacts:
             raise ValueError("The contacts dictionary is empty.")
         else:
             results = []
-            metrics = []
             keys = self.contacts.keys()
             for idx, protein_resi in enumerate(keys):
                 for lip_type in self.contacts[protein_resi].keys():
@@ -299,7 +297,38 @@ class Contacts(object):
                                     fr,
                                 )
                             )
+            results_df = pd.DataFrame(
+                results,
+                columns=[
+                    "Protein",
+                    "Residue ID",
+                    "Residue Name",
+                    "Lipid Type",
+                    "Lipid ID",
+                    "Frame",
+                ],
+            )
+            return results_df
 
+    def contacts_to_metrics(self):
+        """
+        Convert the contacts dictionary to a Pandas DataFrame with different metrics.
+
+        Returns
+        -------
+        Pandas DataFrame
+            Pandas DataFrame with different metrics for the contacts.
+        """
+        if not self.contacts:
+            raise ValueError("The contacts dictionary is empty.")
+        else:
+            metrics = []
+            keys = self.contacts.keys()
+            for idx, protein_resi in enumerate(keys):
+                for lip_type in self.contacts[protein_resi].keys():
+                    for lip_res, t_frames in self.contacts[protein_resi][
+                        lip_type
+                    ].items():
                         # getting chunks of frames with uninterrupted interactions
                         key = "{},{}".format(protein_resi, lip_res)
                         temp = list(self.ranges(self.contact_frames[key]))
@@ -318,18 +347,6 @@ class Contacts(object):
                                 np.mean(temp),
                             )
                         )
-
-            results_df = pd.DataFrame(
-                results,
-                columns=[
-                    "Protein",
-                    "Residue ID",
-                    "Residue Name",
-                    "Lipid Type",
-                    "Lipid ID",
-                    "Frame",
-                ],
-            )
             metrics_df = pd.DataFrame(
                 metrics,
                 columns=[
@@ -344,8 +361,8 @@ class Contacts(object):
                     "Mean Duration",
                 ],
             )
+            return metrics_df
 
-            return results_df, metrics_df
 
     def export(self, filename):
         """
@@ -356,10 +373,11 @@ class Contacts(object):
         filename : str
             Name of the file to export the contacts array.
         """
-        if not isinstance(self.contacts_df, pd.DataFrame):
-            self.contacts_df, self.metrics = self.contacts_to_dataframe()
-        self.contacts_df.to_csv(filename, index=False)
-        self.metrics.to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
+        print("Exporting contacts and metrics to files...")
+        self.contacts_to_dataframe().to_csv(filename, index=False)
+        if not isinstance(self.metrics, pd.DataFrame):            
+            self.contacts_to_metrics().to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
+        print("Contacts successfully exported to file '{}' and metrics to '{}'!!".format(filename, filename.replace(".csv", "_metrics.csv")))
 
     def filter_by_percentile(self, percentile=0.75, metric="Sum of all contacts"):
         """
@@ -396,6 +414,8 @@ class Contacts(object):
         }  # TODO: we need to generate sub_data for each protein.
         js = {protein: {k: [] for k in lipids}}
 
+        if not isinstance(self.metrics, pd.DataFrame):            
+            self.metrics = self.contacts_to_metrics()
         # get dictionary metrics
         metric_dict = (
             self.metrics.groupby(["Residue ID", "Lipid Type"])[metric]
@@ -504,17 +524,13 @@ class Contacts(object):
         return payload
 
     def __str__(self):
-        if not isinstance(self.contacts_df, pd.DataFrame):
+        if self.contacts == None:
             return "<prolint2.Contacts containing 0 contacts>"
         else:
-            return "<prolint2.Contacts containing {} contacts>".format(
-                len(self.contacts_df.index)
-            )
+            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
-        if not isinstance(self.contacts_df, pd.DataFrame):
+        if self.contacts == None:
             return "<prolint2.Contacts containing 0 contacts>"
         else:
-            return "<prolint2.Contacts containing {} contacts>".format(
-                len(self.contacts_df.index)
-            )
+            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
