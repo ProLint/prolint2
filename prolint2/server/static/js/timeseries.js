@@ -140,7 +140,7 @@ export function timeSeriesApp(contactData) {
     });
     });
     
-    series.children.moveValue(series.bulletsContainer, 0);
+    series.children.moveValue(series.bulletsContainer, series.children.length + 1);
 
 
     series.on("tooltipDataItem", function (tooltipDataItem) {
