@@ -298,16 +298,11 @@ class ProLintDashboard:
 
 
     def start_server(self, payload=None):
-        print ('1')
         self.args = payload
-        print ('2')
         self.ts = PL2(self.args.structure, self.args.trajectory, add_lipid_types=self.args.other_lipids)
-        print ('3')
         self.ts.contacts.compute(cutoff=self.args.cutoff)
-        print ('4')
 
         payload = self.ts.contacts.server_payload()
-        print ('5')
 
         t, g = self.sort_lipids(self.ts)
         payload["top_lipids"] = t
@@ -315,11 +310,7 @@ class ProLintDashboard:
 
         self.backend_data = payload
 
-        print ('6')
         self.app.run(reloader=self.reloader, host="localhost", port=self.port, debug=self.debug_bool)
-        print ('7')
-
-
 
 if __name__ == "__main__":
     # start_server(debug_bool=True)
