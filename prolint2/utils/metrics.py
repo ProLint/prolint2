@@ -4,13 +4,13 @@ import numpy as np
 from abc import ABC, abstractmethod
 
 class Metric(ABC):
-    def __init__(self, ts):
-        self.ts = ts
+    def __init__(self, contacts):
+        self.contacts = contacts
 
-    def compute(self, apply_multiplier=True):
-        multiplier = self.ts.dt / self.ts.totaltime if apply_multiplier else 1
+    def compute(self, dt=1, totaltime=1):
+        multiplier = dt / totaltime # if apply_multiplier else 1
         results = defaultdict(dict)
-        for residue_id, lipid_dict in self.ts.contacts.items():
+        for residue_id, lipid_dict in self.contacts.items():
             for lipid_id, lipid_contacts in lipid_dict.items():
                 contact_array = list(lipid_contacts.values())
 
@@ -26,8 +26,8 @@ class Metric(ABC):
         pass
 
 class UserDefinedMetric(Metric):
-    def __init__(self, ts, custom_function: Callable[[Iterable[int]], float]):
-        super().__init__(ts)
+    def __init__(self, contacts, custom_function: Callable[[Iterable[int]], float]):
+        super().__init__(contacts)
         self.custom_function = custom_function
 
     def compute_metric(self, contact_array):
@@ -45,7 +45,7 @@ class MaxMetric(Metric):
     def compute_metric(self, contact_array):
         return np.max(contact_array)
 
-def create_metric(ts, metric, custom_function=None):
+def create_metric(contacts, metric, custom_function=None):
     metric_classes = {
         'mean': MeanMetric,
         'sum': SumMetric,
@@ -59,6 +59,6 @@ def create_metric(ts, metric, custom_function=None):
     metric_class = metric_classes[metric]
 
     if metric == 'custom' and custom_function is not None:
-        return metric_class(ts, custom_function)
+        return metric_class(contacts, custom_function)
     else:
-        return metric_class(ts)
+        return metric_class(contacts)

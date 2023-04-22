@@ -70,8 +70,6 @@ class SerialContacts(AnalysisBase):
             k: set() for k in [x for x in self.dp_resnames_unique]
         }
 
-        print (self.lipid_id_map)
-
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
             raise ValueError("Invalid selection. Empty AtomGroup(s).")
@@ -156,7 +154,7 @@ class SerialContacts(AnalysisBase):
         #         self.contacts.items(),
         #     )
         # )
-        self.contacts_bk = self.contacts
+        self.contacts_raw = self.contacts
 
         self.contacts = transform_contacts(self.contacts)
 
@@ -287,7 +285,7 @@ class Contacts(object):
 
         self.contacts = temp_instance.contacts
         self.contact_frames = temp_instance.contact_frames
-        self.contacts_bk = temp_instance.contacts_bk
+        self.contacts_raw = temp_instance.contacts_raw
         self.contacts_future = temp_instance.contacts_future
         self.lipid_id_map = temp_instance.lipid_id_map
         if get_metrics:
@@ -454,31 +452,11 @@ class Contacts(object):
         js = {protein: {k: [] for k in lipids}}
 
         if metric == 'custom':  # Set this to 'mean', 'sum', 'max', or 'custom'
-            metric_instance = create_metric(self, metric, custom_user_function)
+            metric_instance = create_metric(self.contacts, metric, custom_user_function)
         else:
-            metric_instance = create_metric(self, metric)
+            metric_instance = create_metric(self.contacts, metric)
 
-        metric_dict = metric_instance.compute(apply_multiplier=True)
-
-        # metric1 = metric_dict[metric].to_list()
-
-        # print ('1', metric_dict.head(200).tail(50))
-        # metric_dict = (
-        #     pd.pivot_table(
-        #         metric_dict, index=["Residue ID"], values=metric, columns=["Lipid Type"]
-        #     )
-        #     .fillna(0)
-        #     .to_dict("index")
-        # )
-        # # print ('2', metric_dict)
-
-        # for res in self.residue_ids:
-        #     if res not in metric_dict.keys():
-        #         metric_dict[res] = {k: 0 for k in lipids}
-
-        # # [Resid: {'Lip A': 2, 'Lip B': 3}]
-        # metric_dict = dict(OrderedDict(sorted(metric_dict.items(), key=lambda x: x[0])))
-        # print ('metric_dict', metric_dict)
+        metric_dict = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
 
         for idx, contact_counter in enumerate(metric_dict.values()):
             for lipid, contact_sum in contact_counter.items():
@@ -497,8 +475,6 @@ class Contacts(object):
                     }
                 )
 
-        # print ('js', js)
-
         sub_data = list(sub_data.values())
         norm_with = sum([x["value"] for x in sub_data])
         sub_data = [
@@ -508,8 +484,6 @@ class Contacts(object):
             }
             for d in sub_data
         ]
-
-        # return js, {protein: sub_data}
 
         # TODO:
         # Hardcoded
@@ -527,44 +501,11 @@ class Contacts(object):
             }
             pie_data.append(protein_pdata)
 
-        # ganttApp toy data
-        gantt_data = [
-            {
-                "category": "Lipid 1",
-                "startFrame": 0,
-                "endFrame": 10,
-            },
-            {
-                "category": "Lipid 1",
-                "startFrame": 45,
-                "endFrame": 75,
-            },
-            {
-                "category": "Lipid 1",
-                "startFrame": 90,
-                "endFrame": 100,
-            },
-            {
-                "category": "Lipid 2",
-                "startFrame": 10,
-                "endFrame": 35,
-            },
-            {
-                "category": "Lipid 2",
-                "startFrame": 30,
-                "endFrame": 60,
-            },
-        ]
-        top_10_lipids = ["Lipid 1", "Lipid 2"]
-
-        # payload should include the entire data. The backend can process it then based on client requests
         payload = {
             "data": js,
             "proteins": [protein],
             "lipids": lipids,
             "pie_data": pie_data,  # TODO: include protein info
-            "gantt_data": gantt_data,
-            "top_10_lipids": top_10_lipids,
         }
 
         return payload

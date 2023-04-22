@@ -2,9 +2,8 @@ from collections import Counter
 from prolint2.interactive_sel import interactive_selection
 import os
 import ast
-import json
 
-from bottle import Bottle, redirect, route, run, template, debug, static_file, request
+from bottle import Bottle, redirect, route, static_file, request # pylint: disable=import-error 
 from prolint2.contacts import SerialDistances
 
 import MDAnalysis as mda
@@ -13,14 +12,9 @@ from io import StringIO
 
 from prolint2.server.chord_utils import contact_chord
 
+from prolint2.utils.metrics import create_metric
+
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
-
-@route("/prolint2")
-def prolint2():
-    import sys
-
-    print(request.body.getvalue().decode("utf-8"), file=sys.stdout)
-    return request.body
 
 class ProLintDashboard:
     """
@@ -36,10 +30,14 @@ class ProLintDashboard:
         self.port = port
         self.debug_bool = debug_bool
         self.reloader = reloader
+        self.response = None
         self.app = Bottle()
         self.setup_routes()
 
     def setup_routes(self):
+        """
+            Setup the routes for the dashboard.
+        """
         self.app.route("/", method="GET", callback=self.redirect_to_app)
         self.app.route("/app", method="GET", callback=self.serve_app)
         self.app.route("/static/<filepath:path>", method="GET", callback=self.server_static)
@@ -49,18 +47,30 @@ class ProLintDashboard:
         self.app.route("/tabledata/<metadata>", method="GET", callback=self.serve_table_data)
         self.app.route("/toplipids/<metadata>", method="GET", callback=self.serve_top_lipids)
         self.app.route("/distance/<metadata>", method="GET", callback=self.serve_distance_array)
+        self.app.route("/metric/<metadata>", method="GET", callback=self.update_metric)
 
     def serve_app(self):
+        """
+            Serve the main application.
+        """
         return static_file("index.html", root=SERVER_PATH)
 
     def server_static(self, filepath):
-        print ('server path', SERVER_PATH)
+        """
+            Serve static files.
+        """
         return static_file(filepath, root=os.path.join(SERVER_PATH, "static"))
 
     def redirect_to_app(self):
+        """
+            Redirect to the main application.
+        """
         redirect("/app")
 
     def serve_pdb(self, metadata):
+        """
+            Serve the PDB file to the client for use with Mol*.
+        """
         u = mda.Universe(self.args.structure, self.args.trajectory)
         protein = u.select_atoms("protein")
         pstream = mda.lib.util.NamedStream(StringIO(), "dummy.pdb")
@@ -70,6 +80,21 @@ class ProLintDashboard:
         return pstream.read()
 
     def get_gantt_app_data(self, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+        """
+        Get the data for the Gantt chart in the application.
+
+        Args:
+            g (dict): For each lipid ID, stores the residues in contact and the corresponding
+                    frequency.
+            lipid_id (str): The lipid ID to use.
+            residues_to_show (int): The number of residues to show in the Gantt chart.
+            intervals_to_filter_out (int): The number of frames to filter out.
+
+        Returns:
+            gantt_data (list): A list of dictionaries containing the data for the Gantt chart.
+            categories (list): A list of residue IDs.
+        """
+
         gantt_data = []
         for res, _ in g[lipid_id][:residues_to_show]:
             frame_numbers = self.ts.contacts.contact_frames[f"{res},{lipid_id}"]
@@ -102,10 +127,14 @@ class ProLintDashboard:
         Sort lipid contacts according to their contact frequency, all the while keeping track
         of residue IDs, and number of contacts with each residue.
 
+        Args:
+            ts (PL2): The ProLint2 object.
+
         Returns:
             t (dict): Stores lipid IDs and their contact frequency, sorted in descending order
             g (dict): For each lipid ID, stores the residues in contact and the corresponding
                     frequency.
+                    
         """
 
         def sort_tuple(tup):
@@ -145,7 +174,16 @@ class ProLintDashboard:
     @staticmethod
     def get_frame_contact_intervals(frames, tolerance=6):
         """
-        Get frame ranges
+        Get the intervals of frames in which a contact is present.
+
+        Args:
+            frames (list): A list of frames in which a contact is present.
+            tolerance (int): The number of frames to tolerate before considering a new interval.
+
+        Returns:
+            ranges_collect (list): A list of tuples containing the start and end frames of each
+                interval.
+
         """
         ranges_collect = []
         range_start = 0
@@ -163,6 +201,10 @@ class ProLintDashboard:
         return ranges_collect
 
     def serve_data(self, metadata):
+        """
+            Serve the data to the client for use with the application.
+        """
+
         metadata = ast.literal_eval(metadata)
 
         lipid = metadata["lipid"]
@@ -222,9 +264,46 @@ class ProLintDashboard:
             "residueAtomsData": ra_data,
             "frameNumber": self.ts.n_frames,
         }
+        self.response = response
         return response
 
+    def update_metric(self, metadata):
+        """
+            Update the metric used for the backend data.
+        """
+        metadata = ast.literal_eval(metadata)
+        
+        lipid = metadata["lipid"]
+        metric = metadata.get('metric', '')
+        
+        # TODO: 
+        # Should we support custom user metrics?
+        metric_instance = create_metric(self.ts.contacts.contacts, metric)
+        metric_dict = metric_instance.compute(self.ts.dt, self.ts.totaltime)
+
+        updated_data = []
+        for idx, contact_counter in enumerate(metric_dict.values()):
+            metric_value = contact_counter[lipid]
+            if not metric_value > 0:
+                continue
+
+            residue_name = self.ts.contacts.residue_names[idx]
+            residue_id = self.ts.contacts.residue_ids[idx]
+            updated_data.append(
+                {
+                    "residue":  f"{residue_name} {residue_id}",
+                    "value": float("{:.2f}".format(metric_value)),
+                }
+            )
+
+        self.response['data'] = updated_data
+        return self.response
+
+
     def serve_network(self, metadata):
+        """
+            Serve the data to the client for use with the network application.
+        """
         metadata = ast.literal_eval(metadata)
         lipid = metadata['lipid']
 
@@ -243,6 +322,9 @@ class ProLintDashboard:
         }
 
     def serve_table_data(self, metadata):
+        """
+            Serve the data to the client for use with the table application.
+        """
         metadata = ast.literal_eval(metadata)
         lipid = metadata["lipid"]
 
@@ -255,6 +337,9 @@ class ProLintDashboard:
         }
 
     def serve_top_lipids(self, metadata):
+        """
+            Serve the data to the client for use with the gantt application.
+        """
         metadata = ast.literal_eval(metadata)
         lipid_id = metadata["lipidID"]
 
@@ -268,6 +353,9 @@ class ProLintDashboard:
         }
 
     def serve_distance_array(self, metadata):
+        """
+            Serve the data to the client for use with the heatmap application.
+        """
         metadata = ast.literal_eval(metadata)
         lipid_id = metadata["lipidID"]
         residue_id = int(metadata["residueID"])
@@ -296,16 +384,23 @@ class ProLintDashboard:
             "residueAtomsData": ra_data,
         }
 
-
     def start_server(self, payload=None):
+        """
+            Start the server.
+        """
         if payload is None:
-            import sys
+            import sys # pylint: disable=import-outside-toplevel
             print ("Please provide a payload")
             sys.exit(1)
 
         self.args = payload
         self.ts = PL2(self.args.structure, self.args.trajectory, add_lipid_types=self.args.other_lipids)
+        if self.args.i_bool:
+            self.ts = interactive_selection(self.ts)
         self.ts.contacts.compute(cutoff=self.args.cutoff)
+
+        if self.args.e_file:
+            self.ts.contacts.export(self.args.e_file)
 
         payload = self.ts.contacts.server_payload()
 
