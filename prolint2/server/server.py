@@ -11,7 +11,7 @@ import MDAnalysis as mda
 from prolint2.prolint2 import PL2
 from io import StringIO
 
-from .chord_utils import contact_chord
+from prolint2.server.chord_utils import contact_chord
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
@@ -298,6 +298,11 @@ class ProLintDashboard:
 
 
     def start_server(self, payload=None):
+        if payload is None:
+            import sys
+            print ("Please provide a payload")
+            sys.exit(1)
+
         self.args = payload
         self.ts = PL2(self.args.structure, self.args.trajectory, add_lipid_types=self.args.other_lipids)
         self.ts.contacts.compute(cutoff=self.args.cutoff)
@@ -313,6 +318,5 @@ class ProLintDashboard:
         self.app.run(reloader=self.reloader, host="localhost", port=self.port, debug=self.debug_bool)
 
 if __name__ == "__main__":
-    # start_server(debug_bool=True)
     app = ProLintDashboard(debug_bool=True)
     app.start_server()
