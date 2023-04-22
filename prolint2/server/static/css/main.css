@@ -76,6 +76,27 @@ place-content: center;
 background: #DAEDFB;
 } */
 
+.dropdown-wrapper {
+  display: flex;
+  align-items: center;
+  top: 15px; 
+}
+
+.dropdown-label {
+  margin-right: 0.5em;
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: var(--c);
+}
+
+.custom-dropdown {
+  width: 250px;
+  appearance: none;
+  /* Add the remaining styles from your previous custom-select rule */
+}
+
+
 button, select {
   --b: 1.5px; /* border thickness */
   --s: 0.02em; /* size of the corner */
