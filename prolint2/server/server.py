@@ -27,7 +27,7 @@ class ProLintDashboard:
     A dashboard for ProLint2. It is a fully functional web application that can be used to
     visualize the results of the ProLint2 analysis.
     """
-    def __init__(self, port=8351, debug_bool=False, reloader=True):
+    def __init__(self, port=8351, debug_bool=False, reloader=False):
         self.backend_data = None
         self.ts = None
         self.args = None
@@ -172,15 +172,8 @@ class ProLintDashboard:
         print(lipid, protein, metric)
         if lipid == "" and protein == "":
             # Starting setup:
-            try:
-                lipid = self.backend_data["lipids"][0]
-                protein = self.backend_data["proteins"][0]
-            except:
-                print("Detached EXECUTION")
-                print("This is currently meant for testing only. Not guaranteed to work!")
-                # self.backend_data = independent_execution()
-                lipid = self.backend_data["lipids"][0]
-                protein = self.backend_data["proteins"][0]
+            lipid = self.backend_data["lipids"][0]
+            protein = self.backend_data["proteins"][0]
 
         table_data = []
         for ix, (lipid_id, freq) in enumerate(self.backend_data["top_lipids"][lipid]):
@@ -305,11 +298,16 @@ class ProLintDashboard:
 
 
     def start_server(self, payload=None):
+        print ('1')
         self.args = payload
+        print ('2')
         self.ts = PL2(self.args.structure, self.args.trajectory, add_lipid_types=self.args.other_lipids)
+        print ('3')
         self.ts.contacts.compute(cutoff=self.args.cutoff)
+        print ('4')
 
         payload = self.ts.contacts.server_payload()
+        print ('5')
 
         t, g = self.sort_lipids(self.ts)
         payload["top_lipids"] = t
@@ -317,11 +315,13 @@ class ProLintDashboard:
 
         self.backend_data = payload
 
+        print ('6')
         self.app.run(reloader=self.reloader, host="localhost", port=self.port, debug=self.debug_bool)
+        print ('7')
 
 
 
 if __name__ == "__main__":
     # start_server(debug_bool=True)
-    app = MyApp(debug_bool=True)
+    app = ProLintDashboard(debug_bool=True)
     app.start_server()
