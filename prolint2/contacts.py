@@ -18,10 +18,27 @@ from MDAnalysis.analysis.base import AnalysisBase
 from MDAnalysis.analysis import distances
 import configparser
 
+from collections import defaultdict
+
+# from prolint2.utils.metrics import Metric, UserDefinedMetric, MeanMetric, SumMetric, MaxMetric
+from prolint2.utils.metrics import create_metric
+
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
 config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini"))
 parameters_config = config["Parameters"]
+
+def process_contact_items(contact_items):
+    processed_items = {}
+    for key, value in contact_items:
+        processed_items[key] = Counter(value)
+    return processed_items
+
+def transform_contacts(contacts):
+    transformed_contacts = {}
+    for key, value in contacts.items():
+        transformed_contacts[key] = process_contact_items(value.items())
+    return transformed_contacts
 
 
 class SerialContacts(AnalysisBase):
@@ -49,6 +66,12 @@ class SerialContacts(AnalysisBase):
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 
+        self.lipid_id_map = {
+            k: set() for k in [x for x in self.dp_resnames_unique]
+        }
+
+        print (self.lipid_id_map)
+
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
             raise ValueError("Invalid selection. Empty AtomGroup(s).")
@@ -62,6 +85,8 @@ class SerialContacts(AnalysisBase):
             for k in [x for x in self.q_resids]
         }
         self.contact_frames = {}
+        self.contacts_future = defaultdict(lambda: defaultdict(list))
+
 
     def _single_frame(self):
         gridsearch = FastNS(
@@ -70,7 +95,7 @@ class SerialContacts(AnalysisBase):
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
 
-        existing_pairs = {}
+        existing_pairs = {} 
         for p in pairs:
             residue_id = self.q_resids[p[0]]
             lipid_id = self.db_resids[p[1]]
@@ -103,6 +128,8 @@ class SerialContacts(AnalysisBase):
             lipid_name = self.db_resnames[p[1]]
             self.contacts[residue_id][lipid_name].append(lipid_id)
 
+            self.lipid_id_map[lipid_name].add(lipid_id)
+
             # NOTE:
             # We want to keep track of frames the cutoff is satisfied
             # the self.contact_frames dict gets very large and may not be feasible for large systems.
@@ -111,19 +138,28 @@ class SerialContacts(AnalysisBase):
             # and we can do much more that way.
             if string in self.contact_frames:
                 self.contact_frames[string].append(self._frame_index)
+                self.contacts_future[residue_id][lipid_id].append(self._frame_index)
+                # self.contact_frames[string][self._frame_index] = 1
             else:
                 self.contact_frames[string] = [self._frame_index]
+                self.contacts_future[residue_id][lipid_id] = [self._frame_index]
+                # self.contact_frames[string] = np.zeros(self.n_frames)
+                # self.contact_frames[string][self._frame_index] = 1
 
     def _conclude(self):
-        self.contacts = dict(
-            map(
-                lambda x: (
-                    x[0],
-                    dict(map(lambda y: (y[0], Counter(y[1])), x[1].items())),
-                ),
-                self.contacts.items(),
-            )
-        )
+        # self.contacts = dict(
+        #     map(
+        #         lambda x: (
+        #             x[0],
+        #             dict(map(lambda y: (y[0], Counter(y[1])), x[1].items())),
+        #         ),
+        #         self.contacts.items(),
+        #     )
+        # )
+        self.contacts_bk = self.contacts
+
+        self.contacts = transform_contacts(self.contacts)
+
 
 
 class SerialDistances(AnalysisBase):
@@ -251,6 +287,9 @@ class Contacts(object):
 
         self.contacts = temp_instance.contacts
         self.contact_frames = temp_instance.contact_frames
+        self.contacts_bk = temp_instance.contacts_bk
+        self.contacts_future = temp_instance.contacts_future
+        self.lipid_id_map = temp_instance.lipid_id_map
         if get_metrics:
             self.metrics = self.contacts_to_metrics()
 
@@ -400,7 +439,7 @@ class Contacts(object):
                 self.metrics[metric] > self.metrics[metric].quantile(percentile)
             ]
         
-    def server_payload(self, metric="Sum of all contacts"):
+    def server_payload(self, metric="max", custom_user_function=None):
 
         # TODO:
         # protein name is hardcoded -> read protein name(s) dynamically
@@ -414,35 +453,40 @@ class Contacts(object):
         }  # TODO: we need to generate sub_data for each protein.
         js = {protein: {k: [] for k in lipids}}
 
-        if not isinstance(self.metrics, pd.DataFrame):            
-            self.metrics = self.contacts_to_metrics()
-        # get dictionary metrics
-        metric_dict = (
-            self.metrics.groupby(["Residue ID", "Lipid Type"])[metric]
-            .count()
-            .reset_index()
-        )
-        metric_dict = (
-            pd.pivot_table(
-                metric_dict, index=["Residue ID"], values=metric, columns=["Lipid Type"]
-            )
-            .fillna(0)
-            .to_dict("index")
-        )
+        if metric == 'custom':  # Set this to 'mean', 'sum', 'max', or 'custom'
+            metric_instance = create_metric(self, metric, custom_user_function)
+        else:
+            metric_instance = create_metric(self, metric)
 
-        for res in self.residue_ids:
-            if res not in metric_dict.keys():
-                metric_dict[res] = {k: 0 for k in lipids}
+        metric_dict = metric_instance.compute(apply_multiplier=True)
 
-        # [Resid: {'Lip A': 2, 'Lip B': 3}]
-        metric_dict = dict(OrderedDict(sorted(metric_dict.items(), key=lambda x: x[0])))
+        # metric1 = metric_dict[metric].to_list()
+
+        # print ('1', metric_dict.head(200).tail(50))
+        # metric_dict = (
+        #     pd.pivot_table(
+        #         metric_dict, index=["Residue ID"], values=metric, columns=["Lipid Type"]
+        #     )
+        #     .fillna(0)
+        #     .to_dict("index")
+        # )
+        # # print ('2', metric_dict)
+
+        # for res in self.residue_ids:
+        #     if res not in metric_dict.keys():
+        #         metric_dict[res] = {k: 0 for k in lipids}
+
+        # # [Resid: {'Lip A': 2, 'Lip B': 3}]
+        # metric_dict = dict(OrderedDict(sorted(metric_dict.items(), key=lambda x: x[0])))
+        # print ('metric_dict', metric_dict)
 
         for idx, contact_counter in enumerate(metric_dict.values()):
             for lipid, contact_sum in contact_counter.items():
                 sub_data[lipid]["value"] += contact_sum
-                metric_transformation = (
-                    contact_sum * self.dt
-                ) / self.totaltime  # TODO: do we have to substract 1 frame here?
+                metric_transformation = contact_sum
+                # metric_transformation = (
+                #     contact_sum * self.dt
+                # ) / self.totaltime  # TODO: do we have to substract 1 frame here?
                 if not metric_transformation > 0:
                     continue
 
@@ -452,6 +496,8 @@ class Contacts(object):
                         "value": float("{:.2f}".format(metric_transformation)),
                     }
                 )
+
+        # print ('js', js)
 
         sub_data = list(sub_data.values())
         norm_with = sum([x["value"] for x in sub_data])

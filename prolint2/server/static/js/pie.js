@@ -357,7 +357,7 @@ export function pieApp(table, ganttReturnValue, heatmap, timeSeries, networkRoot
     pieSeries.data.setAll(responseData['pieData']);
 
     function selectSlice(slice) {
-        selectedSlice = slice;
+        const selectedSlice = slice;
         var dataItem = slice.dataItem;
         var dataContext = dataItem.dataContext;
 

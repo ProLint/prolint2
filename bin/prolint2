@@ -8,7 +8,8 @@ r"""Argument parser to use prolint2 from the command-line
 
 import argparse
 import prolint2._version as vers
-from prolint2.server.server import start_server
+# from prolint2.server.server import start_server
+from prolint2.server.server import MyApp
 import configparser
 from prolint2 import get_config
 import os
@@ -118,7 +119,9 @@ prolint2_parser.add_argument(
 args = prolint2_parser.parse_args()
 
 # Starting the server
-start_server(payload=args, reloader=False, i_bool=args.i_bool, e_file=args.e_file)
+# start_server(payload=args, reloader=False, i_bool=args.i_bool, e_file=args.e_file)
+app = MyApp()
+app.start_server(payload=args)
 import sys
 
 sys.exit()
