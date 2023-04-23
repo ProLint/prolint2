@@ -14,6 +14,10 @@ class OutputFormat(ABC):
     def get_result(self):
         pass
 
+    @abstractmethod
+    def clear(self):
+        pass
+
 class DefaultOutputFormat(OutputFormat):
     def __init__(self):
         super().__init__()
@@ -24,6 +28,9 @@ class DefaultOutputFormat(OutputFormat):
 
     def get_result(self):
         return self.results
+    
+    def clear(self):
+        self.results = defaultdict(lambda: defaultdict(dict))
 
 class CustomOutputFormat(OutputFormat):
     def __init__(self):
@@ -35,6 +42,9 @@ class CustomOutputFormat(OutputFormat):
 
     def get_result(self):
         return self.results
+    
+    def clear(self):
+        self.results = defaultdict(lambda: defaultdict(list))
 
 class SingleOutputFormat(OutputFormat):
     def __init__(self):
@@ -46,6 +56,9 @@ class SingleOutputFormat(OutputFormat):
 
     def get_result(self):
         return self.results
+    
+    def clear(self):
+        self.results = defaultdict(dict)
 
 class ProLintDashboardOutputFormat(OutputFormat):
     def __init__(self, residue_names=None, residue_ids=None):
@@ -67,3 +80,6 @@ class ProLintDashboardOutputFormat(OutputFormat):
 
     def get_result(self):
         return self.results
+    
+    def clear(self):
+        self.results = defaultdict(list)

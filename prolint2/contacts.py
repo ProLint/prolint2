@@ -6,19 +6,16 @@ r"""Contacts base classes --- :mod:`prolint2.contacts`
 """
 
 import os
-import pandas as pd
-import numpy as np
-import MDAnalysis as mda
-from collections import Counter
-from collections import namedtuple
-from collections import OrderedDict
-from itertools import groupby
-from MDAnalysis.lib.nsgrid import FastNS
-from MDAnalysis.analysis.base import AnalysisBase
-from MDAnalysis.analysis import distances
 import configparser
+from collections import Counter
+from itertools import groupby
 
-from collections import defaultdict
+import numpy as np
+import pandas as pd
+import MDAnalysis as mda
+from MDAnalysis.lib.nsgrid import FastNS
+from MDAnalysis.analysis import distances
+from MDAnalysis.analysis.base import AnalysisBase
 
 from prolint2.utils.metrics import create_metric
 from prolint2.utils.registries import MetricRegistry, auto_register_metrics
@@ -29,12 +26,28 @@ config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini
 parameters_config = config["Parameters"]
 
 def process_contact_items(contact_items):
+    """
+    Process the contact items to get the number of contacts per residue.
+    """
     processed_items = {}
     for key, value in contact_items:
         processed_items[key] = Counter(value)
     return processed_items
 
 def transform_contacts(contacts):
+    """
+    Transform the contacts to a dictionary of dictionaries.
+
+    Parameters
+    ----------
+    contacts : dict
+        Dictionary of contacts.
+
+    Returns
+    -------
+    dict: Dictionary of dictionaries.
+
+    """
     transformed_contacts = {}
     for key, value in contacts.items():
         transformed_contacts[key] = process_contact_items(value.items())
@@ -67,21 +80,18 @@ class SerialContacts(AnalysisBase):
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 
+        self.contacts = {
+            k: {v: [] for v in self.dp_resnames_unique}
+            for k in [x for x in self.q_resids]
+        }
+        self.contact_frames = {}
+
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
             raise ValueError("Invalid selection. Empty AtomGroup(s).")
 
         if self.cutoff <= 0:
             raise ValueError("The cutoff must be greater than 0.")
-
-    def _prepare(self):
-        self.contacts = {
-            k: {v: [] for v in self.dp_resnames_unique}
-            for k in [x for x in self.q_resids]
-        }
-        self.contact_frames = {}
-        self.contacts_future = defaultdict(lambda: defaultdict(list))
-
 
     def _single_frame(self):
         gridsearch = FastNS(
@@ -121,29 +131,11 @@ class SerialContacts(AnalysisBase):
             # and we can do much more that way.
             if string in self.contact_frames:
                 self.contact_frames[string].append(self._frame_index)
-                # self.contacts_future[residue_id][lipid_id].append(self._frame_index)
-                # self.contact_frames[string][self._frame_index] = 1
             else:
                 self.contact_frames[string] = [self._frame_index]
-                # self.contacts_future[residue_id][lipid_id] = [self._frame_index]
-                # self.contact_frames[string] = np.zeros(self.n_frames)
-                # self.contact_frames[string][self._frame_index] = 1
 
     def _conclude(self):
-        # self.contacts = dict(
-        #     map(
-        #         lambda x: (
-        #             x[0],
-        #             dict(map(lambda y: (y[0], Counter(y[1])), x[1].items())),
-        #         ),
-        #         self.contacts.items(),
-        #     )
-        # )
-        self.contacts_raw = self.contacts
-
         self.contacts = transform_contacts(self.contacts)
-
-
 
 class SerialDistances(AnalysisBase):
     r"""
@@ -172,6 +164,8 @@ class SerialDistances(AnalysisBase):
         self.resid_atomgroup = self.query.select_atoms(f"resid {residue_id}")
         self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
         self.resid_atomnames = self.resid_atomgroup.names.tolist()
+        self.result_array = None
+        self.distance_array = None
 
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
@@ -236,7 +230,7 @@ class Contacts(object):
         self.metrics = None
 
         self.registry = MetricRegistry()
-        auto_register_metrics(self.registry, 'prolint2.utils.metrics')
+        self._register_metrics()
 
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
@@ -244,6 +238,9 @@ class Contacts(object):
         self.n_frames = query.selected.universe.trajectory.n_frames
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
+
+    def _register_metrics(self):
+        auto_register_metrics(self.registry, 'prolint2.utils.metrics')
 
     def compute(self, cutoff=int(parameters_config["cutoff"]), get_metrics=False):
         """

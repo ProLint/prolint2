@@ -41,6 +41,9 @@ def create_metric(contacts, metrics, output_format=None, custom_function: Callab
         'dashboard': ProLintDashboardOutputFormat,
     }
 
+    if len(metrics) != 1 and output_format == 'single':
+        raise ValueError("The 'single' output format can only be used with a single metric.")
+    
     if len(metrics) == 1 and output_format is None or output_format == 'single':
         output_format_class = SingleOutputFormat()
     else:
