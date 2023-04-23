@@ -26,5 +26,6 @@ def auto_register_metrics(metric_registry: MetricRegistry, module_name: str):
     module = importlib.import_module(module_name)
     for _, obj in inspect.getmembers(module):
         if inspect.isclass(obj) and issubclass(obj, BaseMetric) and obj != BaseMetric:
+            print ('Registering metric: ', obj.name, ' from module: ', module_name, '...')
             metric_name = obj.name
             metric_registry.register(metric_name, obj)

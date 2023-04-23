@@ -5,7 +5,6 @@ from abc import ABC, abstractmethod
 class OutputFormat(ABC):
     def __init__(self):
         self.class_name = self.__class__.__name__
-        # pass
 
     @abstractmethod
     def store_result(self, residue_id, lipid_id, metric_name, value):
@@ -49,7 +48,7 @@ class SingleOutputFormat(OutputFormat):
         return self.results
 
 class ProLintDashboardOutputFormat(OutputFormat):
-    def __init__(self, residue_names=None, residue_ids=None, **kwargs):
+    def __init__(self, residue_names=None, residue_ids=None):
         super().__init__()
         self.results = defaultdict(list)
         self.residue_names = residue_names
@@ -62,7 +61,7 @@ class ProLintDashboardOutputFormat(OutputFormat):
         self.results[lipid_id].append(
             {
                 "residue": f"{self.residue_names[residue_id]} {self.residue_ids[residue_id]}",
-                "value": float("{:.2f}".format(value)),
+                "value": float(f"{value:.2f}"),
             }
         )
 

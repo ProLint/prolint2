@@ -249,6 +249,7 @@ class ProLintDashboard:
 
         # TODO:
         # Possibly, avoid single point of failure on these dictionary lookups?
+        # print (self.backend_data["data"][protein][lipid])
         response = {
             "data": self.backend_data["data"][protein][lipid],
             "proteins": self.backend_data["proteins"],
