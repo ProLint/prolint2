@@ -278,7 +278,7 @@ class ProLintDashboard:
         
         # TODO: 
         # Should we support custom user metrics?
-        metric_instance = create_metric(self.ts.contacts.contacts, metric)
+        metric_instance = create_metric(self.ts.contacts.contacts, metrics=[metric], metric_registry=self.ts.contacts.registry)
         metric_dict = metric_instance.compute(self.ts.dt, self.ts.totaltime)
 
         updated_data = []

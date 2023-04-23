@@ -20,8 +20,8 @@ import configparser
 
 from collections import defaultdict
 
-# from prolint2.utils.metrics import Metric, UserDefinedMetric, MeanMetric, SumMetric, MaxMetric
 from prolint2.utils.metrics import create_metric
+from prolint2.utils.registries import MetricRegistry, auto_register_metrics
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
@@ -56,6 +56,7 @@ class SerialContacts(AnalysisBase):
     def __init__(self, universe, query, database, cutoff, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
+
         self.query = query
         self.database = database
         self.cutoff = cutoff
@@ -250,6 +251,9 @@ class Contacts(object):
         self.contact_frames = None
         self.metrics = None
 
+        self.registry = MetricRegistry()
+        auto_register_metrics(self.registry, 'prolint2.utils.metrics')
+
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
         # What's the best way here? Include trajectory as an initialization argument?
@@ -400,7 +404,6 @@ class Contacts(object):
             )
             return metrics_df
 
-
     def export(self, filename):
         """
         Export the contacts array to a file.
@@ -443,81 +446,48 @@ class Contacts(object):
         # protein name is hardcoded -> read protein name(s) dynamically
         # update code to handle multiple identical proteins
         # update code to handle multiple copies of different proteins
-        protein_name = "Protein"
-        protein = protein_name  # TODO: we'll need to update this into a list and iterate over it
-        lipids = list(np.unique(self.database.selected.resnames))
-        sub_data = {
-            k: {"category": k, "value": 0} for k in lipids
-        }  # TODO: we need to generate sub_data for each protein.
-        js = {protein: {k: [] for k in lipids}}
-
-        if metric == 'custom':  # Set this to 'mean', 'sum', 'max', or 'custom'
-            metric_instance = create_metric(self.contacts, metric, custom_user_function)
-        else:
-            metric_instance = create_metric(self.contacts, metric)
-
-        metric_dict = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
-
-        for idx, contact_counter in enumerate(metric_dict.values()):
-            for lipid, contact_sum in contact_counter.items():
-                sub_data[lipid]["value"] += contact_sum
-                metric_transformation = contact_sum
-                # metric_transformation = (
-                #     contact_sum * self.dt
-                # ) / self.totaltime  # TODO: do we have to substract 1 frame here?
-                if not metric_transformation > 0:
-                    continue
-
-                js[protein][lipid].append(
-                    {
-                        "residue": f"{self.residue_names[idx]} {self.residue_ids[idx]}",
-                        "value": float("{:.2f}".format(metric_transformation)),
-                    }
-                )
-
-        sub_data = list(sub_data.values())
-        norm_with = sum([x["value"] for x in sub_data])
-        sub_data = [
-            {
-                "category": d["category"],
-                "value": "{:.2f}".format(d["value"] / norm_with),
-            }
-            for d in sub_data
-        ]
-
-        # TODO:
-        # Hardcoded
+        protein_name = "Protein" # TODO: we'll need to update this into a list and iterate over it
         proteins = [protein_name]
         protein_counts = {protein_name: 1}
+
+        residue_contacts = {}
+        metric_instance = create_metric(self.contacts, metrics=[metric], metric_registry=self.registry, output_format='dashboard', residue_names=self.residue_names, residue_ids=self.residue_ids)
+        residue_contacts[protein_name] = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
+
+        lipid_counts = self.database.lipid_count()
+        total_lipid_sum = sum(lipid_counts.values())
+        sub_data = []
+        for lipid, count in lipid_counts.items():
+            sub_data.append({"category": lipid, "value": count / total_lipid_sum})
 
         pie_data = []
         for protein in proteins:
             value = protein_counts[protein] / sum(protein_counts.values())
 
             protein_pdata = {
-                "category": protein,
+                "category": protein_name,
                 "value": "{:.2f}".format(value),
                 "subData": sub_data,
             }
             pie_data.append(protein_pdata)
 
         payload = {
-            "data": js,
-            "proteins": [protein],
-            "lipids": lipids,
+            "data": residue_contacts,
+            "proteins": [protein_name],
+            "lipids": self.database.lipid_types().tolist(),
             "pie_data": pie_data,  # TODO: include protein info
         }
 
         return payload
 
     def __str__(self):
-        if self.contacts == None:
+        if self.contacts is None:
             return "<prolint2.Contacts containing 0 contacts>"
         else:
             return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
 
     def __repr__(self):
-        if self.contacts == None:
+        if self.contacts is None:
             return "<prolint2.Contacts containing 0 contacts>"
         else:
             return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
