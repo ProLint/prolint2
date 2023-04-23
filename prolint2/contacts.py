@@ -67,10 +67,6 @@ class SerialContacts(AnalysisBase):
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 
-        self.lipid_id_map = {
-            k: set() for k in [x for x in self.dp_resnames_unique]
-        }
-
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
             raise ValueError("Invalid selection. Empty AtomGroup(s).")
@@ -94,7 +90,7 @@ class SerialContacts(AnalysisBase):
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
 
-        existing_pairs = {} 
+        existing_pairs = set()
         for p in pairs:
             residue_id = self.q_resids[p[0]]
             lipid_id = self.db_resids[p[1]]
@@ -106,19 +102,9 @@ class SerialContacts(AnalysisBase):
             # We want to keep track of frames the cutoff is satisfied
             # and also the pairs that satisfied the cutoff -> this can be used to avoid
             # the distance array analysis necessary later.
-            # frame_pairs = (self._frame_index, p)
-            # if string in self.contact_frames:
-            #     self.contact_frames[string].append(frame_pairs)
-            # else:
-            #     self.contact_frames[string] = [frame_pairs]
-
             if f"{residue_id}{lipid_id}" in existing_pairs:
                 continue
-            existing_pairs[f"{residue_id}{lipid_id}"] = True
-
-            # TODO:
-            # @bis: we may be able to get further performance improvements by
-            # using the Counter object with its update methods.
+            existing_pairs.add(f"{residue_id}{lipid_id}")
 
             # TODO:
             # these IDs are not guaranteed to be unique:
@@ -126,8 +112,6 @@ class SerialContacts(AnalysisBase):
             # For very large systems with duplicate lipid residue IDs (e.g. two instances of 1234CHOL)
             lipid_name = self.db_resnames[p[1]]
             self.contacts[residue_id][lipid_name].append(lipid_id)
-
-            self.lipid_id_map[lipid_name].add(lipid_id)
 
             # NOTE:
             # We want to keep track of frames the cutoff is satisfied
@@ -137,11 +121,11 @@ class SerialContacts(AnalysisBase):
             # and we can do much more that way.
             if string in self.contact_frames:
                 self.contact_frames[string].append(self._frame_index)
-                self.contacts_future[residue_id][lipid_id].append(self._frame_index)
+                # self.contacts_future[residue_id][lipid_id].append(self._frame_index)
                 # self.contact_frames[string][self._frame_index] = 1
             else:
                 self.contact_frames[string] = [self._frame_index]
-                self.contacts_future[residue_id][lipid_id] = [self._frame_index]
+                # self.contacts_future[residue_id][lipid_id] = [self._frame_index]
                 # self.contact_frames[string] = np.zeros(self.n_frames)
                 # self.contact_frames[string][self._frame_index] = 1
 
@@ -289,9 +273,6 @@ class Contacts(object):
 
         self.contacts = temp_instance.contacts
         self.contact_frames = temp_instance.contact_frames
-        self.contacts_raw = temp_instance.contacts_raw
-        self.contacts_future = temp_instance.contacts_future
-        self.lipid_id_map = temp_instance.lipid_id_map
         if get_metrics:
             self.metrics = self.contacts_to_metrics()
 
@@ -305,6 +286,33 @@ class Contacts(object):
             el = lst[t]
             t += l
             yield len(range(el, el + l))
+
+    def computed_contacts(self):
+        """
+        Returns the computed contacts.
+        """
+        if self.contacts is None:
+            raise ValueError("No contacts computed. Run compute() first.")
+        
+        formatted_contact_frames = {}
+        contact_array = np.zeros(self.n_frames, dtype=np.int8)
+        for key, value in self.contact_frames.items():
+            contact_array[value] = 1
+            formatted_contact_frames[key] = contact_array.copy()
+            contact_array[value] = 0
+            
+        def create_multi_index(index_values):
+            split_indices = [tuple(x.split(',')) for x in index_values]
+            return pd.MultiIndex.from_tuples(split_indices, names=['residueID', 'lipidID'])
+
+        df = pd.DataFrame.from_dict(formatted_contact_frames, orient='index')
+        df.index = create_multi_index(df.index)
+        df = df.sort_index(
+            level=['residueID', 'lipidID'],
+            ascending=[True, True]
+        )
+
+        return df
 
     def contacts_to_dataframe(self):
         """
