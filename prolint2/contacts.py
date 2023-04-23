@@ -450,15 +450,23 @@ class Contacts(object):
         proteins = [protein_name]
         protein_counts = {protein_name: 1}
 
-        residue_contacts = {}
-        metric_instance = create_metric(self.contacts, metrics=[metric], metric_registry=self.registry, output_format='dashboard', residue_names=self.residue_names, residue_ids=self.residue_ids)
-        residue_contacts[protein_name] = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
+        # residue_contacts = {}
+        metric_instance = create_metric(
+            self.contacts, 
+            metrics=[metric], 
+            metric_registry=self.registry, 
+            output_format='dashboard', 
+            lipid_type=self.database.lipid_types().tolist()[0], 
+            residue_names=self.residue_names, 
+            residue_ids=self.residue_ids
+        )
+        residue_contacts = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
 
         lipid_counts = self.database.lipid_count()
         total_lipid_sum = sum(lipid_counts.values())
         sub_data = []
         for lipid, count in lipid_counts.items():
-            sub_data.append({"category": lipid, "value": count / total_lipid_sum})
+            sub_data.append({"category": lipid, "value": "{:.2f}".format(count / total_lipid_sum)})
 
         pie_data = []
         for protein in proteins:
@@ -472,7 +480,7 @@ class Contacts(object):
             pie_data.append(protein_pdata)
 
         payload = {
-            "data": residue_contacts,
+            "data": {protein_name: residue_contacts},
             "proteins": [protein_name],
             "lipids": self.database.lipid_types().tolist(),
             "pie_data": pie_data,  # TODO: include protein info

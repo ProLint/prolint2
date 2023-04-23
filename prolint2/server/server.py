@@ -275,29 +275,20 @@ class ProLintDashboard:
         metadata = ast.literal_eval(metadata)
         
         lipid = metadata["lipid"]
-        metric = metadata.get('metric', '')
+        metric = metadata["metric"]
         
-        # TODO: 
-        # Should we support custom user metrics?
-        metric_instance = create_metric(self.ts.contacts.contacts, metrics=[metric], metric_registry=self.ts.contacts.registry)
+        metric_instance = create_metric(
+            self.ts.contacts.contacts,
+            metrics=[metric],
+            metric_registry=self.ts.contacts.registry, 
+            output_format='dashboard',
+            lipid_type=lipid,
+            residue_names=self.ts.contacts.residue_names, 
+            residue_ids=self.ts.contacts.residue_ids
+        )
         metric_dict = metric_instance.compute(self.ts.dt, self.ts.totaltime)
 
-        updated_data = []
-        for idx, contact_counter in enumerate(metric_dict.values()):
-            metric_value = contact_counter[lipid]
-            if not metric_value > 0:
-                continue
-
-            residue_name = self.ts.contacts.residue_names[idx]
-            residue_id = self.ts.contacts.residue_ids[idx]
-            updated_data.append(
-                {
-                    "residue":  f"{residue_name} {residue_id}",
-                    "value": float("{:.2f}".format(metric_value)),
-                }
-            )
-
-        self.response['data'] = updated_data
+        self.response['data'] = metric_dict[lipid]
         return self.response
 
 

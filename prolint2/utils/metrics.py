@@ -30,7 +30,7 @@ class MaxMetric(BaseMetric):
     def compute_metric(self, contact_array):
         return np.max(contact_array)
 
-def create_metric(contacts, metrics, output_format=None, custom_function: Callable = None, metric_registry: MetricRegistry=None, **kwargs):
+def create_metric(contacts, metrics, output_format=None, custom_function: Callable = None, metric_registry: MetricRegistry=None, lipid_type=None, **kwargs):
     if metric_registry is None:
         raise ValueError("A MetricRegistry instance must be provided.")
 
@@ -63,4 +63,4 @@ def create_metric(contacts, metrics, output_format=None, custom_function: Callab
         else:
             metric_objects.append(metric_class())
 
-    return Metric(contacts, metric_objects, output_format_class)
+    return Metric(contacts, metric_objects, output_format_class, lipid_type)
