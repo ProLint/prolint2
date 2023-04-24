@@ -291,9 +291,9 @@ class Contacts(object):
             raise ValueError("No contacts computed. Run compute() first.")
         
         formatted_contact_frames = {}
-        for residue_id, lipid_dict in ts.contacts.contact_frames.items():
+        for residue_id, lipid_dict in self.contact_frames.items():
             for lipid_id, frames in lipid_dict.items():
-                contact_array = np.zeros(ts.n_frames, dtype=np.int8)
+                contact_array = np.zeros(self.n_frames, dtype=np.int8)
                 contact_array[frames] = 1
                 key = (residue_id, lipid_id)
                 formatted_contact_frames[key] = contact_array.copy()
