@@ -7,7 +7,7 @@ r"""Contacts base classes --- :mod:`prolint2.contacts`
 
 import os
 import configparser
-from collections import Counter
+from collections import Counter, defaultdict
 from itertools import groupby
 
 import numpy as np
@@ -84,7 +84,7 @@ class SerialContacts(AnalysisBase):
             k: {v: [] for v in self.dp_resnames_unique}
             for k in [x for x in self.q_resids]
         }
-        self.contact_frames = {}
+        self.contact_frames = defaultdict(lambda: defaultdict(list))
 
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
@@ -105,6 +105,7 @@ class SerialContacts(AnalysisBase):
             residue_id = self.q_resids[p[0]]
             lipid_id = self.db_resids[p[1]]
             string = f"{residue_id},{lipid_id}"
+            residue_lipid = (residue_id, lipid_id)
 
             # if self._frame_index == 0 and residue_id < 200:
             #     print (p[0], p[1], residue_id, lipid_id)
@@ -112,9 +113,9 @@ class SerialContacts(AnalysisBase):
             # We want to keep track of frames the cutoff is satisfied
             # and also the pairs that satisfied the cutoff -> this can be used to avoid
             # the distance array analysis necessary later.
-            if f"{residue_id}{lipid_id}" in existing_pairs:
+            if residue_lipid in existing_pairs:
                 continue
-            existing_pairs.add(f"{residue_id}{lipid_id}")
+            existing_pairs.add(residue_lipid)
 
             # TODO:
             # these IDs are not guaranteed to be unique:
@@ -129,10 +130,8 @@ class SerialContacts(AnalysisBase):
             # In general, it's not a method that's going to scale well. Given the backend we have, it
             # makes more sense to store results in a temporary SQL database. Retrieval will be superfast,
             # and we can do much more that way.
-            if string in self.contact_frames:
-                self.contact_frames[string].append(self._frame_index)
-            else:
-                self.contact_frames[string] = [self._frame_index]
+
+            self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
     def _conclude(self):
         self.contacts = transform_contacts(self.contacts)
@@ -292,18 +291,15 @@ class Contacts(object):
             raise ValueError("No contacts computed. Run compute() first.")
         
         formatted_contact_frames = {}
-        contact_array = np.zeros(self.n_frames, dtype=np.int8)
-        for key, value in self.contact_frames.items():
-            contact_array[value] = 1
-            formatted_contact_frames[key] = contact_array.copy()
-            contact_array[value] = 0
-            
-        def create_multi_index(index_values):
-            split_indices = [tuple(x.split(',')) for x in index_values]
-            return pd.MultiIndex.from_tuples(split_indices, names=['residueID', 'lipidID'])
+        for residue_id, lipid_dict in ts.contacts.contact_frames.items():
+            for lipid_id, frames in lipid_dict.items():
+                contact_array = np.zeros(ts.n_frames, dtype=np.int8)
+                contact_array[frames] = 1
+                key = (residue_id, lipid_id)
+                formatted_contact_frames[key] = contact_array.copy()
 
         df = pd.DataFrame.from_dict(formatted_contact_frames, orient='index')
-        df.index = create_multi_index(df.index)
+        df.index = pd.MultiIndex.from_tuples(df.index, names=['residueID', 'lipidID'])
         df = df.sort_index(
             level=['residueID', 'lipidID'],
             ascending=[True, True]

@@ -5,24 +5,37 @@ import numpy as np
 from itertools import combinations
 from .utils import calculate_contact_intervals
 
-def per_lipid_contacts(ts, lipids, frame_cutoff=10):
-    """
-    Given a list of lipid IDs, returns a dict with these lipid IDs
-    as keys, and values set to a dict containing the residues these lipids
-    interact with as keys and the corresponding number of contacts as values.
-    These contacts can be filtered using the `frame_cutoff` option.
+# def per_lipid_contacts(ts, lipids, frame_cutoff=10):
+#     """
+#     Given a list of lipid IDs, returns a dict with these lipid IDs
+#     as keys, and values set to a dict containing the residues these lipids
+#     interact with as keys and the corresponding number of contacts as values.
+#     These contacts can be filtered using the `frame_cutoff` option.
 
-    TODO:
-    `frame_cutoff` should operate on a percentage of trajectory length.
-    """
+#     TODO:
+#     `frame_cutoff` should operate on a percentage of trajectory length.
+#     """
+#     results = {k: {} for k in lipids}
+#     for k, v in ts.contacts.contact_frames.items():
+#         if len(v) < frame_cutoff:
+#             continue
+#         # r, l = [int(x) for x in k.split(',')] # k used to be a string formatted as 'residue,lipid'
+#         # k now is a tuple of (residue, lipid)
+#         r, l = k
+#         if l in lipids:
+#             results[l][r] = len(v)
+#     return results
+
+def per_lipid_contacts(ts, lipids, frame_cutoff=10):
     results = {k: {} for k in lipids}
-    for k, v in ts.contacts.contact_frames.items():
-        if len(v) < frame_cutoff:
-            continue
-        r, l = [int(x) for x in k.split(',')]
-        if l in lipids:
-            results[l][r] = len(v)
+    for residue_id, lipid_dict in ts.contacts.contact_frames.items():
+        for lipid_id, frames in lipid_dict.items():
+            if len(frames) < frame_cutoff:
+                continue
+            if lipid_id in lipids:
+                results[lipid_id][residue_id] = len(frames)
     return results
+
 
 def sort_dict(d, cutoff=None):
     """

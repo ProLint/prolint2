@@ -97,7 +97,11 @@ class ProLintDashboard:
 
         gantt_data = []
         for res, _ in g[lipid_id][:residues_to_show]:
-            frame_numbers = self.ts.contacts.contact_frames[f"{res},{lipid_id}"]
+            # res & lipid_id used to be a string formatted as 'residue,lipid'
+            # frame_numbers = self.ts.contacts.contact_frames[f"{res},{lipid_id}"]
+            # now they are a tuple of (residue, lipid)
+            # frame_numbers = self.ts.contacts.contact_frames[(res, lipid_id)]
+            frame_numbers = self.ts.contacts.contact_frames[res][lipid_id]
             frame_intervals = self.get_frame_contact_intervals(frame_numbers)
             for start, end in frame_intervals:
                 if end - start < intervals_to_filter_out:
@@ -235,7 +239,9 @@ class ProLintDashboard:
             self.ts.database.selected,
             lipid_id,
             residue_id,
-            self.ts.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+            # self.ts.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+            # self.ts.contacts.contact_frames[(residue_id, lipid_id)],
+            self.ts.contacts.contact_frames[residue_id][lipid_id],
         )
         ri.run(verbose=False)
 
@@ -358,7 +364,9 @@ class ProLintDashboard:
             self.ts.database.selected,
             lipid_id,
             residue_id,
-            self.ts.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+            # self.ts.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+            # self.ts.contacts.contact_frames[(residue_id, lipid_id)],
+            self.ts.contacts.contact_frames[residue_id][lipid_id],
         )
         ri.run(verbose=False)
 
