@@ -65,7 +65,10 @@ class ContactDurations:
         results = defaultdict(dict)
         for residue, contact_frame in self.contact_frames.items():
             for lipid_resname in lipid_resnames:
-                results[lipid_resname][residue] = self.compute(contact_frame, lipid_resname)
+                # results[lipid_resname][residue] = self.compute(contact_frame, lipid_resname)
+                result = self.compute(contact_frame, lipid_resname)
+                if len(result) > 0:
+                    results[lipid_resname][residue] = result
 
         self._durations = results
 

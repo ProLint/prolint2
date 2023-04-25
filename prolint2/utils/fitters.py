@@ -5,7 +5,7 @@ from prolint2.utils.base import FittingFunction
 
 class BiExpoFittingFunction(FittingFunction):
     name = 'bi_expo'
-    p0 = [1, 0.1, 1., 1.]
+    p0 = [1, 1., 1., 1.]
     maxfev = 1000000
 
     def compute(self, x, k1, k2, A, B):
@@ -19,7 +19,7 @@ class BiExpoFittingFunction(FittingFunction):
 
 class MonoExpoFittingFunction(FittingFunction):
     name = 'mono_expo'
-    p0 = [1, 0.1]
+    p0 = [1, 1]
     maxfev = 1000000
 
     def compute(self, x, k, A):
