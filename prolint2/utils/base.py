@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from scipy.optimize import curve_fit
 from prolint2.utils.formatters import OutputFormat, DefaultOutputFormat
 
 class BaseMetric(ABC):
@@ -37,3 +38,30 @@ class Metric(ABC):
                         self.output_format.store_result(residue_id, lipid_id, metric.__class__.__name__, 0)
 
         return self.output_format.get_result()
+
+class FittingFunctionMeta(type):
+    def __init__(cls, name, bases, dct):
+        if not hasattr(cls, 'registry'):
+            cls.registry = {}
+        else:
+            cls.registry[cls.name] = cls
+        super().__init__(name, bases, dct)
+
+class FittingFunction(metaclass=FittingFunctionMeta):
+    name = None
+    p0 = [1, 1, 1, 1]
+    maxfev = 1000000
+
+    def compute(self, x, *params):
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def get_koff(self, popt):
+        raise NotImplementedError("Subclasses must implement this method")
+
+    def fit(self, x_data, y_data, **kwargs):
+        if 'p0' not in kwargs:
+            kwargs['p0'] = self.p0
+        if 'maxfev' not in kwargs:
+            kwargs['maxfev'] = self.maxfev
+        popt, _ = curve_fit(self.compute, x_data, y_data, **kwargs)
+        return popt
