@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from scipy.optimize import curve_fit
-from prolint2.utils.formatters import OutputFormat, DefaultOutputFormat
+from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
 
 class BaseMetric(ABC):
     def __init__(self):

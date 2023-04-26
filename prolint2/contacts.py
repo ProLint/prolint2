@@ -17,8 +17,8 @@ from MDAnalysis.lib.nsgrid import FastNS
 from MDAnalysis.analysis import distances
 from MDAnalysis.analysis.base import AnalysisBase
 
-from prolint2.utils.metrics import create_metric
-from prolint2.utils.registries import MetricRegistry, auto_register_metrics
+from prolint2.metrics.metrics import create_metric
+from prolint2.metrics.registries import MetricRegistry, auto_register_metrics
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
@@ -239,7 +239,7 @@ class Contacts(object):
         self.totaltime = self.query.selected.universe.trajectory.totaltime
 
     def _register_metrics(self):
-        auto_register_metrics(self.registry, 'prolint2.utils.metrics')
+        auto_register_metrics(self.registry, 'prolint2.metrics.metrics')
 
     def compute(self, cutoff=int(parameters_config["cutoff"]), get_metrics=False):
         """

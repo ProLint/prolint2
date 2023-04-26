@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Union
 
-from prolint2.utils.formatters import OutputFormat, SingleOutputFormat
-from prolint2.utils.registries import MetricRegistry
+from prolint2.metrics.formatters import OutputFormat, SingleOutputFormat
+from prolint2.metrics.registries import MetricRegistry
 
 class BaseOutputFormatConverter(ABC):
     def __init__(self, output_format: OutputFormat, metric_type: Union[str, int], metric_registry: MetricRegistry):

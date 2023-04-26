@@ -1,10 +1,7 @@
-from typing import Iterable, Union
-
 import numpy as np
-from scipy.optimize import curve_fit
 
-from prolint2.utils.base import FittingFunction
-from prolint2.utils.fitters import FittingFunctionFactory
+from prolint2.metrics.base import FittingFunction
+from prolint2.metrics.fitters import FittingFunctionFactory
 
 class SurvivalFunction:
     def __init__(self, durations, t_total, delta_t_list):

@@ -2,7 +2,7 @@ from typing import List, Type
 import importlib
 import inspect
 
-from prolint2.utils.base import BaseMetric
+from prolint2.metrics.base import BaseMetric
 
 class MetricRegistry:
     def __init__(self):

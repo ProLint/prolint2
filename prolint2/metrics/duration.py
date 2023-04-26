@@ -5,7 +5,7 @@ from itertools import chain
 
 import numpy as np
 
-from prolint2.utils.utils import (
+from prolint2.metrics.utils import (
     filter_resnames_by_lipid_ids_optimized,
     contact_frames_to_binary_array,
     count_contiguous_segments

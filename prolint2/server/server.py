@@ -12,7 +12,7 @@ from io import StringIO
 
 from prolint2.server.chord_utils import contact_chord
 
-from prolint2.utils.metrics import create_metric
+from prolint2.metrics.metrics import create_metric
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 

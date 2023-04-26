@@ -1,7 +1,7 @@
 
 import numpy as np
 from scipy.optimize import curve_fit
-from prolint2.utils.base import FittingFunction
+from prolint2.metrics.base import FittingFunction
 
 class BiExpoFittingFunction(FittingFunction):
     name = 'bi_expo'

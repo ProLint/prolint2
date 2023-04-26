@@ -1,9 +1,9 @@
 from typing import Callable, Iterable
 import numpy as np
 
-from prolint2.utils.base import BaseMetric, Metric
-from prolint2.utils.registries import MetricRegistry
-from prolint2.utils.formatters import DefaultOutputFormat, SingleOutputFormat, ProLintDashboardOutputFormat, CustomOutputFormat
+from prolint2.metrics.base import BaseMetric, Metric
+from prolint2.metrics.registries import MetricRegistry
+from prolint2.metrics.formatters import DefaultOutputFormat, SingleOutputFormat, ProLintDashboardOutputFormat, CustomOutputFormat
 
     
 class UserDefinedMetric(BaseMetric):
