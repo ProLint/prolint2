@@ -1,14 +1,10 @@
 from prolint2.metrics.metrics import create_metric
-from prolint2.metrics.registries import MetricRegistry
-
 
 class ServerPayload:
     def __init__(self, contacts, ts):
         self.contacts = contacts
 
-        self.registry = MetricRegistry()
-        # self._register_metrics()
-
+        self.registry = ts.registry
         self.database = ts.database
         self.dt = ts.dt
         self.totaltime = ts.totaltime
@@ -16,9 +12,6 @@ class ServerPayload:
         self.residue_ids = ts.query.selected.residues.resids
 
         self._compute()
-
-    def _register_metrics(self):
-        auto_register_metrics(self.registry, 'prolint2.metrics.metrics')
 
     def residue_contacts(self, lipid_type: str = None, metric="max"):
         metric_instance = create_metric(
@@ -39,17 +32,6 @@ class ServerPayload:
         protein_name = "Protein"  # TODO: we'll need to update this into a list and iterate over it
         proteins = [protein_name]
         protein_counts = {protein_name: 1}
-
-        # metric_instance = create_metric(
-        #     self.contacts,
-        #     metrics=[metric],
-        #     metric_registry=self.registry,
-        #     output_format="dashboard",
-        #     lipid_type=self.database.lipid_types().tolist()[0] if lipid_type is None else lipid_type,
-        #     residue_names=self.residue_names,
-        #     residue_ids=self.residue_ids,
-        # )
-        # residue_contacts = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
 
         residue_contacts = self.residue_contacts(lipid_type=lipid_type, metric=metric)
 

@@ -12,6 +12,8 @@ from MDAnalysis.core.topologyattrs import ResidueStringAttr
 from .contacts import Contacts
 import configparser
 
+from prolint2.metrics.registries import MetricRegistry
+
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
 config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini"))
@@ -107,6 +109,8 @@ class PL2(object):
         self.atoms = md.atoms
         self.residues = self.atoms.residues
         self.atoms.universe.add_TopologyAttr("macros")
+
+        self.registry = MetricRegistry()
 
         # adding the macros to the membrane residues
         lipid_types = parameters_config["lipid_types"].split(", ")
