@@ -80,10 +80,7 @@ class SerialContacts(AnalysisBase):
         self.db_resnames = self.database.resnames
         self.dp_resnames_unique = np.unique(self.db_resnames)
 
-        self.contacts = {
-            k: {v: [] for v in self.dp_resnames_unique}
-            for k in [x for x in self.q_resids]
-        }
+        self.contacts = self._initialize_contacts()
         self.contact_frames = defaultdict(lambda: defaultdict(list))
 
         # Raise if selection doesn't exist
@@ -93,45 +90,45 @@ class SerialContacts(AnalysisBase):
         if self.cutoff <= 0:
             raise ValueError("The cutoff must be greater than 0.")
 
-    def _single_frame(self):
+    def _initialize_contacts(self):
+        contacts = {}
+        for k in self.q_resids:
+            contacts[k] = {v: [] for v in self.dp_resnames_unique}
+        return contacts
+
+    def _get_residue_lipid_info(self, pair):
+        residue_id = self.q_resids[pair[0]]
+        lipid_id = self.db_resids[pair[1]]
+        lipid_name = self.db_resnames[pair[1]]
+        return residue_id, lipid_id, lipid_name
+
+    def _compute_pairs(self):
+        """
+        Compute the pairs of residues and lipids that are within the cutoff distance.
+        """
         gridsearch = FastNS(
             self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True
         )
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
+        return pairs
 
-        existing_pairs = set()
-        for p in pairs:
-            residue_id = self.q_resids[p[0]]
-            lipid_id = self.db_resids[p[1]]
-            string = f"{residue_id},{lipid_id}"
-            residue_lipid = (residue_id, lipid_id)
+    def _single_frame(self):
+        """
+        Compute the contacts for a single frame.
+        """
+        pairs = self._compute_pairs()
 
-            # if self._frame_index == 0 and residue_id < 200:
-            #     print (p[0], p[1], residue_id, lipid_id)
-            # NOTE:
-            # We want to keep track of frames the cutoff is satisfied
-            # and also the pairs that satisfied the cutoff -> this can be used to avoid
-            # the distance array analysis necessary later.
-            if residue_lipid in existing_pairs:
-                continue
-            existing_pairs.add(residue_lipid)
+        existing_pairs = defaultdict(set)
+        for pair in pairs:
+            residue_lipid = self._get_residue_lipid_info(pair)
+            if residue_lipid not in existing_pairs:
 
-            # TODO:
-            # these IDs are not guaranteed to be unique:
-            # For systems containing multiple proteins
-            # For very large systems with duplicate lipid residue IDs (e.g. two instances of 1234CHOL)
-            lipid_name = self.db_resnames[p[1]]
-            self.contacts[residue_id][lipid_name].append(lipid_id)
+                existing_pairs[residue_lipid].add(residue_lipid)
 
-            # NOTE:
-            # We want to keep track of frames the cutoff is satisfied
-            # the self.contact_frames dict gets very large and may not be feasible for large systems.
-            # In general, it's not a method that's going to scale well. Given the backend we have, it
-            # makes more sense to store results in a temporary SQL database. Retrieval will be superfast,
-            # and we can do much more that way.
-
-            self.contact_frames[residue_id][lipid_id].append(self._frame_index)
+                residue_id, lipid_id, lipid_name = residue_lipid
+                self.contacts[residue_id][lipid_name].append(lipid_id)
+                self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
     def _conclude(self):
         self.contacts = transform_contacts(self.contacts)
