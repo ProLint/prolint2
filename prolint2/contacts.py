@@ -164,6 +164,7 @@ class SerialContacts(ContactComputerBase):
                 self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
     def _conclude(self):
+        self.contacts = {k: self.contacts[k] for k in sorted(self.contacts)}
         self.contacts = transform_contacts(self.contacts)
 
 class SerialDistances(AnalysisBase):
