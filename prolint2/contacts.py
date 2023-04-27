@@ -15,209 +15,15 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 import MDAnalysis as mda
-from MDAnalysis.lib.nsgrid import FastNS
-from MDAnalysis.analysis import distances
-from MDAnalysis.analysis.base import AnalysisBase
 
 from prolint2.metrics.metrics import create_metric
 from prolint2.metrics.registries import MetricRegistry, auto_register_metrics
-from prolint2.utils.utils import fast_unique_comparison
+from prolint2.computers.contacts import ContactComputerBase, SerialContacts
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
 config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini"))
 parameters_config = config["Parameters"]
-
-def process_contact_items(contact_items):
-    """
-    Process the contact items to get the number of contacts per residue.
-    """
-    processed_items = {}
-    for key, value in contact_items:
-        processed_items[key] = Counter(value)
-    return processed_items
-
-def transform_contacts(contacts):
-    """
-    Transform the contacts to a dictionary of dictionaries.
-
-    Parameters
-    ----------
-    contacts : dict
-        Dictionary of contacts.
-
-    Returns
-    -------
-    dict: Dictionary of dictionaries.
-
-    """
-    transformed_contacts = {}
-    for key, value in contacts.items():
-        transformed_contacts[key] = process_contact_items(value.items())
-    return transformed_contacts
-
-
-
-class ContactComputerBase(AnalysisBase, ABC):
-    # @abstractmethod
-    # def _compute_pairs(self):
-    #     pass
-
-    # @abstractmethod
-    # def _compute(self):
-    #     pass
-
-    def __add__(self, other):
-        pass
-
-    def intersection(self, other):
-        pass
-
-    def union(self, other):
-        pass
-
-class ComputeContacts(ContactComputerBase):
-    def __init__(self, cutoff):
-        self.cutoff = cutoff
-        self.contacts = None
-        self._compute()
-
-    def _compute(self):
-        pass
-
-class SerialContacts(ContactComputerBase):
-    r"""
-    Class to get the distance-based contacts starting from two AtomGroups
-    using a *serial* approach.
-
-    It inherits from the MDAnalysis AnalysisBase class.
-    """
-    def __init__(self, universe, query, database, cutoff, **kwargs):
-
-        super().__init__(universe.universe.trajectory, **kwargs)
-
-        self.query = query
-        self.database = database
-        self.cutoff = cutoff
-
-        self.q_resids = self.query.resids
-        self.db_resids = self.database.resids
-        self.db_resnames = self.database.resnames
-
-        self.contacts = defaultdict(lambda: defaultdict(list))
-        self.contact_frames = defaultdict(lambda: defaultdict(list))
-
-        self._validate_inputs()
-    
-    def _validate_inputs(self):
-        """
-        Validate the inputs.
-        """
-        # Raise if selection doesn't exist
-        if len(self.query) == 0 or len(self.database) == 0:
-            raise ValueError("Invalid selection. Empty AtomGroup(s).")
-
-        if self.cutoff <= 0:
-            raise ValueError("The cutoff must be greater than 0.")
-
-    def _get_residue_lipid_info(self, pair):
-        """
-        Get the residue and lipid information for a given pair.
-        """
-        residue_id = self.q_resids[pair[0]]
-        lipid_id = self.db_resids[pair[1]]
-        lipid_name = self.db_resnames[pair[1]]
-        return residue_id, lipid_id, lipid_name
-
-    def _compute_pairs(self):
-        """
-        Compute the pairs of residues and lipids that are within the cutoff distance.
-        """
-        gridsearch = FastNS(
-            self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True
-        )
-        result = gridsearch.search(self.query.positions)
-        pairs = result.get_pairs()
-        
-        return pairs
-    
-    def _single_frame(self):
-        """
-        Compute the contacts for a single frame.
-        """
-        pairs = self._compute_pairs()
-
-        q_resid_indices = pairs[:, 0]
-        db_resid_indices = pairs[:, 1]
-        residue_ids = self.q_resids[q_resid_indices]
-        lipid_ids = self.db_resids[db_resid_indices]
-        lipid_names = self.db_resnames[db_resid_indices]
-
-        residue_ids, lipid_ids, lipid_names = fast_unique_comparison(residue_ids, lipid_ids, lipid_names)
-
-        existing_pairs = set()
-        for unique_data in zip(residue_ids, lipid_ids, lipid_names):
-            residue_id, lipid_id, lipid_name = unique_data
-            if (residue_id, lipid_id) not in existing_pairs:
-                existing_pairs.add((residue_id, lipid_id))
-                self.contacts[residue_id][lipid_name].append(lipid_id)
-                self.contact_frames[residue_id][lipid_id].append(self._frame_index)
-
-    def _conclude(self):
-        self.contacts = {k: self.contacts[k] for k in sorted(self.contacts)}
-        self.contacts = transform_contacts(self.contacts)
-
-class SerialDistances(AnalysisBase):
-    r"""
-    Class to get the distance-based contacts starting from two AtomGroups
-    using a *serial* approach.
-
-    It inherits from the MDAnalysis AnalysisBase class.
-    """
-    def __init__(
-        self, universe, query, database, lipid_id, residue_id, frame_filter, **kwargs
-    ):
-
-        super().__init__(universe.universe.trajectory, **kwargs)
-        self.query = query
-        self.database = database
-        self.frame_filter = frame_filter
-        frame_range = np.arange(len(self.frame_filter))
-        self.frame_mapping = {k: v for k, v in zip(self.frame_filter, frame_range)}
-
-        self.lipid_atomgroup = self.database.select_atoms(f"resid {lipid_id}")
-        self.resid_atomgroup = self.query.select_atoms(f"resid {residue_id}")
-        self.lipid_atomnames = self.lipid_atomgroup.names.tolist()
-        self.resid_atomnames = self.resid_atomgroup.names.tolist()
-        self.result_array = None
-        self.distance_array = None
-
-        # Raise if selection doesn't exist
-        if len(self.query) == 0 or len(self.database) == 0:
-            raise ValueError("Invalid selection. Empty AtomGroup(s).")
-
-    def _prepare(self):
-        self.result_array = np.zeros(
-            (
-                len(self.frame_filter),
-                self.lipid_atomgroup.n_atoms,
-                self.resid_atomgroup.n_atoms,
-            )
-        )
-
-    def _single_frame(self):
-        if self._frame_index in self.frame_filter:
-            r = distances.distance_array(
-                self.lipid_atomgroup.positions,
-                self.resid_atomgroup.positions,
-                box=self.database.universe.dimensions,
-            )
-            # print ('frame iterator: ', self._frame_index)
-            self.result_array[self.frame_mapping[self._frame_index]] = r
-
-    def _conclude(self):
-        self.distance_array = np.mean(self.result_array, axis=0)
-        del self.result_array
 
 
 class Contacts(object):
@@ -266,21 +72,27 @@ class Contacts(object):
 
 
         self._contact_computers = {
-            'default': ComputeContacts
+            'default': SerialContacts
             # Add other contact computation strategies here
         }
 
 
-    def compute2(self, strategy_or_computer='default', **kwargs):
-        if isinstance(strategy_or_computer, ContactComputerBase):
-            return strategy_or_computer
-        else:
-            contact_computer_class = self._contact_computers[strategy_or_computer]
-            return contact_computer_class(**kwargs)
-
 
     def _register_metrics(self):
         auto_register_metrics(self.registry, 'prolint2.metrics.metrics')
+
+
+    def compute2(self, strategy_or_computer='default', **kwargs):
+        if isinstance(strategy_or_computer, ContactComputerBase):
+            contact_computer = strategy_or_computer
+        else:
+            contact_computer_class = self._contact_computers[strategy_or_computer]
+            contact_computer = contact_computer_class(
+                self.query.selected.universe, self.query.selected, self.database.selected, **kwargs
+            )
+        contact_computer.run(verbose=True)
+        return contact_computer
+
 
     def compute(self, cutoff=int(parameters_config["cutoff"]), get_metrics=False):
         """

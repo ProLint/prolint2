@@ -4,7 +4,7 @@ import os
 import ast
 
 from bottle import Bottle, redirect, route, static_file, request # pylint: disable=import-error 
-from prolint2.contacts import SerialDistances
+from prolint2.computers.distances import SerialDistances
 
 import MDAnalysis as mda
 from prolint2.prolint2 import PL2
