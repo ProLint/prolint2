@@ -92,11 +92,6 @@ class SerialContacts(ContactComputerBase):
 
     It inherits from the MDAnalysis AnalysisBase class.
     """
-    # TODO:
-    # @bis: The front end has the hierarch protein -> lipids -> residue
-    # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
-    # work later on. We should modify this, so we store data in the right
-    # hierarchical structure.
     def __init__(self, universe, query, database, cutoff, **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
@@ -105,17 +100,14 @@ class SerialContacts(ContactComputerBase):
         self.database = database
         self.cutoff = cutoff
 
-        self._validate_inputs()
-
-        # We need to convert to list to allow for JSON serialization
         self.q_resids = self.query.resids
         self.db_resids = self.database.resids
         self.db_resnames = self.database.resnames
 
-        # Initialize contacts and contact frames
         self.contacts = defaultdict(lambda: defaultdict(list))
         self.contact_frames = defaultdict(lambda: defaultdict(list))
 
+        self._validate_inputs()
     
     def _validate_inputs(self):
         """
@@ -181,11 +173,6 @@ class SerialDistances(AnalysisBase):
 
     It inherits from the MDAnalysis AnalysisBase class.
     """
-    # TODO:
-    # @bis: The front end has the hierarch protein -> lipids -> residue
-    # The data, however, are stored protein -> residue -> lipids, leading to unnecessary
-    # work later on. We should modify this, so we store data in the right
-    # hierarchical structure.
     def __init__(
         self, universe, query, database, lipid_id, residue_id, frame_filter, **kwargs
     ):
