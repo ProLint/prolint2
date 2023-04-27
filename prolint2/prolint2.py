@@ -174,6 +174,7 @@ class PL2(object):
         self.contacts = Contacts(self.query, self.database)
 
         # system information
+        self.universe = md.universe
         self.query_unique = np.unique(self.query.selected.resnames)
         self.query_unique_size = self.query_unique.size
         self.database_unique = np.unique(self.database.selected.resnames)
@@ -183,6 +184,9 @@ class PL2(object):
         self.time = md.trajectory.time
         self.units = md.trajectory.units
         self.dt = md.trajectory.dt
+
+    def compute_contacts(self, *args, **kwargs):
+        return self.contacts.compute2(*args, **kwargs)
 
     def __str__(self):
         return "Base class to handle the calculation of the contacts in prolint2."

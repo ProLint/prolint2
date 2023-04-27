@@ -10,6 +10,8 @@ import configparser
 from collections import Counter, defaultdict
 from itertools import groupby
 
+from abc import ABC, abstractmethod
+
 import numpy as np
 import pandas as pd
 import MDAnalysis as mda
@@ -19,6 +21,7 @@ from MDAnalysis.analysis.base import AnalysisBase
 
 from prolint2.metrics.metrics import create_metric
 from prolint2.metrics.registries import MetricRegistry, auto_register_metrics
+from prolint2.utils.utils import fast_unique_comparison
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
@@ -54,7 +57,35 @@ def transform_contacts(contacts):
     return transformed_contacts
 
 
-class SerialContacts(AnalysisBase):
+
+class ContactComputerBase(AnalysisBase, ABC):
+    # @abstractmethod
+    # def _compute_pairs(self):
+    #     pass
+
+    # @abstractmethod
+    # def _compute(self):
+    #     pass
+
+    def __add__(self, other):
+        pass
+
+    def intersection(self, other):
+        pass
+
+    def union(self, other):
+        pass
+
+class ComputeContacts(ContactComputerBase):
+    def __init__(self, cutoff):
+        self.cutoff = cutoff
+        self.contacts = None
+        self._compute()
+
+    def _compute(self):
+        pass
+
+class SerialContacts(ContactComputerBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups
     using a *serial* approach.
@@ -74,15 +105,22 @@ class SerialContacts(AnalysisBase):
         self.database = database
         self.cutoff = cutoff
 
-        # We need to convert to list to allow for JSON serialization
-        self.q_resids = self.query.resids.tolist()
-        self.db_resids = self.database.resids.tolist()
-        self.db_resnames = self.database.resnames
-        self.dp_resnames_unique = np.unique(self.db_resnames)
+        self._validate_inputs()
 
-        self.contacts = self._initialize_contacts()
+        # We need to convert to list to allow for JSON serialization
+        self.q_resids = self.query.resids
+        self.db_resids = self.database.resids
+        self.db_resnames = self.database.resnames
+
+        # Initialize contacts and contact frames
+        self.contacts = defaultdict(lambda: defaultdict(list))
         self.contact_frames = defaultdict(lambda: defaultdict(list))
 
+    
+    def _validate_inputs(self):
+        """
+        Validate the inputs.
+        """
         # Raise if selection doesn't exist
         if len(self.query) == 0 or len(self.database) == 0:
             raise ValueError("Invalid selection. Empty AtomGroup(s).")
@@ -90,13 +128,10 @@ class SerialContacts(AnalysisBase):
         if self.cutoff <= 0:
             raise ValueError("The cutoff must be greater than 0.")
 
-    def _initialize_contacts(self):
-        contacts = {}
-        for k in self.q_resids:
-            contacts[k] = {v: [] for v in self.dp_resnames_unique}
-        return contacts
-
     def _get_residue_lipid_info(self, pair):
+        """
+        Get the residue and lipid information for a given pair.
+        """
         residue_id = self.q_resids[pair[0]]
         lipid_id = self.db_resids[pair[1]]
         lipid_name = self.db_resnames[pair[1]]
@@ -111,22 +146,28 @@ class SerialContacts(AnalysisBase):
         )
         result = gridsearch.search(self.query.positions)
         pairs = result.get_pairs()
+        
         return pairs
-
+    
     def _single_frame(self):
         """
         Compute the contacts for a single frame.
         """
         pairs = self._compute_pairs()
 
-        existing_pairs = defaultdict(set)
-        for pair in pairs:
-            residue_lipid = self._get_residue_lipid_info(pair)
-            if residue_lipid not in existing_pairs:
+        q_resid_indices = pairs[:, 0]
+        db_resid_indices = pairs[:, 1]
+        residue_ids = self.q_resids[q_resid_indices]
+        lipid_ids = self.db_resids[db_resid_indices]
+        lipid_names = self.db_resnames[db_resid_indices]
 
-                existing_pairs[residue_lipid].add(residue_lipid)
+        residue_ids, lipid_ids, lipid_names = fast_unique_comparison(residue_ids, lipid_ids, lipid_names)
 
-                residue_id, lipid_id, lipid_name = residue_lipid
+        existing_pairs = set()
+        for unique_data in zip(residue_ids, lipid_ids, lipid_names):
+            residue_id, lipid_id, lipid_name = unique_data
+            if (residue_id, lipid_id) not in existing_pairs:
+                existing_pairs.add((residue_id, lipid_id))
                 self.contacts[residue_id][lipid_name].append(lipid_id)
                 self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
@@ -234,6 +275,21 @@ class Contacts(object):
         self.n_frames = query.selected.universe.trajectory.n_frames
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
+
+
+        self._contact_computers = {
+            'default': ComputeContacts
+            # Add other contact computation strategies here
+        }
+
+
+    def compute2(self, strategy_or_computer='default', **kwargs):
+        if isinstance(strategy_or_computer, ContactComputerBase):
+            return strategy_or_computer
+        else:
+            contact_computer_class = self._contact_computers[strategy_or_computer]
+            return contact_computer_class(**kwargs)
+
 
     def _register_metrics(self):
         auto_register_metrics(self.registry, 'prolint2.metrics.metrics')
