@@ -5,6 +5,7 @@ class ServerPayload:
         self.contacts = contacts
 
         self.registry = ts.registry
+
         self.database = ts.database
         self.dt = ts.dt
         self.totaltime = ts.totaltime

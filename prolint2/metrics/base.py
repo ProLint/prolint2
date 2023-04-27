@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from scipy.optimize import curve_fit
 from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
-# from prolint2.metrics.registries import MetricRegistry
 
 from typing import Type
-MetricRegistry = Type["metric.MetricRegistry"]
+MetricRegistry = Type["registries.MetricRegistry"]
 
 class BaseMetric(ABC):
     name: str = None
