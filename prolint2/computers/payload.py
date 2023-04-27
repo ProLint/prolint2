@@ -1,5 +1,5 @@
 from prolint2.metrics.metrics import create_metric
-from prolint2.metrics.registries import MetricRegistry, auto_register_metrics
+from prolint2.metrics.registries import MetricRegistry
 
 
 class ServerPayload:
@@ -7,7 +7,7 @@ class ServerPayload:
         self.contacts = contacts
 
         self.registry = MetricRegistry()
-        self._register_metrics()
+        # self._register_metrics()
 
         self.database = ts.database
         self.dt = ts.dt

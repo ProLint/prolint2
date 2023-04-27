@@ -1,14 +1,24 @@
 from abc import ABC, abstractmethod
 from scipy.optimize import curve_fit
 from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
+# from prolint2.metrics.registries import MetricRegistry
+
+from typing import Type
+MetricRegistry = Type["metric.MetricRegistry"]
 
 class BaseMetric(ABC):
+    name: str = None
+    
     def __init__(self):
         pass
 
     @abstractmethod
     def compute_metric(self, contact_array):
         pass
+
+    @classmethod
+    def _register(cls, registry: MetricRegistry):
+        registry.register(cls.name, cls)
 
 class Metric(ABC):
     def __init__(self, contacts, metrics, output_format: OutputFormat = DefaultOutputFormat(), lipid_type=None, clear=True):

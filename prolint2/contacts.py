@@ -14,7 +14,7 @@ import pandas as pd
 import MDAnalysis as mda
 
 from prolint2.metrics.metrics import create_metric
-from prolint2.metrics.registries import MetricRegistry, auto_register_metrics
+# from prolint2.metrics.registries import MetricRegistry, auto_register_metrics
 from prolint2.computers.contacts import ContactComputerBase, SerialContacts
 
 # Getting the config file
