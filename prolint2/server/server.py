@@ -14,6 +14,8 @@ from prolint2.server.chord_utils import contact_chord
 
 from prolint2.metrics.metrics import create_metric
 
+from prolint2.computers.payload import ServerPayload
+
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
 class ProLintDashboard:
@@ -24,6 +26,8 @@ class ProLintDashboard:
     def __init__(self, port=8351, debug_bool=False, reloader=False):
         self.backend_data = None
         self.ts = None
+        self.contacts = None
+        self.payload = None
         self.args = None
         self.data = None
         self.data_loaded = False
@@ -98,10 +102,10 @@ class ProLintDashboard:
         gantt_data = []
         for res, _ in g[lipid_id][:residues_to_show]:
             # res & lipid_id used to be a string formatted as 'residue,lipid'
-            # frame_numbers = self.ts.contacts.contact_frames[f"{res},{lipid_id}"]
+            # frame_numbers = self.contacts.contact_frames[f"{res},{lipid_id}"]
             # now they are a tuple of (residue, lipid)
-            # frame_numbers = self.ts.contacts.contact_frames[(res, lipid_id)]
-            frame_numbers = self.ts.contacts.contact_frames[res][lipid_id]
+            # frame_numbers = self.contacts.contact_frames[(res, lipid_id)]
+            frame_numbers = self.contacts.contact_frames[res][lipid_id]
             frame_intervals = self.get_frame_contact_intervals(frame_numbers)
             for start, end in frame_intervals:
                 if end - start < intervals_to_filter_out:
@@ -125,8 +129,8 @@ class ProLintDashboard:
                 categories.append(y)
         return gantt_data, categories
 
-    @staticmethod
-    def sort_lipids(ts):
+    # @staticmethod
+    def sort_lipids(self):
         """
         Sort lipid contacts according to their contact frequency, all the while keeping track
         of residue IDs, and number of contacts with each residue.
@@ -147,12 +151,12 @@ class ProLintDashboard:
 
         # TODO:
         # top lipid number should be put in the config.
-        contact_threshold = ts.n_frames * 0.05
+        contact_threshold = self.ts.n_frames * 0.05
 
         # initialize dictionary to store values:
-        t = {k: {} for k in ts.database_unique}
+        t = {k: {} for k in self.ts.database_unique}
         g = {}
-        for _, (residue, lipid_contacts) in enumerate(ts.contacts.contacts.items()):
+        for _, (residue, lipid_contacts) in enumerate(self.contacts.contacts.items()):
             for lipid, contact_counter in lipid_contacts.items():
                 top10_counter = contact_counter.most_common()
                 for (lipid_id, lipid_counter) in top10_counter:
@@ -240,9 +244,9 @@ class ProLintDashboard:
             self.ts.database.selected,
             lipid_id,
             residue_id,
-            # self.ts.contacts.contact_frames[f"{residue_id},{lipid_id}"],
-            # self.ts.contacts.contact_frames[(residue_id, lipid_id)],
-            self.ts.contacts.contact_frames[residue_id][lipid_id],
+            # self.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+            # self.contacts.contact_frames[(residue_id, lipid_id)],
+            self.contacts.contact_frames[residue_id][lipid_id],
         )
         ri.run(verbose=False)
 
@@ -282,19 +286,21 @@ class ProLintDashboard:
         
         lipid = metadata["lipid"]
         metric = metadata["metric"]
-        
-        metric_instance = create_metric(
-            self.ts.contacts.contacts,
-            metrics=[metric],
-            metric_registry=self.ts.contacts.registry, 
-            output_format='dashboard',
-            lipid_type=lipid,
-            residue_names=self.ts.contacts.residue_names, 
-            residue_ids=self.ts.contacts.residue_ids
-        )
-        metric_dict = metric_instance.compute(self.ts.dt, self.ts.totaltime)
 
-        self.response['data'] = metric_dict[lipid]
+        residue_contacts = self.payload.residue_contacts(lipid_type=lipid, metric=metric)
+        
+        # metric_instance = create_metric(
+        #     self.contacts.contacts,
+        #     metrics=[metric],
+        #     metric_registry=self.contacts.registry, 
+        #     output_format='dashboard',
+        #     lipid_type=lipid,
+        #     residue_names=self.contacts.residue_names, 
+        #     residue_ids=self.contacts.residue_ids
+        # )
+        # metric_dict = metric_instance.compute(self.ts.dt, self.ts.totaltime)
+
+        self.response['data'] = residue_contacts[lipid]
         return self.response
 
 
@@ -308,6 +314,7 @@ class ProLintDashboard:
         top_lipid_ids = [x[0] for x in self.backend_data['top_lipids'][lipid]]
         chord_elements, hidden_node_indices, per_lipid_nodes = contact_chord(
             self.ts,
+            self.contacts,
             top_lipid_ids,
             self.backend_data['lipid_contact_frames'],
             cutoff=100
@@ -364,9 +371,9 @@ class ProLintDashboard:
             self.ts.database.selected,
             lipid_id,
             residue_id,
-            # self.ts.contacts.contact_frames[f"{residue_id},{lipid_id}"],
-            # self.ts.contacts.contact_frames[(residue_id, lipid_id)],
-            self.ts.contacts.contact_frames[residue_id][lipid_id],
+            # self.contacts.contact_frames[f"{residue_id},{lipid_id}"],
+            # self.contacts.contact_frames[(residue_id, lipid_id)],
+            self.contacts.contact_frames[residue_id][lipid_id],
         )
         ri.run(verbose=False)
 
@@ -397,14 +404,17 @@ class ProLintDashboard:
         self.ts = PL2(self.args.structure, self.args.trajectory, add_lipid_types=self.args.other_lipids)
         if self.args.i_bool:
             self.ts = interactive_selection(self.ts)
-        self.ts.contacts.compute(cutoff=self.args.cutoff)
+        # self.contacts.compute(cutoff=self.args.cutoff)
+        self.contacts = self.ts.compute_contacts(cutoff=self.args.cutoff)
 
         if self.args.e_file:
-            self.ts.contacts.export(self.args.e_file)
+            self.contacts.export(self.args.e_file)
 
-        payload = self.ts.contacts.server_payload()
+        # payload = self.contacts.server_payload()
+        self.payload = ServerPayload(self.contacts, self.ts)
+        payload = self.payload.payload
 
-        t, g = self.sort_lipids(self.ts)
+        t, g = self.sort_lipids()
         payload["top_lipids"] = t
         payload["lipid_contact_frames"] = g
 

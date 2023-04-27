@@ -7,10 +7,7 @@ r"""Contacts base classes --- :mod:`prolint2.contacts`
 
 import os
 import configparser
-from collections import Counter, defaultdict
 from itertools import groupby
-
-from abc import ABC, abstractmethod
 
 import numpy as np
 import pandas as pd
@@ -60,9 +57,6 @@ class Contacts(object):
         self.contact_frames = None
         self.metrics = None
 
-        self.registry = MetricRegistry()
-        self._register_metrics()
-
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
         # What's the best way here? Include trajectory as an initialization argument?
@@ -77,12 +71,19 @@ class Contacts(object):
         }
 
 
+    def compute(self, strategy_or_computer='default', **kwargs):
+        """
+        Compute the contacts using a cythonized version of a cell-list algorithm.
 
-    def _register_metrics(self):
-        auto_register_metrics(self.registry, 'prolint2.metrics.metrics')
+        Parameters
+        ----------
+        strategy_or_computer : str or :class:`ContactComputerBase` ('default')
+            Strategy or computer to use to compute the contacts. If a string is passed, it has to be a key in the
+            **_contact_computers** dictionary.
+        kwargs : dict
+            Keyword arguments to be passed to the **ContactComputerBase** class.
+        """
 
-
-    def compute2(self, strategy_or_computer='default', **kwargs):
         if isinstance(strategy_or_computer, ContactComputerBase):
             contact_computer = strategy_or_computer
         else:
@@ -94,39 +95,9 @@ class Contacts(object):
         return contact_computer
 
 
-    def compute(self, cutoff=int(parameters_config["cutoff"]), get_metrics=False):
-        """
-        Compute the cutoff distance-based contacts using a cythonized version of a cell-list algorithm.
-
-        Parameters
-        ----------
-        cutoff : int (7)
-            Value in Angstrom to be used as cutoff for the calculation of the contacts.
-        """
-        self.cutoff = cutoff
-        assert isinstance(
-            self.query.selected,
-            (mda.core.groups.AtomGroup),
-        ), "the query has to be an AtomGroup"
-        assert isinstance(
-            self.database.selected,
-            (mda.core.groups.AtomGroup),
-        ), "the database has to be an AtomGroup"
-        temp_instance = SerialContacts(
-            self.query.selected.universe,
-            self.query.selected,
-            self.database.selected,
-            cutoff,
-        )
-        temp_instance.run(verbose=True)
-
-        self.contacts = temp_instance.contacts
-        self.contact_frames = temp_instance.contact_frames
-        if get_metrics:
-            self.metrics = self.contacts_to_metrics()
-
     # this functions allows the definition of chunks of frames with uninterrupted interactions
     # i.e. it takes a list of frames as [9, 11, 12] and it returns [1, 2]
+
     def ranges(self, lst):
         pos = (j - i for i, j in enumerate(lst))
         t = 0
@@ -294,54 +265,6 @@ class Contacts(object):
                 self.metrics[metric] > self.metrics[metric].quantile(percentile)
             ]
         
-    def server_payload(self, metric="max", custom_user_function=None):
-
-        # TODO:
-        # protein name is hardcoded -> read protein name(s) dynamically
-        # update code to handle multiple identical proteins
-        # update code to handle multiple copies of different proteins
-        protein_name = "Protein" # TODO: we'll need to update this into a list and iterate over it
-        proteins = [protein_name]
-        protein_counts = {protein_name: 1}
-
-        # residue_contacts = {}
-        metric_instance = create_metric(
-            self.contacts, 
-            metrics=[metric], 
-            metric_registry=self.registry, 
-            output_format='dashboard', 
-            lipid_type=self.database.lipid_types().tolist()[0], 
-            residue_names=self.residue_names, 
-            residue_ids=self.residue_ids
-        )
-        residue_contacts = metric_instance.compute(dt=self.dt, totaltime=self.totaltime)
-
-        lipid_counts = self.database.lipid_count()
-        total_lipid_sum = sum(lipid_counts.values())
-        sub_data = []
-        for lipid, count in lipid_counts.items():
-            sub_data.append({"category": lipid, "value": "{:.2f}".format(count / total_lipid_sum)})
-
-        pie_data = []
-        for protein in proteins:
-            value = protein_counts[protein] / sum(protein_counts.values())
-
-            protein_pdata = {
-                "category": protein_name,
-                "value": "{:.2f}".format(value),
-                "subData": sub_data,
-            }
-            pie_data.append(protein_pdata)
-
-        payload = {
-            "data": {protein_name: residue_contacts},
-            "proteins": [protein_name],
-            "lipids": self.database.lipid_types().tolist(),
-            "pie_data": pie_data,  # TODO: include protein info
-        }
-
-        return payload
-
     def __str__(self):
         if self.contacts is None:
             return "<prolint2.Contacts containing 0 contacts>"

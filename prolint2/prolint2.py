@@ -186,7 +186,7 @@ class PL2(object):
         self.dt = md.trajectory.dt
 
     def compute_contacts(self, *args, **kwargs):
-        return self.contacts.compute2(*args, **kwargs)
+        return self.contacts.compute(*args, **kwargs)
 
     def __str__(self):
         return "Base class to handle the calculation of the contacts in prolint2."

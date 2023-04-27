@@ -3,7 +3,7 @@
 from inspect import ArgSpec
 import numpy as np
 from itertools import combinations
-from .utils import calculate_contact_intervals
+from prolint2.server.utils import calculate_contact_intervals
 
 # def per_lipid_contacts(ts, lipids, frame_cutoff=10):
 #     """
@@ -111,17 +111,17 @@ def get_ordered_combinations(lipid_contacts):
 
     return ordered_combinations
 
-def shared_contacts(ts, top_lipids, lipid_contact_frames, *args, **kwargs):
+def shared_contacts(contacts, top_lipids, lipid_contact_frames, *args, **kwargs):
     """
     Aim: improve the shortcomings outlined in `get_ordered_combinations`.
     """
     lipid_shared_contacts = {}
     for lipid in top_lipids:
-        contact_intervals = calculate_contact_intervals(ts, lipid_contact_frames, lipid, *args, **kwargs)
+        contact_intervals = calculate_contact_intervals(contacts, lipid_contact_frames, lipid, *args, **kwargs)
         residue_contacts = {}
         for res1, res2 in combinations(contact_intervals.keys(), 2):
-            contacts = residue_pair_matching_contacts(contact_intervals[res1], contact_intervals[res2])
-            residue_contacts[f'{res1},{res2}'] = contacts
+            pair_contacts = residue_pair_matching_contacts(contact_intervals[res1], contact_intervals[res2])
+            residue_contacts[f'{res1},{res2}'] = pair_contacts
         lipid_shared_contacts[lipid] = residue_contacts
 
     shared_contacts_all = {}
@@ -209,7 +209,7 @@ def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
 
     return chord_elements
 
-def contact_chord(ts, top_lipid_ids, lipid_contact_frames, cutoff=100):
+def contact_chord(ts, contacts, top_lipid_ids, lipid_contact_frames, cutoff=100):
     """
     We call all functions here. We return the chord elements (these are the data
     amCharts needs to render nodes and links), we also return information on which
@@ -220,7 +220,7 @@ def contact_chord(ts, top_lipid_ids, lipid_contact_frames, cutoff=100):
     """
     # lipid_contacts = per_lipid_contacts(ts, top_lipid_ids)
     lipid_shared_contacts, ordered_combinations = shared_contacts(
-        ts,
+        contacts,
         top_lipid_ids,
         lipid_contact_frames,
         residues_to_show=30,

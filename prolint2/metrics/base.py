@@ -12,7 +12,7 @@ class BaseMetric(ABC):
 
 class Metric(ABC):
     def __init__(self, contacts, metrics, output_format: OutputFormat = DefaultOutputFormat(), lipid_type=None, clear=True):
-        self.contact_input = contacts
+        self.contact_input = contacts.contacts
         if not isinstance(metrics, list):
             metrics = [metrics]
         self.metrics = metrics

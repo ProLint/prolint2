@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from collections import Counter, defaultdict
 
 from MDAnalysis.lib.nsgrid import FastNS
