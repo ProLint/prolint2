@@ -152,19 +152,20 @@ class ProLintDashboard:
         # initialize dictionary to store values:
         t = {k: {} for k in ts.database_unique}
         g = {}
-        for ix, (residue, lipid_contacts) in enumerate(ts.contacts.contacts.items()):
+        for _, (residue, lipid_contacts) in enumerate(ts.contacts.contacts.items()):
             for lipid, contact_counter in lipid_contacts.items():
                 top10_counter = contact_counter.most_common()
                 for (lipid_id, lipid_counter) in top10_counter:
+                    # Type conversion are necessary to ensure JSON serializability
                     # Exclude short-lived contacts
                     if lipid_counter <= contact_threshold:
                         continue
                     if lipid_id in t[lipid]:
-                        t[lipid][lipid_id] += lipid_counter
-                        g[lipid_id].append((residue, lipid_counter))
+                        t[lipid][int(lipid_id)] += lipid_counter
+                        g[int(lipid_id)].append((int(residue), lipid_counter))
                     else:
-                        t[lipid][lipid_id] = lipid_counter
-                        g[lipid_id] = [(residue, lipid_counter)]
+                        t[lipid][int(lipid_id)] = lipid_counter
+                        g[int(lipid_id)] = [(int(residue), lipid_counter)]
 
         for lipid, values in t.items():
             t[lipid] = Counter(values).most_common()
@@ -255,7 +256,6 @@ class ProLintDashboard:
 
         # TODO:
         # Possibly, avoid single point of failure on these dictionary lookups?
-        # print (self.backend_data["data"][protein][lipid])
         response = {
             "data": self.backend_data["data"][protein][lipid],
             "proteins": self.backend_data["proteins"],
