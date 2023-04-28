@@ -24,6 +24,18 @@ class PLAtomGroupBase(ABC):
     def get_resnames(self, resids: Iterable[int]):
         """ Get the residue names of a list of residues in the AtomGroup."""
 
+    @abstractmethod
+    def get_resid(self, resname: str):
+        """ Get the residue ID of a residue in the AtomGroup."""
+
+    @abstractmethod
+    def get_resids(self, resnames: Iterable[str]):
+        """ Get the residue IDs of a list of residues in the AtomGroup."""
+
+    @abstractmethod
+    def filter_resids_by_resname(self, resname: str):
+        """ Filter the residue IDs by residue name."""
+
     @property
     @abstractmethod
     def unique_resnames(self):
@@ -41,6 +53,10 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
         """Initialize the AtomGroup."""
         super().__init__(*args, **kwargs)
         self._resname_resid_labels = self._build_resname_resid_labels()
+        self._stored_resnames = self.residues.resnames.copy()
+        self._stored_resids = self.residues.resids.copy()
+        # self.stored_resnames = self.residues.resnames
+        # self.stored_resids = self.residues.resids
 
     def _build_resname_resid_labels(self):
         """Build a dictionary of residue names and residue IDs."""
@@ -48,6 +64,11 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
         resids = self.residues.resids
 
         return dict(zip(resids, resnames))
+
+    def _build_stored_resnames(self):
+        """Build a dictionary of residue names and residue IDs."""
+        resnames = self.residues.resnames
+        return resnames
 
     def _build_selection_string(self, resname=None, atomname=None, resnum=None, atomids=None):
         selections = []
@@ -103,6 +124,33 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
             return {resid: self._resname_resid_labels[resid] for resid in resids}
         else:
             raise ValueError("out must be either list or dict")
+
+    def get_resid(self, resname: str):
+        """Get the residue ID of a residue in the AtomGroup."""
+        return self.residues.resids[self.residues.resnames == resname][0]
+    
+    def get_resids(self, resnames: Iterable[str], out: Union[list, Dict[str, int]] = list):
+        """Get the residue IDs of a list of residues in the AtomGroup."""
+        if out is list:
+            return [self.get_resid(resname) for resname in resnames]
+        elif out is dict:
+            return {resname: self.get_resid(resname) for resname in resnames}
+        else:
+            raise ValueError("out must be either list or dict")
+
+    def filter_resids_by_resname(self, resids: np.ndarray, resname: str):
+        """Filter the residue IDs by residue name."""
+        all_resnames = self._stored_resnames
+        all_resids = self._stored_resids
+        # print ('shapes', all_resnames.shape, all_resids.shape, resids.shape)
+        indices = np.searchsorted(all_resids, resids)
+        return resids[np.where(all_resnames[indices] == resname)[0]]
+
+    @staticmethod
+    def static_filter_resids_by_resname(resids: np.ndarray, resnames: np.ndarray, resids_subset: np.ndarray, resname: str):
+        """Filter the residue IDs by residue name."""
+        indices = np.searchsorted(resids, resids_subset)
+        return resids_subset[np.where(resnames[indices] == resname)[0]]
 
     @property
     def unique_resnames(self):

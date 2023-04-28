@@ -3,6 +3,13 @@ from itertools import chain
 
 import numpy as np
 
+def fast_filter_resids_by_resname(resids: np.ndarray, resnames: np.ndarray, resids_subset: np.ndarray, resname: str):
+    """Filter the residue IDs by residue name."""
+    indices = np.searchsorted(resids, resids_subset)
+    result = resids_subset[np.where(resnames[indices] == resname)[0]]
+    return set(result)
+
+
 def filter_lipid_ids_by_resname(database, lipid_ids: np.ndarray, lipid_resname: str) -> np.ndarray:
     """Filter lipid IDs by residue name.
     
@@ -19,10 +26,10 @@ def filter_lipid_ids_by_resname(database, lipid_ids: np.ndarray, lipid_resname: 
         An array of filtered lipid IDs.
     """
     sorted_lipid_ids = np.sort(lipid_ids)
-    sorted_indices = np.searchsorted(database.selected.residues.resids, sorted_lipid_ids)
-    mask = np.zeros(database.selected.residues.resids.shape, dtype=bool)
+    sorted_indices = np.searchsorted(database.residues.resids, sorted_lipid_ids)
+    mask = np.zeros(database.residues.resids.shape, dtype=bool)
     mask[sorted_indices] = True
-    filtered_resnames = sorted_lipid_ids[database.selected.residues.resnames[mask] == lipid_resname]
+    filtered_resnames = sorted_lipid_ids[database.residues.resnames[mask] == lipid_resname]
 
     return filtered_resnames
 
@@ -30,14 +37,14 @@ def filter_lipid_ids_by_resname(database, lipid_ids: np.ndarray, lipid_resname: 
 def create_lipid_resname_mask(database, lipid_resname):
     """Create a mask for filtering lipid IDs by residue name. """
     
-    return database.selected.residues.resnames == lipid_resname
+    return database.residues.resnames == lipid_resname
 
 def filter_resnames_by_lipid_ids_optimized(lipid_resname_mask, lipid_ids, database):
     """Filter lipid IDs by residue name. This is an optimized version of filter_lipid_ids_by_resname, which requires
     the lipid_resname_mask to be precomputed."""
     sorted_lipid_ids = np.sort(lipid_ids)
-    sorted_indices = np.searchsorted(database.selected.residues.resids, sorted_lipid_ids)
-    mask = np.zeros(database.selected.residues.resids.shape, dtype=bool)
+    sorted_indices = np.searchsorted(database.residues.resids, sorted_lipid_ids)
+    mask = np.zeros(database.residues.resids.shape, dtype=bool)
     mask[sorted_indices] = True
     combined_mask = lipid_resname_mask & mask
     filtered_resnames = sorted_lipid_ids[combined_mask[sorted_indices]]
@@ -89,6 +96,40 @@ def count_contiguous_segments(arr: np.ndarray) -> np.ndarray:
 
     return segment_lengths
 
+def fast_contiguous_segment_lengths(arr, multiplier: float=1.) -> np.ndarray:
+    """Compute the lengths of contiguous segments of indices in the input array.
+    
+    Parameters
+    ----------
+    arr : Iterable[int]
+        A sorted list of indices.
+        
+    Returns
+    -------
+    np.ndarray
+        An array of contiguous segment lengths.
+    """
+    if len(arr) == 0:
+        return np.array([])
+
+    # Calculate the differences between consecutive elements
+    diffs = np.diff(arr)
+
+    # Find the indices where the difference is greater than 1
+    split_indices = np.where(diffs > 1)[0]
+
+    # Calculate the segment lengths directly from the split_indices array using slicing
+    segment_lengths = np.empty(split_indices.size + 1, dtype=int)
+    if split_indices.size == 0:
+        segment_lengths[0] = len(arr)
+        return segment_lengths
+    segment_lengths[0] = split_indices[0] + 1
+    segment_lengths[-1] = len(arr) - split_indices[-1] - 1
+    segment_lengths[1:-1] = np.diff(split_indices) #- 1
+
+    return segment_lengths * multiplier
+
+
 def index_of_ones(arr: np.ndarray) -> np.ndarray:
     """Return the indices of ones in a binary array.
 
@@ -106,7 +147,8 @@ def index_of_ones(arr: np.ndarray) -> np.ndarray:
     return np.where(arr == 1)[0]
 
 def compute_lipid_durations(database, contact_frames: Dict[int, List[int]], lipid_resname: str, n_frames: int, multiplier: float = 1) -> np.ndarray:
-    """Compute the duration of lipid contacts.
+    """Compute the duration of lipid contacts. Slower implementation. 
+    See ContactDurations for a faster implementation.
     
     Parameters
     ----------

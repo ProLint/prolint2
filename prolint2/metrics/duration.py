@@ -5,25 +5,22 @@ from itertools import chain
 
 import numpy as np
 
-from prolint2.metrics.utils import (
-    filter_resnames_by_lipid_ids_optimized,
-    contact_frames_to_binary_array,
-    count_contiguous_segments
-)
+from prolint2.metrics.utils import fast_filter_resids_by_resname, fast_contiguous_segment_lengths
+
 
 class ContactDurations:
     """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts. """
-    def __init__(self, ts, custom_multiplier: float = None, unit: Literal['us', 'ns'] = 'us'):
+    def __init__(self, ts, contacts, custom_multiplier: float = None, unit: Literal['us', 'ns'] = 'us'):
         self.n_frames = ts.trajectory.n_frames
         self.unit = unit
         self.unit_divisor = 1000000 if unit == 'us' else 1000
-        self.totaltime = ts.trajectory.totaltime / self.unit_divisor
-        self.dt = ts.trajectory.dt / self.unit_divisor
-        self.multiplier = custom_multiplier if custom_multiplier is not None else self.dt / self.unit_divisor
-        self.contact_frames = ts.contacts.contact_frames
+        self.multiplier = custom_multiplier if custom_multiplier is not None else ts.trajectory.dt / self.unit_divisor
+        self.contact_frames = contacts.contact_frames
 
-        self._database = ts.database
-        self._lipid_resname_mask = {k: self._create_lipid_resname_mask(ts.database, k) for k in ts.database.lipid_types()}
+        # stored for performance reasons. MDAnalysis `resids` and `resnames` accesses are slow.
+        self._resids = ts.database.residues.resids
+        self._resnames = ts.database.residues.resnames
+        self._lipid_resname_mask = {k: self._create_lipid_resname_mask(ts.database, k) for k in ts.database.unique_resnames}
         self._durations = None
 
     def compute(self, contact_frame: Dict[int, List[int]], lipid_resname: str) -> np.ndarray:
@@ -91,17 +88,19 @@ class ContactDurations:
         """
 
         ids_to_filter = np.array(list(contact_frames.keys()))
-        lipid_ids = filter_resnames_by_lipid_ids_optimized(self._lipid_resname_mask[lipid_resname], ids_to_filter, self._database)
+        lipid_ids = fast_filter_resids_by_resname(self._resids, self._resnames, ids_to_filter, lipid_resname)
         
-        durations = [contact_frames_to_binary_array(v, self.n_frames) for k, v in contact_frames.items() if k in lipid_ids]
-        durations = [count_contiguous_segments(v) * self.multiplier for v in durations]
+        durations = []
+        for k, arr in contact_frames.items():
+            if k in lipid_ids:
+                durations.append(fast_contiguous_segment_lengths(arr, self.multiplier))
         
         return sorted(chain.from_iterable(durations))
 
     @staticmethod
     def _create_lipid_resname_mask(database, lipid_resname):
         # set the lipid_resname_mask to True for all lipids with the given resname
-        return database.selected.residues.resnames == lipid_resname
+        return database.residues.resnames == lipid_resname
 
     @property
     def results(self):
