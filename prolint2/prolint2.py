@@ -12,6 +12,10 @@ from MDAnalysis.core.topologyattrs import ResidueStringAttr
 from .contacts import Contacts
 import configparser
 
+import warnings
+warnings.filterwarnings('ignore')
+
+
 from prolint2.metrics.registries import MetricRegistry
 
 # Getting the config file
@@ -20,52 +24,149 @@ config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini
 parameters_config = config["Parameters"]
 
 
+# class MacrosClass(ResidueStringAttr):
+#     """
+#     Class to add the *macros* metadata.
+
+#     The *macros* metadata is an additional label to each residue in the system,
+#     that is going to be useful for the selection of the query and the database groups.
+
+#     If the residue is included in the :class:`MembraneDatabase` group, then the *macro*
+#     metadata will be set as **membrane**; if the residue is included in the
+#     :class:`QueryProteins` group then the *macro* metadata will be set as
+#     **Protein#** depending on the number of segments (or chains) in the system;
+#     otherwise the *macro* metadata will be set as **other**.
+
+#     .. warning::
+
+#         The identification of the different proteins in the system will be done using one of two
+#         approaches:
+
+#         i. If the format file used includes segment (or chain) information, then the *macro* metadata will
+#         be set with the name specified in each segment (or chain). #TODO
+
+#         ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`PL2`
+#         will assume that proteins are ordered and the start residue of the next protein is always smaller than
+#         the last residue of the previous protein.
+
+#     Example
+#     -------
+#     All these assignation are done automatically by **prolint2**, so you do not need to use this
+#     class for anything. But you can access the information of the *macros* metadata as follows::
+
+#         from prolint2 import PL2
+#         target_system = PL2('coordinates.gro', 'trajectory.xtc')
+
+#         target_system.query.selected.residues.macros
+
+#     And you will get an uni-dimensional numpy array with same amount of values as residues selected in the **query**
+#     group and the *macro* of each residue. You can do the same for your **database** group.
+
+#     """
+
+#     attrname = "macros"
+#     singular = "macro"
+
+#     @staticmethod
+#     def _gen_initial_values(n_atoms, n_residues, n_segments):
+#         return np.array(["other"] * n_residues, dtype=object)
+
 class MacrosClass(ResidueStringAttr):
-    """
-    Class to add the *macros* metadata.
-
-    The *macros* metadata is an additional label to each residue in the system,
-    that is going to be useful for the selection of the query and the database groups.
-
-    If the residue is included in the :class:`MembraneDatabase` group, then the *macro*
-    metadata will be set as **membrane**; if the residue is included in the
-    :class:`QueryProteins` group then the *macro* metadata will be set as
-    **Protein#** depending on the number of segments (or chains) in the system;
-    otherwise the *macro* metadata will be set as **other**.
-
-    .. warning::
-
-        The identification of the different proteins in the system will be done using one of two
-        approaches:
-
-        i. If the format file used includes segment (or chain) information, then the *macro* metadata will
-        be set with the name specified in each segment (or chain). #TODO
-
-        ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`PL2`
-        will assume that proteins are ordered and the start residue of the next protein is always smaller than
-        the last residue of the previous protein.
-
-    Example
-    -------
-    All these assignation are done automatically by **prolint2**, so you do not need to use this
-    class for anything. But you can access the information of the *macros* metadata as follows::
-
-        from prolint2 import PL2
-        target_system = PL2('coordinates.gro', 'trajectory.xtc')
-
-        target_system.query.selected.residues.macros
-
-    And you will get an uni-dimensional numpy array with same amount of values as residues selected in the **query**
-    group and the *macro* of each residue. You can do the same for your **database** group.
-
-    """
-
     attrname = "macros"
     singular = "macro"
+
+    def __init__(self, universe):
+        n_atoms, n_residues, n_segments = universe.atoms.n_atoms, universe.residues.n_residues, universe.segments.n_segments
+        values = self._gen_initial_values(n_atoms, n_residues, n_segments)
+        super().__init__(values)
 
     @staticmethod
     def _gen_initial_values(n_atoms, n_residues, n_segments):
         return np.array(["other"] * n_residues, dtype=object)
+
+    @staticmethod
+    def set_macros_values(query):
+        protein_segments = query.segments
+
+        if len(protein_segments) == 1 and protein_segments.n_atoms == query.n_atoms:
+            for segment_idx, segment in enumerate(protein_segments):
+                segment.residues.macros = "Protein" + str(segment_idx)
+        else:
+            resseq = query.residues.resids
+            res0, first_last_index, first_index = resseq[0], [], 0
+
+            for last_index, res in enumerate(resseq):
+                if res < res0:
+                    first_last_index.append((first_index, last_index - 1))
+                    first_index = last_index
+                res0 = res
+            first_last_index.append((first_index, last_index))
+
+            for idx, (first_index, last_index) in enumerate(first_last_index):
+                selected_residues = query.residues[first_index:last_index + 1]
+                selected_residues.macros = "Protein" + str(idx)
+
+
+class Universe(mda.Universe):
+    def __init__(self, *args, universe=None, query=None, database=None, **kwargs):
+        if universe is not None:
+            if isinstance(universe, mda.Universe):
+                topology = universe.filename
+                trajectory = universe.trajectory.filename
+                super().__init__(topology, trajectory)
+            else:
+                raise TypeError("universe argument should be an instance of mda.Universe")
+        else:
+            super().__init__(*args, **kwargs)
+
+        self.query = self._handle_query(query)
+        self.database = self._handle_database(database)
+
+        self.registry = MetricRegistry()
+
+
+
+        add_lipid_types = []
+        lipid_types = parameters_config["lipid_types"].split(", ")
+        lipid_types = lipid_types + add_lipid_types
+        not_protein_restypes = np.unique(
+            self.atoms.select_atoms("not protein").residues.resnames
+        )
+        membrane_restypes = []
+        for type in lipid_types:
+            if type in not_protein_restypes:
+                membrane_restypes.append("resname " + type)
+        if len(membrane_restypes) == 1:
+            membrane_sel = membrane_restypes[0]
+        elif len(membrane_restypes) > 1:
+            membrane_sel = membrane_restypes[0]
+            for type in membrane_restypes[1:]:
+                membrane_sel = membrane_sel + " or " + type
+        else:
+            print("There are not lipid residues in your system")
+
+        self._add_macros()
+
+
+    def _add_macros(self):
+        macros_attr = MacrosClass(self)
+        self.atoms.universe.add_TopologyAttr(macros_attr)
+
+        macros_attr.set_macros_values(self.query)
+
+
+    def _handle_query(self, query):
+        if query is None:
+            query_selection_string = "protein"
+            query = self.select_atoms(query_selection_string)
+        return query
+    
+    def _handle_database(self, database):
+        if database is None:
+            database_selection_string = "not protein"
+            database = self.select_atoms(database_selection_string)
+        return database
+
 
 
 class PL2(object):
@@ -150,22 +251,22 @@ class PL2(object):
         else:
             # Get start and end indices of proteins in the system.
             resseq = self.atoms.select_atoms(protein_sel).residues.resindices
-            p0 = resseq[0]
+            res0 = resseq[0]
             # first and last index
-            fi_li = []
-            fi = 0
-            for li, p in enumerate(resseq):
-                if p < p0:
-                    fi_li.append((fi, li - 1))
-                    fi = li
-                p0 = p
-            fi_li.append((fi, li))
+            first_index_last_index = []
+            first_index = 0
+            for last_index, res in enumerate(resseq):
+                if res < res0:
+                    first_index_last_index.append((first_index, last_index - 1))
+                    first_index = last_index
+                res0 = res
+            first_index_last_index.append((first_index, last_index))
 
-            for idx, values in enumerate(fi_li):
-                fi = values[0]
-                li = values[1]
+            for idx, values in enumerate(first_index_last_index):
+                first_index = values[0]
+                last_index = values[1]
                 self.atoms.select_atoms(protein_sel).residues[
-                    list(range(fi, li + 1))
+                    list(range(first_index, last_index + 1))
                 ].residues.macros = "Protein" + str(idx)
 
         # TODO
@@ -173,8 +274,10 @@ class PL2(object):
 
         self.atoms.select_atoms(membrane_sel).residues.macros = "membrane"
         self.list_of_macros = list(np.unique(self.atoms.residues.macros))
+
         self.query = QueryProteins(self.atoms.select_atoms(protein_sel))
         self.database = MembraneDatabase(self.atoms.select_atoms(membrane_sel))
+
         self.contacts = Contacts(self.query, self.database)
 
         # system information

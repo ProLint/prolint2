@@ -14,7 +14,6 @@ class MetricRegistry:
         module = importlib.import_module(self.module_name)
         for _, obj in inspect.getmembers(module):
             if inspect.isclass(obj) and issubclass(obj, BaseMetric) and obj != BaseMetric:
-                print ('Registering metric: ', obj.name, ' from module: ', self.module_name, '...')
                 metric_name = obj.name
                 self.register(metric_name, obj)
 

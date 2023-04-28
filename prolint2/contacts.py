@@ -11,7 +11,6 @@ from itertools import groupby
 
 import numpy as np
 import pandas as pd
-import MDAnalysis as mda
 
 from prolint2.computers.contacts import ContactComputerBase, SerialContacts
 
@@ -48,12 +47,6 @@ class Contacts(object):
     def __init__(self, query, database):
         self.query = query
         self.database = database
-        self.residue_names = self.query.selected.residues.resnames
-        self.residue_ids = self.query.selected.residues.resids
-        self.cutoff = None
-        self.contacts = None
-        self.contact_frames = None
-        self.metrics = None
 
         # TODO:
         # @bis: I really don't like how we have to back reference the trajectory here
@@ -62,10 +55,9 @@ class Contacts(object):
         self.dt = self.query.selected.universe.trajectory.dt
         self.totaltime = self.query.selected.universe.trajectory.totaltime
 
-
         self._contact_computers = {
             'default': SerialContacts
-            # Add other contact computation strategies here
+            # Other contact computation strategies here
         }
 
 
@@ -96,181 +88,181 @@ class Contacts(object):
     # this functions allows the definition of chunks of frames with uninterrupted interactions
     # i.e. it takes a list of frames as [9, 11, 12] and it returns [1, 2]
 
-    def ranges(self, lst):
-        pos = (j - i for i, j in enumerate(lst))
-        t = 0
-        for i, els in groupby(pos):
-            l = len(list(els))
-            el = lst[t]
-            t += l
-            yield len(range(el, el + l))
+    # def ranges(self, lst):
+    #     pos = (j - i for i, j in enumerate(lst))
+    #     t = 0
+    #     for i, els in groupby(pos):
+    #         l = len(list(els))
+    #         el = lst[t]
+    #         t += l
+    #         yield len(range(el, el + l))
 
-    def computed_contacts(self):
-        """
-        Returns the computed contacts.
-        """
-        if self.contacts is None:
-            raise ValueError("No contacts computed. Run compute() first.")
+    # def computed_contacts(self):
+    #     """
+    #     Returns the computed contacts.
+    #     """
+    #     if self.contacts is None:
+    #         raise ValueError("No contacts computed. Run compute() first.")
         
-        formatted_contact_frames = {}
-        for residue_id, lipid_dict in self.contact_frames.items():
-            for lipid_id, frames in lipid_dict.items():
-                contact_array = np.zeros(self.n_frames, dtype=np.int8)
-                contact_array[frames] = 1
-                key = (residue_id, lipid_id)
-                formatted_contact_frames[key] = contact_array.copy()
+    #     formatted_contact_frames = {}
+    #     for residue_id, lipid_dict in self.contact_frames.items():
+    #         for lipid_id, frames in lipid_dict.items():
+    #             contact_array = np.zeros(self.n_frames, dtype=np.int8)
+    #             contact_array[frames] = 1
+    #             key = (residue_id, lipid_id)
+    #             formatted_contact_frames[key] = contact_array.copy()
 
-        df = pd.DataFrame.from_dict(formatted_contact_frames, orient='index')
-        df.index = pd.MultiIndex.from_tuples(df.index, names=['residueID', 'lipidID'])
-        df = df.sort_index(
-            level=['residueID', 'lipidID'],
-            ascending=[True, True]
-        )
+    #     df = pd.DataFrame.from_dict(formatted_contact_frames, orient='index')
+    #     df.index = pd.MultiIndex.from_tuples(df.index, names=['residueID', 'lipidID'])
+    #     df = df.sort_index(
+    #         level=['residueID', 'lipidID'],
+    #         ascending=[True, True]
+    #     )
 
-        return df
+    #     return df
 
-    def contacts_to_dataframe(self):
-        """
-        Convert the contacts dictionary to a Pandas DataFrame.
+    # def contacts_to_dataframe(self):
+    #     """
+    #     Convert the contacts dictionary to a Pandas DataFrame.
 
-        Returns
-        -------
-        Pandas DataFrame
-            Pandas DataFrame with all the contacts.
-        """
-        if not self.contacts:
-            raise ValueError("The contacts dictionary is empty.")
-        else:
-            results = []
-            keys = self.contacts.keys()
-            for idx, protein_resi in enumerate(keys):
-                for lip_type in self.contacts[protein_resi].keys():
-                    for lip_res, t_frames in self.contacts[protein_resi][
-                        lip_type
-                    ].items():
-                        for fr in self.contact_frames[
-                            "{},{}".format(protein_resi, lip_res)
-                        ]:
-                            results.append(
-                                (
-                                    "Protein1",
-                                    protein_resi,
-                                    self.query.selected.residues[idx].resname,
-                                    lip_type,
-                                    lip_res,
-                                    fr,
-                                )
-                            )
-            results_df = pd.DataFrame(
-                results,
-                columns=[
-                    "Protein",
-                    "Residue ID",
-                    "Residue Name",
-                    "Lipid Type",
-                    "Lipid ID",
-                    "Frame",
-                ],
-            )
-            return results_df
+    #     Returns
+    #     -------
+    #     Pandas DataFrame
+    #         Pandas DataFrame with all the contacts.
+    #     """
+    #     if not self.contacts:
+    #         raise ValueError("The contacts dictionary is empty.")
+    #     else:
+    #         results = []
+    #         keys = self.contacts.keys()
+    #         for idx, protein_resi in enumerate(keys):
+    #             for lip_type in self.contacts[protein_resi].keys():
+    #                 for lip_res, t_frames in self.contacts[protein_resi][
+    #                     lip_type
+    #                 ].items():
+    #                     for fr in self.contact_frames[
+    #                         "{},{}".format(protein_resi, lip_res)
+    #                     ]:
+    #                         results.append(
+    #                             (
+    #                                 "Protein1",
+    #                                 protein_resi,
+    #                                 self.query.selected.residues[idx].resname,
+    #                                 lip_type,
+    #                                 lip_res,
+    #                                 fr,
+    #                             )
+    #                         )
+    #         results_df = pd.DataFrame(
+    #             results,
+    #             columns=[
+    #                 "Protein",
+    #                 "Residue ID",
+    #                 "Residue Name",
+    #                 "Lipid Type",
+    #                 "Lipid ID",
+    #                 "Frame",
+    #             ],
+    #         )
+    #         return results_df
 
-    def contacts_to_metrics(self):
-        """
-        Convert the contacts dictionary to a Pandas DataFrame with different metrics.
+    # def contacts_to_metrics(self):
+    #     """
+    #     Convert the contacts dictionary to a Pandas DataFrame with different metrics.
 
-        Returns
-        -------
-        Pandas DataFrame
-            Pandas DataFrame with different metrics for the contacts.
-        """
-        if not self.contacts:
-            raise ValueError("The contacts dictionary is empty.")
-        else:
-            metrics = []
-            keys = self.contacts.keys()
-            for idx, protein_resi in enumerate(keys):
-                for lip_type in self.contacts[protein_resi].keys():
-                    for lip_res, t_frames in self.contacts[protein_resi][
-                        lip_type
-                    ].items():
-                        # getting chunks of frames with uninterrupted interactions
-                        key = "{},{}".format(protein_resi, lip_res)
-                        temp = list(self.ranges(self.contact_frames[key]))
+    #     Returns
+    #     -------
+    #     Pandas DataFrame
+    #         Pandas DataFrame with different metrics for the contacts.
+    #     """
+    #     if not self.contacts:
+    #         raise ValueError("The contacts dictionary is empty.")
+    #     else:
+    #         metrics = []
+    #         keys = self.contacts.keys()
+    #         for idx, protein_resi in enumerate(keys):
+    #             for lip_type in self.contacts[protein_resi].keys():
+    #                 for lip_res, t_frames in self.contacts[protein_resi][
+    #                     lip_type
+    #                 ].items():
+    #                     # getting chunks of frames with uninterrupted interactions
+    #                     key = "{},{}".format(protein_resi, lip_res)
+    #                     temp = list(self.ranges(self.contact_frames[key]))
 
-                        # calculating metrics
-                        metrics.append(
-                            (
-                                "Protein1",
-                                protein_resi,
-                                self.residue_names[idx],
-                                lip_type,
-                                lip_res,
-                                t_frames,
-                                t_frames / self.n_frames,
-                                max(temp),
-                                np.mean(temp),
-                            )
-                        )
-            metrics_df = pd.DataFrame(
-                metrics,
-                columns=[
-                    "Protein",
-                    "Residue ID",
-                    "Residue Name",
-                    "Lipid Type",
-                    "Lipid ID",
-                    "Sum of all contacts",
-                    "Occupancy",
-                    "Longest Duration",
-                    "Mean Duration",
-                ],
-            )
-            return metrics_df
+    #                     # calculating metrics
+    #                     metrics.append(
+    #                         (
+    #                             "Protein1",
+    #                             protein_resi,
+    #                             self.residue_names[idx],
+    #                             lip_type,
+    #                             lip_res,
+    #                             t_frames,
+    #                             t_frames / self.n_frames,
+    #                             max(temp),
+    #                             np.mean(temp),
+    #                         )
+    #                     )
+    #         metrics_df = pd.DataFrame(
+    #             metrics,
+    #             columns=[
+    #                 "Protein",
+    #                 "Residue ID",
+    #                 "Residue Name",
+    #                 "Lipid Type",
+    #                 "Lipid ID",
+    #                 "Sum of all contacts",
+    #                 "Occupancy",
+    #                 "Longest Duration",
+    #                 "Mean Duration",
+    #             ],
+    #         )
+    #         return metrics_df
 
-    def export(self, filename):
-        """
-        Export the contacts array to a file.
+    # def export(self, filename):
+    #     """
+    #     Export the contacts array to a file.
 
-        Parameters
-        ----------
-        filename : str
-            Name of the file to export the contacts array.
-        """
-        print("Exporting contacts and metrics to files...")
-        self.contacts_to_dataframe().to_csv(filename, index=False)
-        if not isinstance(self.metrics, pd.DataFrame):            
-            self.contacts_to_metrics().to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
-        print("Contacts successfully exported to file '{}' and metrics to '{}'!!".format(filename, filename.replace(".csv", "_metrics.csv")))
+    #     Parameters
+    #     ----------
+    #     filename : str
+    #         Name of the file to export the contacts array.
+    #     """
+    #     print("Exporting contacts and metrics to files...")
+    #     self.contacts_to_dataframe().to_csv(filename, index=False)
+    #     if not isinstance(self.metrics, pd.DataFrame):            
+    #         self.contacts_to_metrics().to_csv(filename.replace(".csv", "_metrics.csv"), index=False)
+    #     print("Contacts successfully exported to file '{}' and metrics to '{}'!!".format(filename, filename.replace(".csv", "_metrics.csv")))
 
-    def filter_by_percentile(self, percentile=0.75, metric="Sum of all contacts"):
-        """
-        Filter the contacts by percentile.
+    # def filter_by_percentile(self, percentile=0.75, metric="Sum of all contacts"):
+    #     """
+    #     Filter the contacts by percentile.
 
-        Parameters
-        ----------
-        percentile : float (0.75)
-            Percentile to be used for filtering the contacts array.
-        """
-        if metric not in [
-            "Sum of all contacts",
-            "Occupancy",
-            "Longest Duration",
-            "Mean Duration",
-        ]:
-            raise ValueError("The metric is not valid.")
-        else:
-            return self.metrics[
-                self.metrics[metric] > self.metrics[metric].quantile(percentile)
-            ]
+    #     Parameters
+    #     ----------
+    #     percentile : float (0.75)
+    #         Percentile to be used for filtering the contacts array.
+    #     """
+    #     if metric not in [
+    #         "Sum of all contacts",
+    #         "Occupancy",
+    #         "Longest Duration",
+    #         "Mean Duration",
+    #     ]:
+    #         raise ValueError("The metric is not valid.")
+    #     else:
+    #         return self.metrics[
+    #             self.metrics[metric] > self.metrics[metric].quantile(percentile)
+    #         ]
         
-    def __str__(self):
-        if self.contacts is None:
-            return "<prolint2.Contacts containing 0 contacts>"
-        else:
-            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
+    # def __str__(self):
+    #     if self.contacts is None:
+    #         return "<prolint2.Contacts containing 0 contacts>"
+    #     else:
+    #         return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
 
-    def __repr__(self):
-        if self.contacts is None:
-            return "<prolint2.Contacts containing 0 contacts>"
-        else:
-            return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
+    # def __repr__(self):
+    #     if self.contacts is None:
+    #         return "<prolint2.Contacts containing 0 contacts>"
+    #     else:
+    #         return "<prolint2.Contacts containing {} contacts>".format(len(self.contacts))
