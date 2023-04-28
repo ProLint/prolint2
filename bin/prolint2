@@ -6,13 +6,14 @@ r"""Argument parser to use prolint2 from the command-line
 :Copyright: MIT License
 """
 
-import argparse
-import prolint2._version as vers
-# from prolint2.server.server import start_server
-from prolint2.server.server import ProLintDashboard
-import configparser
-from prolint2 import get_config
 import os
+import argparse
+import configparser
+
+from prolint2 import get_config
+import prolint2._version as vers
+from prolint2.server.server import ProLintDashboard
+
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)

@@ -2,7 +2,8 @@
 
 # Add imports here
 import os
-from .prolint2 import *
+from .core import Universe
+
 from .interactive_sel import *
 
 # Handle versioneer
@@ -16,10 +17,8 @@ del get_versions, versions
 # to get the paths relative to the root of the package
 _ROOT = os.path.abspath(os.path.dirname(__file__))
 
-
 def get_data():
     return os.path.join(_ROOT, "data")
-
 
 # to get the path to the config file
 def get_config():
