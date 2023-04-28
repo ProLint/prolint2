@@ -1,20 +1,16 @@
-from collections import Counter
-from prolint2.interactive_sel import interactive_selection
 import os
 import ast
-
-from bottle import Bottle, redirect, route, static_file, request # pylint: disable=import-error 
-from prolint2.computers.distances import SerialDistances
+from io import StringIO
+from collections import Counter
 
 import MDAnalysis as mda
-from prolint2.prolint2 import PL2
-from io import StringIO
+from bottle import Bottle, redirect, static_file
 
+from prolint2.core.universe import Universe
 from prolint2.server.chord_utils import contact_chord
-
-from prolint2.metrics.metrics import create_metric
-
+from prolint2.interactive_sel import interactive_selection
 from prolint2.computers.payload import ServerPayload
+from prolint2.computers.distances import SerialDistances
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
@@ -101,10 +97,6 @@ class ProLintDashboard:
 
         gantt_data = []
         for res, _ in g[lipid_id][:residues_to_show]:
-            # res & lipid_id used to be a string formatted as 'residue,lipid'
-            # frame_numbers = self.contacts.contact_frames[f"{res},{lipid_id}"]
-            # now they are a tuple of (residue, lipid)
-            # frame_numbers = self.contacts.contact_frames[(res, lipid_id)]
             frame_numbers = self.contacts.contact_frames[res][lipid_id]
             frame_intervals = self.get_frame_contact_intervals(frame_numbers)
             for start, end in frame_intervals:
@@ -112,7 +104,6 @@ class ProLintDashboard:
                     continue
                 gantt_data.append(
                     {
-                        # "category": f'{res}',
                         "category": res,
                         "startFrame": start,
                         "endFrame": end,
@@ -151,10 +142,10 @@ class ProLintDashboard:
 
         # TODO:
         # top lipid number should be put in the config.
-        contact_threshold = self.ts.n_frames * 0.05
+        contact_threshold = self.ts.trajectory.n_frames * 0.05
 
         # initialize dictionary to store values:
-        t = {k: {} for k in self.ts.database_unique}
+        t = {k: {} for k in self.ts.database.unique_resnames}
         g = {}
         for _, (residue, lipid_contacts) in enumerate(self.contacts.contacts.items()):
             for lipid, contact_counter in lipid_contacts.items():
@@ -239,13 +230,11 @@ class ProLintDashboard:
         # Initiate heatmapApp with the top residue
         residue_id = self.backend_data["lipid_contact_frames"][lipid_id][0][0]
         ri = SerialDistances(
-            self.ts.query.selected.universe,
-            self.ts.query.selected,
-            self.ts.database.selected,
+            self.ts.query.universe,
+            self.ts.query,
+            self.ts.database,
             lipid_id,
             residue_id,
-            # self.contacts.contact_frames[f"{residue_id},{lipid_id}"],
-            # self.contacts.contact_frames[(residue_id, lipid_id)],
             self.contacts.contact_frames[residue_id][lipid_id],
         )
         ri.run(verbose=False)
@@ -273,7 +262,7 @@ class ProLintDashboard:
             "heatmapData": hm_data,
             "lipidAtomsData": la_data,
             "residueAtomsData": ra_data,
-            "frameNumber": self.ts.n_frames,
+            "frameNumber": self.ts.trajectory.n_frames,
         }
         self.response = response
         return response
@@ -289,17 +278,6 @@ class ProLintDashboard:
 
         residue_contacts = self.payload.residue_contacts(lipid_type=lipid, metric=metric)
         
-        # metric_instance = create_metric(
-        #     self.contacts.contacts,
-        #     metrics=[metric],
-        #     metric_registry=self.contacts.registry, 
-        #     output_format='dashboard',
-        #     lipid_type=lipid,
-        #     residue_names=self.contacts.residue_names, 
-        #     residue_ids=self.contacts.residue_ids
-        # )
-        # metric_dict = metric_instance.compute(self.ts.dt, self.ts.totaltime)
-
         self.response['data'] = residue_contacts[lipid]
         return self.response
 
@@ -366,13 +344,11 @@ class ProLintDashboard:
         residue_id = int(metadata["residueID"])
 
         ri = SerialDistances(
-            self.ts.query.selected.universe,
-            self.ts.query.selected,
-            self.ts.database.selected,
+            self.ts.query.universe,
+            self.ts.query,
+            self.ts.database,
             lipid_id,
             residue_id,
-            # self.contacts.contact_frames[f"{residue_id},{lipid_id}"],
-            # self.contacts.contact_frames[(residue_id, lipid_id)],
             self.contacts.contact_frames[residue_id][lipid_id],
         )
         ri.run(verbose=False)
@@ -401,10 +377,10 @@ class ProLintDashboard:
             sys.exit(1)
 
         self.args = payload
-        self.ts = PL2(self.args.structure, self.args.trajectory, add_lipid_types=self.args.other_lipids)
+        self.ts = Universe(self.args.structure, self.args.trajectory)
+
         if self.args.i_bool:
             self.ts = interactive_selection(self.ts)
-        # self.contacts.compute(cutoff=self.args.cutoff)
         self.contacts = self.ts.compute_contacts(cutoff=self.args.cutoff)
 
         if self.args.e_file:

@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Union, Dict
+from collections import Counter
 
+import numpy as np
 import MDAnalysis as mda
 
 class PLAtomGroupBase(ABC):
@@ -22,6 +24,16 @@ class PLAtomGroupBase(ABC):
     def get_resnames(self, resids: Iterable[int]):
         """ Get the residue names of a list of residues in the AtomGroup."""
 
+    @property
+    @abstractmethod
+    def unique_resnames(self):
+        """ Get the unique residue names in the AtomGroup."""
+
+    @property
+    @abstractmethod
+    def resname_counts(self):
+        """ Get the number of residues of each residue name in the AtomGroup."""
+        
 class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
     """An extended version of the MDAnalysis AtomGroup class."""
 
@@ -92,10 +104,18 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
         else:
             raise ValueError("out must be either list or dict")
 
-    def __str__(self):
-        """Return a string representation of the AtomGroup."""
-        return f"ProLint AtomGroup with {len(self)} atoms"
+    @property
+    def unique_resnames(self):
+        """Get the unique residue names in the AtomGroup."""
+        return np.unique(self.residues.resnames)
 
-    def __repr__(self):
-        """Return a string representation of the AtomGroup."""
-        return f"ProLint AtomGroup with {len(self)} atoms"
+    @property
+    def resname_counts(self):
+        """Get the number of residues of each residue name in the AtomGroup."""
+        return Counter(self.residues.resnames)
+
+    def __str__(self) -> str:
+        return f"<ProLint Wrapper for {super().__str__()}>"
+    
+    def __repr__(self) -> str:
+        return f"<ProLint Wrapper for {super().__repr__()}>"

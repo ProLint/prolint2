@@ -29,8 +29,6 @@ def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=15, inte
     """
     contact_intervals = {}
     for res, _ in g[lipid_id][:residues_to_show]:
-        # frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
-        # frame_numbers = TS.contacts.contact_frames[(res, lipid_id)]
         frame_numbers = contacts.contact_frames[res][lipid_id]
         frame_intervals = get_frame_contact_intervals(frame_numbers)
         for start, end in frame_intervals:
@@ -51,8 +49,6 @@ def amCharts_contact_intervals(contacts, g, lipid_id, residues_to_show=15, inter
     """
     contact_intervals = []
     for res, _ in g[lipid_id][:residues_to_show]:
-        # frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
-        # frame_numbers = TS.contacts.contact_frames[(res, lipid_id)]
         frame_numbers = contacts.contact_frames[res][lipid_id]
         frame_intervals = get_frame_contact_intervals(frame_numbers)
         for start, end in frame_intervals:

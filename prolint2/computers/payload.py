@@ -1,26 +1,39 @@
 from prolint2.metrics.metrics import create_metric
 
 class ServerPayload:
+    """ Class that provides the data for the dashboard.
+    
+    Parameters
+    ----------
+    contacts : :class:`ContactsProvider`
+        The contacts provider object.
+    ts : :class:`Universe`
+        The universe object.
+        
+    """
     def __init__(self, contacts, ts):
         self.contacts = contacts
 
         self.registry = ts.registry
 
-        self.database = ts.database
-        self.dt = ts.dt
-        self.totaltime = ts.totaltime
-        self.residue_names = ts.query.selected.residues.resnames
-        self.residue_ids = ts.query.selected.residues.resids
+        self.database_resnames = ts.database.unique_resnames.tolist()
+        self.database_resname_counts = ts.database.resname_counts
+        self.residue_names = ts.query.residues.resnames
+        self.residue_ids = ts.query.residues.resids
+
+        self.dt = ts.trajectory.dt
+        self.totaltime = ts.trajectory.totaltime
 
         self._compute()
 
     def residue_contacts(self, lipid_type: str = None, metric="max"):
+        """ Compute residue contacts. """
         metric_instance = create_metric(
             self.contacts,
             metrics=[metric],
             metric_registry=self.registry,
             output_format="dashboard",
-            lipid_type=self.database.lipid_types().tolist()[0] if lipid_type is None else lipid_type,
+            lipid_type=self.database_resnames[0] if lipid_type is None else lipid_type,
             residue_names=self.residue_names,
             residue_ids=self.residue_ids,
         )
@@ -36,7 +49,7 @@ class ServerPayload:
 
         residue_contacts = self.residue_contacts(lipid_type=lipid_type, metric=metric)
 
-        lipid_counts = self.database.lipid_count()
+        lipid_counts = self.database_resname_counts
         total_lipid_sum = sum(lipid_counts.values())
         sub_data = []
         for lipid, count in lipid_counts.items():
@@ -56,13 +69,15 @@ class ServerPayload:
         self._payload = {
             "data": {protein_name: residue_contacts},
             "proteins": [protein_name],
-            "lipids": self.database.lipid_types().tolist(),
+            "lipids": self.database_resnames,
             "pie_data": pie_data,  # TODO: include protein info
         }
 
     @property
     def payload(self):
+        """The payload."""
         return self._payload
     
     def get_payload(self):
+        """Return the payload."""
         return self.payload

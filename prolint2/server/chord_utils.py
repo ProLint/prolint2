@@ -180,8 +180,8 @@ def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
     node_links = list(combinations(nodes, 2))
     position_node_links = [x for x in node_links if x[0] == 0]
 
-    resnums = ts.query.selected.residues.resnums
-    resnames = ts.query.selected.residues.resnames
+    resnums = ts.query.residues.resnums
+    resnames = ts.query.residues.resnames
     node_names = {x[0]: f'{x[0]} {x[1]}' for x in list(zip(resnums, resnames))}
 
     chord_elements = []
@@ -228,7 +228,7 @@ def contact_chord(ts, contacts, top_lipid_ids, lipid_contact_frames, cutoff=100)
         )
     # ordered_combinations = get_ordered_combinations(lipid_contacts)
     linked_nodes = get_linked_nodes(ordered_combinations, cutoff=cutoff)
-    nodes, hidden_node_indices = get_node_list(ts.query.selected.n_residues, linked_nodes)
+    nodes, hidden_node_indices = get_node_list(ts.query.n_residues, linked_nodes)
     chord_elements = get_chord_elements(ts, nodes, ordered_combinations, cutoff=cutoff)
 
     per_lipid_nodes = {}

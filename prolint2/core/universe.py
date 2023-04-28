@@ -1,20 +1,13 @@
-import os
-import configparser
+import warnings
+
+import MDAnalysis as mda
 
 from prolint2.core.base import MacrosClass
 from prolint2.core.groups import ExtendedAtomGroup
 from prolint2.metrics.registries import MetricRegistry
+from prolint2.core.contact_provider import ContactsProvider
 
-import MDAnalysis as mda
-
-import warnings
 warnings.filterwarnings('ignore')
-
-config = configparser.ConfigParser(allow_no_value=True)
-config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini"))
-parameters_config = config["Parameters"]
-
-
 class Universe(mda.Universe):
     """A subclass of MDAnalysis.Universe that adds a query and database attribute, and other useful methods."""
     def __init__(self, *args, universe=None, query=None, database=None, **kwargs):
@@ -32,6 +25,7 @@ class Universe(mda.Universe):
         self._database = self._handle_database(database)
 
         self.registry = MetricRegistry()
+        self.contacts = ContactsProvider(self.query, self.database)
 
         self._add_macros()
 
@@ -81,3 +75,12 @@ class Universe(mda.Universe):
     def update_database(self, new_database):
         """Update the database AtomGroup with a new AtomGroup."""
         self.database = new_database
+
+    def compute_contacts(self, *args, **kwargs):
+        return self.contacts.compute(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"<ProLint Wrapper for {super().__str__()}>"
+    
+    def __repr__(self) -> str:
+        return f"<ProLint Wrapper for {super().__repr__()}>"

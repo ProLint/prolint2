@@ -19,6 +19,64 @@ config = configparser.ConfigParser(allow_no_value=True)
 config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini"))
 parameters_config = config["Parameters"]
 
+class ContactsProvider:
+    """Stores information to run and analyze the distance-based contacts results
+    between the :class:`.prolint2.QueryProteins` and :class:`.prolint2.MembraneDatabase` groups.
+
+    Parameters
+    ----------
+    query : :class:`QueryProteins`
+    database : :class:`MembraneDatabase`
+
+    Attributes
+    ----------
+    query : :class:`QueryProteins`
+        **Query** group to use during the calculation of the contacts.
+    database : :class:`MembraneDatabase`
+        **Database** group to use during the calculation of the contacts.
+    contacts : Array (None)
+        Numpy uni-dimensional array of shape equal to the number of frames used during the calculation of the contacts.
+        Each element of the array has a Scipy matrix with the pairs (i, j) defining the contacts, where *i* is the index
+        of the residue in the **query** group, and *j* is the index of the residue in the **database** group. It can be populated
+        using either the **compute()** or the **load()** methods.
+    counts : Pandas DataFrame (None)
+        Pandas DataFrame with the counted contacts. It is populated using the **count_contacts()** method.
+    """
+
+    def __init__(self, query, database):
+        self.query = query
+        self.database = database
+
+        self._contact_computers = {
+            'default': SerialContacts
+            # Other contact computation strategies here
+        }
+
+
+    def compute(self, strategy_or_computer='default', **kwargs):
+        """
+        Compute the contacts using a cythonized version of a cell-list algorithm.
+
+        Parameters
+        ----------
+        strategy_or_computer : str or :class:`ContactComputerBase` ('default')
+            Strategy or computer to use to compute the contacts. If a string is passed, it has to be a key in the
+            **_contact_computers** dictionary.
+        kwargs : dict
+            Keyword arguments to be passed to the **ContactComputerBase** class.
+        """
+
+        if isinstance(strategy_or_computer, ContactComputerBase):
+            contact_computer = strategy_or_computer
+        else:
+            contact_computer_class = self._contact_computers[strategy_or_computer]
+            contact_computer = contact_computer_class(
+                self.query.universe, self.query, self.database, **kwargs
+            )
+        contact_computer.run(verbose=True)
+        return contact_computer
+
+
 
 class Contacts(object):
     """Stores information to run and analyze the distance-based contacts results

@@ -24,52 +24,52 @@ config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "config.ini
 parameters_config = config["Parameters"]
 
 
-# class MacrosClass(ResidueStringAttr):
-#     """
-#     Class to add the *macros* metadata.
+class MacrosClass(ResidueStringAttr):
+    """
+    Class to add the *macros* metadata.
 
-#     The *macros* metadata is an additional label to each residue in the system,
-#     that is going to be useful for the selection of the query and the database groups.
+    The *macros* metadata is an additional label to each residue in the system,
+    that is going to be useful for the selection of the query and the database groups.
 
-#     If the residue is included in the :class:`MembraneDatabase` group, then the *macro*
-#     metadata will be set as **membrane**; if the residue is included in the
-#     :class:`QueryProteins` group then the *macro* metadata will be set as
-#     **Protein#** depending on the number of segments (or chains) in the system;
-#     otherwise the *macro* metadata will be set as **other**.
+    If the residue is included in the :class:`MembraneDatabase` group, then the *macro*
+    metadata will be set as **membrane**; if the residue is included in the
+    :class:`QueryProteins` group then the *macro* metadata will be set as
+    **Protein#** depending on the number of segments (or chains) in the system;
+    otherwise the *macro* metadata will be set as **other**.
 
-#     .. warning::
+    .. warning::
 
-#         The identification of the different proteins in the system will be done using one of two
-#         approaches:
+        The identification of the different proteins in the system will be done using one of two
+        approaches:
 
-#         i. If the format file used includes segment (or chain) information, then the *macro* metadata will
-#         be set with the name specified in each segment (or chain). #TODO
+        i. If the format file used includes segment (or chain) information, then the *macro* metadata will
+        be set with the name specified in each segment (or chain). #TODO
 
-#         ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`PL2`
-#         will assume that proteins are ordered and the start residue of the next protein is always smaller than
-#         the last residue of the previous protein.
+        ii. If the format files used do not include this information (i.e. *gro* format file) then :class:`PL2`
+        will assume that proteins are ordered and the start residue of the next protein is always smaller than
+        the last residue of the previous protein.
 
-#     Example
-#     -------
-#     All these assignation are done automatically by **prolint2**, so you do not need to use this
-#     class for anything. But you can access the information of the *macros* metadata as follows::
+    Example
+    -------
+    All these assignation are done automatically by **prolint2**, so you do not need to use this
+    class for anything. But you can access the information of the *macros* metadata as follows::
 
-#         from prolint2 import PL2
-#         target_system = PL2('coordinates.gro', 'trajectory.xtc')
+        from prolint2 import PL2
+        target_system = PL2('coordinates.gro', 'trajectory.xtc')
 
-#         target_system.query.selected.residues.macros
+        target_system.query.selected.residues.macros
 
-#     And you will get an uni-dimensional numpy array with same amount of values as residues selected in the **query**
-#     group and the *macro* of each residue. You can do the same for your **database** group.
+    And you will get an uni-dimensional numpy array with same amount of values as residues selected in the **query**
+    group and the *macro* of each residue. You can do the same for your **database** group.
 
-#     """
+    """
 
-#     attrname = "macros"
-#     singular = "macro"
+    attrname = "macros"
+    singular = "macro"
 
-#     @staticmethod
-#     def _gen_initial_values(n_atoms, n_residues, n_segments):
-#         return np.array(["other"] * n_residues, dtype=object)
+    @staticmethod
+    def _gen_initial_values(n_atoms, n_residues, n_segments):
+        return np.array(["other"] * n_residues, dtype=object)
 
 # class MacrosClass(ResidueStringAttr):
 #     attrname = "macros"
