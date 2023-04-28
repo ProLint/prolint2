@@ -14,12 +14,12 @@ from prolint2.metrics.utils import (
 class ContactDurations:
     """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts. """
     def __init__(self, ts, custom_multiplier: float = None, unit: Literal['us', 'ns'] = 'us'):
-        self.n_frames = ts.n_frames
+        self.n_frames = ts.trajectory.n_frames
         self.unit = unit
         self.unit_divisor = 1000000 if unit == 'us' else 1000
-        self.totaltime = ts.totaltime / self.unit_divisor
-        self.dt = ts.dt / self.unit_divisor
-        self.multiplier = custom_multiplier if custom_multiplier is not None else ts.dt / self.unit_divisor
+        self.totaltime = ts.trajectory.totaltime / self.unit_divisor
+        self.dt = ts.trajectory.dt / self.unit_divisor
+        self.multiplier = custom_multiplier if custom_multiplier is not None else self.dt / self.unit_divisor
         self.contact_frames = ts.contacts.contact_frames
 
         self._database = ts.database
