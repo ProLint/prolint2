@@ -71,101 +71,101 @@ parameters_config = config["Parameters"]
 #     def _gen_initial_values(n_atoms, n_residues, n_segments):
 #         return np.array(["other"] * n_residues, dtype=object)
 
-class MacrosClass(ResidueStringAttr):
-    attrname = "macros"
-    singular = "macro"
+# class MacrosClass(ResidueStringAttr):
+#     attrname = "macros"
+#     singular = "macro"
 
-    def __init__(self, universe):
-        n_atoms, n_residues, n_segments = universe.atoms.n_atoms, universe.residues.n_residues, universe.segments.n_segments
-        values = self._gen_initial_values(n_atoms, n_residues, n_segments)
-        super().__init__(values)
+#     def __init__(self, universe):
+#         n_atoms, n_residues, n_segments = universe.atoms.n_atoms, universe.residues.n_residues, universe.segments.n_segments
+#         values = self._gen_initial_values(n_atoms, n_residues, n_segments)
+#         super().__init__(values)
 
-    @staticmethod
-    def _gen_initial_values(n_atoms, n_residues, n_segments):
-        return np.array(["other"] * n_residues, dtype=object)
+#     @staticmethod
+#     def _gen_initial_values(n_atoms, n_residues, n_segments):
+#         return np.array(["other"] * n_residues, dtype=object)
 
-    @staticmethod
-    def set_macros_values(query):
-        protein_segments = query.segments
+#     @staticmethod
+#     def set_macros_values(query, n_proteins=None):
+#         protein_segments = query.segments
 
-        if len(protein_segments) == 1 and protein_segments.n_atoms == query.n_atoms:
-            for segment_idx, segment in enumerate(protein_segments):
-                segment.residues.macros = "Protein" + str(segment_idx)
-        else:
-            resseq = query.residues.resids
-            res0, first_last_index, first_index = resseq[0], [], 0
+#         if len(protein_segments) == 1 and protein_segments.n_atoms == query.n_atoms:
+#             for segment_idx, segment in enumerate(protein_segments):
+#                 segment.residues.macros = "Protein" + str(segment_idx)
+#         else:
+#             resseq = query.residues.resids
+#             res0, first_last_index, first_index = resseq[0], [], 0
 
-            for last_index, res in enumerate(resseq):
-                if res < res0:
-                    first_last_index.append((first_index, last_index - 1))
-                    first_index = last_index
-                res0 = res
-            first_last_index.append((first_index, last_index))
+#             for last_index, res in enumerate(resseq):
+#                 if res < res0:
+#                     first_last_index.append((first_index, last_index - 1))
+#                     first_index = last_index
+#                 res0 = res
+#             first_last_index.append((first_index, last_index))
 
-            for idx, (first_index, last_index) in enumerate(first_last_index):
-                selected_residues = query.residues[first_index:last_index + 1]
-                selected_residues.macros = "Protein" + str(idx)
-
-
-class Universe(mda.Universe):
-    def __init__(self, *args, universe=None, query=None, database=None, **kwargs):
-        if universe is not None:
-            if isinstance(universe, mda.Universe):
-                topology = universe.filename
-                trajectory = universe.trajectory.filename
-                super().__init__(topology, trajectory)
-            else:
-                raise TypeError("universe argument should be an instance of mda.Universe")
-        else:
-            super().__init__(*args, **kwargs)
-
-        self.query = self._handle_query(query)
-        self.database = self._handle_database(database)
-
-        self.registry = MetricRegistry()
+#             for idx, (first_index, last_index) in enumerate(first_last_index):
+#                 selected_residues = query.residues[first_index:last_index + 1]
+#                 selected_residues.macros = "Protein" + str(idx)
 
 
+# class Universe(mda.Universe):
+#     def __init__(self, *args, universe=None, query=None, database=None, **kwargs):
+#         if universe is not None:
+#             if isinstance(universe, mda.Universe):
+#                 topology = universe.filename
+#                 trajectory = universe.trajectory.filename
+#                 super().__init__(topology, trajectory)
+#             else:
+#                 raise TypeError("universe argument should be an instance of mda.Universe")
+#         else:
+#             super().__init__(*args, **kwargs)
 
-        add_lipid_types = []
-        lipid_types = parameters_config["lipid_types"].split(", ")
-        lipid_types = lipid_types + add_lipid_types
-        not_protein_restypes = np.unique(
-            self.atoms.select_atoms("not protein").residues.resnames
-        )
-        membrane_restypes = []
-        for type in lipid_types:
-            if type in not_protein_restypes:
-                membrane_restypes.append("resname " + type)
-        if len(membrane_restypes) == 1:
-            membrane_sel = membrane_restypes[0]
-        elif len(membrane_restypes) > 1:
-            membrane_sel = membrane_restypes[0]
-            for type in membrane_restypes[1:]:
-                membrane_sel = membrane_sel + " or " + type
-        else:
-            print("There are not lipid residues in your system")
+#         self.query = self._handle_query(query)
+#         self.database = self._handle_database(database)
 
-        self._add_macros()
+#         self.registry = MetricRegistry()
 
 
-    def _add_macros(self):
-        macros_attr = MacrosClass(self)
-        self.atoms.universe.add_TopologyAttr(macros_attr)
 
-        macros_attr.set_macros_values(self.query)
+#         add_lipid_types = []
+#         lipid_types = parameters_config["lipid_types"].split(", ")
+#         lipid_types = lipid_types + add_lipid_types
+#         not_protein_restypes = np.unique(
+#             self.atoms.select_atoms("not protein").residues.resnames
+#         )
+#         membrane_restypes = []
+#         for type in lipid_types:
+#             if type in not_protein_restypes:
+#                 membrane_restypes.append("resname " + type)
+#         if len(membrane_restypes) == 1:
+#             membrane_sel = membrane_restypes[0]
+#         elif len(membrane_restypes) > 1:
+#             membrane_sel = membrane_restypes[0]
+#             for type in membrane_restypes[1:]:
+#                 membrane_sel = membrane_sel + " or " + type
+#         else:
+#             print("There are not lipid residues in your system")
+
+#         self._add_macros()
 
 
-    def _handle_query(self, query):
-        if query is None:
-            query_selection_string = "protein"
-            query = self.select_atoms(query_selection_string)
-        return query
+#     def _add_macros(self):
+#         macros_attr = MacrosClass(self)
+#         self.atoms.universe.add_TopologyAttr(macros_attr)
+
+#         macros_attr.set_macros_values(self.query)
+
+
+#     def _handle_query(self, query):
+#         if query is None:
+#             query_selection_string = "protein"
+#             query = self.select_atoms(query_selection_string)
+#         return query
     
-    def _handle_database(self, database):
-        if database is None:
-            database_selection_string = "not protein"
-            database = self.select_atoms(database_selection_string)
-        return database
+#     def _handle_database(self, database):
+#         if database is None:
+#             database_selection_string = "not protein"
+#             database = self.select_atoms(database_selection_string)
+#         return database
 
 
 
