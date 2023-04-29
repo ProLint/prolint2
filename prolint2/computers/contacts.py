@@ -4,6 +4,7 @@ from MDAnalysis.lib.nsgrid import FastNS
 
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
+from prolint2.metrics.duration import ContactDurations
 
 def process_contact_items(contact_items):
     """
@@ -54,7 +55,8 @@ class SerialContacts(ContactComputerBase):
         self.db_resids = self.database.resids
         self.db_resnames = self.database.resnames
 
-        self.contacts = defaultdict(lambda: defaultdict(list))
+        self.contacts = None
+        # self.contacts2 = defaultdict(lambda: defaultdict(list))
         self.contact_frames = defaultdict(lambda: defaultdict(list))
 
         self._validate_inputs()
@@ -110,9 +112,10 @@ class SerialContacts(ContactComputerBase):
             residue_id, lipid_id, lipid_name = unique_data
             if (residue_id, lipid_id) not in existing_pairs:
                 existing_pairs.add((residue_id, lipid_id))
-                self.contacts[residue_id][lipid_name].append(lipid_id)
+                # self.contacts2[residue_id][lipid_name].append(lipid_id)
                 self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
     def _conclude(self):
-        self.contacts = {k: self.contacts[k] for k in sorted(self.contacts)}
-        self.contacts = transform_contacts(self.contacts)
+        contacts = ContactDurations(self.query.universe, self.contact_frames)
+        contacts.run()
+        self.contacts = contacts

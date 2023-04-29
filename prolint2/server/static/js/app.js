@@ -38,6 +38,8 @@ fetch("/data/" + JSON.stringify(obj))
   .then((responseData) => {
 
     var contactData = responseData["data"];
+    console.log('pieData', responseData['pieData'])
+    console.log('contactData', contactData)
     var lipids = responseData["lipids"];
 
     var rootReferenceObjects = radarApp();

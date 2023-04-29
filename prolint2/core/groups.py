@@ -33,7 +33,7 @@ class PLAtomGroupBase(ABC):
         """ Get the residue IDs of a list of residues in the AtomGroup."""
 
     @abstractmethod
-    def filter_resids_by_resname(self, resname: str):
+    def filter_resids_by_resname(self, resids: np.ndarray, resname: str):
         """ Filter the residue IDs by residue name."""
 
     @property
@@ -53,10 +53,8 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
         """Initialize the AtomGroup."""
         super().__init__(*args, **kwargs)
         self._resname_resid_labels = self._build_resname_resid_labels()
-        self._stored_resnames = self.residues.resnames.copy()
-        self._stored_resids = self.residues.resids.copy()
-        # self.stored_resnames = self.residues.resnames
-        # self.stored_resids = self.residues.resids
+        self._stored_resnames = self.residues.resnames
+        self._stored_resids = self.residues.resids
 
     def _build_resname_resid_labels(self):
         """Build a dictionary of residue names and residue IDs."""

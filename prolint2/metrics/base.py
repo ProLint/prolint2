@@ -21,7 +21,8 @@ class BaseMetric(ABC):
 
 class Metric(ABC):
     def __init__(self, contacts, metrics, output_format: OutputFormat = DefaultOutputFormat(), lipid_type=None, clear=True):
-        self.contact_input = contacts.contacts
+        self.contact_input = dict(sorted(contacts.contacts.items()))
+
         if not isinstance(metrics, list):
             metrics = [metrics]
         self.metrics = metrics
@@ -33,18 +34,21 @@ class Metric(ABC):
     def compute(self, dt=1, totaltime=1):
         multiplier = dt / totaltime
         for residue_id, lipid_dict in self.contact_input.items():
-            for lipid_id, lipid_contacts in lipid_dict.items():
-                if self.lipid_type is not None and self.lipid_type != lipid_id:
+            for lipid_name, contact_array in lipid_dict.items():
+                if self.lipid_type is not None and self.lipid_type != lipid_name:
                     continue
-                contact_array = list(lipid_contacts.values())
+                # contact_array = list(lipid_contacts.values())
 
                 if contact_array:
                     for metric in self.metrics:
+                        if max(contact_array) > 1:
+                            print ('contact_array', residue_id, lipid_name, max(contact_array))
                         value = metric.compute_metric(contact_array) * multiplier
-                        self.output_format.store_result(residue_id, lipid_id, metric.__class__.__name__, value)
+                        # print ('value', residue_id, lipid_name, value, multiplier)
+                        self.output_format.store_result(residue_id, lipid_name, metric.__class__.__name__, value)
                 else:
                     for metric in self.metrics:
-                        self.output_format.store_result(residue_id, lipid_id, metric.__class__.__name__, 0)
+                        self.output_format.store_result(residue_id, lipid_name, metric.__class__.__name__, 0)
 
         return self.output_format.get_result()
 

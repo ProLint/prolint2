@@ -122,7 +122,7 @@ def fast_contiguous_segment_lengths(arr, multiplier: float=1.) -> np.ndarray:
     segment_lengths = np.empty(split_indices.size + 1, dtype=int)
     if split_indices.size == 0:
         segment_lengths[0] = len(arr)
-        return segment_lengths
+        return segment_lengths * multiplier
     segment_lengths[0] = split_indices[0] + 1
     segment_lengths[-1] = len(arr) - split_indices[-1] - 1
     segment_lengths[1:-1] = np.diff(split_indices) #- 1

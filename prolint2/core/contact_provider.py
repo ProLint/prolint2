@@ -33,4 +33,4 @@ class ContactsProvider:
                 self.query.universe, self.query, self.database, **kwargs
             )
         contact_computer.run(verbose=True)
-        return contact_computer
+        return contact_computer.contacts

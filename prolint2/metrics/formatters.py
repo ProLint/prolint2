@@ -67,16 +67,17 @@ class ProLintDashboardOutputFormat(OutputFormat):
         self.residue_names = residue_names
         self.residue_ids = residue_ids
 
-    def store_result(self, residue_id, lipid_id, metric_name, value):
+    def store_result(self, residue_id, lipid_name, metric_name, value):
         if not value > 0:
             return
         
-        self.results[lipid_id].append(
+        self.results[lipid_name].append(
             {
                 "residue": f"{self.residue_names[residue_id]} {self.residue_ids[residue_id]}",
                 "value": float(f"{value:.2f}"),
             }
         )
+        # print ('store_result', f"{self.residue_names[residue_id]} {self.residue_ids[residue_id]}", float(f"{value:.2f}"))
 
     def get_result(self):
         return self.results
