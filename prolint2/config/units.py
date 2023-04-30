@@ -9,3 +9,10 @@ class UnitConversionFactor(Enum):
     us = 1e-6
     ms = 1e-3
     s = 1.0
+
+DEFAULT_SIM_PARAMS = {
+    'units': 'us',
+    'normalizer': 'total_time',
+    'unit_conversion_factor': UnitConversionFactor.ps.value / UnitConversionFactor.us.value,
+    'norm_factor': 1
+}

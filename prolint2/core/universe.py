@@ -36,11 +36,12 @@ class Universe(mda.Universe):
         self.registry = MetricRegistry()
         self.contacts = ContactsProvider(self.query, self.database)
 
-        self._time_unit = self._set_default_time_unit()
-        self._units = units
-        self._normalizer = normalize_by
-        self._unit_conversion_factor = self._handle_units(self._units)
-        self._norm_factor = self._handle_normalizer(self._normalizer)
+        self.params = {
+            'units': units,
+            'normalizer': normalize_by,
+            'unit_conversion_factor': self._handle_units(units),
+            'norm_factor': self._handle_normalizer(normalize_by, units)
+        }
 
         self._add_macros()
 
@@ -67,14 +68,15 @@ class Universe(mda.Universe):
                 units = UnitConversionFactor[units]
             else:
                 raise ValueError(f"units argument must be one of {UnitConversionFactor.__members__}")
-        return UnitConversionFactor[self._time_unit].value / units.value
+        time_unit = self._set_default_time_unit()
+        return UnitConversionFactor[time_unit].value / units.value
 
-    def _handle_normalizer(self, normalize_by):
+    def _handle_normalizer(self, normalize_by, units):
         if normalize_by not in ['counts', 'total_time', 'time_fraction']:
             raise ValueError("normalize_by argument must be one of ['counts', 'total_time', 'time_fraction']")
         norm_factors = {
             'counts': 1,
-            'total_time': self.trajectory.dt * self._unit_conversion_factor,
+            'total_time': self.trajectory.dt * self._handle_units(units),
             'time_fraction': self.trajectory.dt / self.trajectory.totaltime
         }
         return norm_factors[normalize_by]
@@ -123,23 +125,22 @@ class Universe(mda.Universe):
     @property
     def units(self):
         """The units of the trajectory time."""
-        return self._units
-    
+        return self.params['units']
+
     @units.setter
     def units(self, new_units):
-        self._unit_conversion_factor = self._handle_units(new_units)
-        self._units = new_units
-        # self._unit_conversion_factor = self._units
+        self.params['unit_conversion_factor'] = self._handle_units(new_units)
+        self.params['units'] = new_units
 
     @property
     def normalize_by(self):
         """The normalizer of the trajectory time."""
-        return self._normalizer
-    
+        return self.params['normalizer']
+
     @normalize_by.setter
     def normalize_by(self, new_normalizer):
-        self._norm_factor = self._handle_normalizer(new_normalizer)
-        self._normalizer = new_normalizer
+        self.params['norm_factor'] = self._handle_normalizer(new_normalizer, self.params['units'])
+        self.params['normalizer'] = new_normalizer
 
     def __str__(self) -> str:
         return f"<ProLint Wrapper for {super().__str__()}>"

@@ -6,11 +6,12 @@ from prolint2.core.typing import NestedFloatDict, NestedIterFloatDict, NestedIte
 from prolint2.metrics.exact_contacts import ExactContacts
 from prolint2.metrics.aprox_contacts import AproxContacts
 
+from prolint2.config.units import DEFAULT_SIM_PARAMS
 class ContactsProvider:
     """
     Class that provides the contacts computation functionality.
     """
-    def __init__(self, query, database, contact_frames=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
+    def __init__(self, query, database, params=None, contact_frames=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
         self.query = query
         self.database = database
 
@@ -24,6 +25,9 @@ class ContactsProvider:
         self._computed_contacts = None if contact_frames is None else contact_frames
         self._compute_strategy = compute_strategy
         self._contact_strategy = self._contact_counter[contact_strategy]
+
+        if params is None:
+            params = DEFAULT_SIM_PARAMS
 
     def compute(self, strategy_or_computer=None, **kwargs):
         """
