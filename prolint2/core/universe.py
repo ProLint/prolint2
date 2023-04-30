@@ -19,7 +19,7 @@ VALID_UNITS = get_args(TimeUnitLiteral)
 warnings.filterwarnings('ignore')
 class Universe(mda.Universe):
     """A subclass of MDAnalysis.Universe that adds a query and database attribute, and other useful methods."""
-    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'total_time', 'time_fraction'] = 'total_time', units: TimeUnitLiteral = 'us', **kwargs):
+    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'total_time', 'time_fraction'] = 'time_fraction', units: TimeUnitLiteral = 'us', **kwargs):
         if universe is not None:
             if isinstance(universe, mda.Universe):
                 topology = universe.filename
@@ -33,15 +33,16 @@ class Universe(mda.Universe):
         self._query = self._handle_query(query)
         self._database = self._handle_database(database)
 
-        self.registry = MetricRegistry()
-        self.contacts = ContactsProvider(self.query, self.database)
-
         self.params = {
             'units': units,
             'normalizer': normalize_by,
             'unit_conversion_factor': self._handle_units(units),
             'norm_factor': self._handle_normalizer(normalize_by, units)
         }
+
+
+        self.registry = MetricRegistry()
+        self.contacts = ContactsProvider(self.query, self.database, params=self.params)
 
         self._add_macros()
 
@@ -75,9 +76,9 @@ class Universe(mda.Universe):
         if normalize_by not in ['counts', 'total_time', 'time_fraction']:
             raise ValueError("normalize_by argument must be one of ['counts', 'total_time', 'time_fraction']")
         norm_factors = {
-            'counts': 1,
-            'total_time': self.trajectory.dt * self._handle_units(units),
-            'time_fraction': self.trajectory.dt / self.trajectory.totaltime
+            'counts': 1.0,
+            'total_time': float(self.trajectory.dt * self._handle_units(units)),
+            'time_fraction': float(self.trajectory.dt / self.trajectory.totaltime)
         }
         return norm_factors[normalize_by]
 

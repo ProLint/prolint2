@@ -11,7 +11,7 @@ class ContactsProvider:
     """
     Class that provides the contacts computation functionality.
     """
-    def __init__(self, query, database, params=None, contact_frames=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
+    def __init__(self, query, database, params=None, contact_frames=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'aprox'):
         self.query = query
         self.database = database
 
@@ -26,8 +26,7 @@ class ContactsProvider:
         self._compute_strategy = compute_strategy
         self._contact_strategy = self._contact_counter[contact_strategy]
 
-        if params is None:
-            params = DEFAULT_SIM_PARAMS
+        self.params = params if params is not None else DEFAULT_SIM_PARAMS
 
     def compute(self, strategy_or_computer=None, **kwargs):
         """
@@ -60,7 +59,7 @@ class ContactsProvider:
         # self._computed_contacts = contact_computer.contacts
 
         # Strategy to count and store contacts (e.g. exact, aprox, etc.)
-        contact_strategy_instance = self._contact_strategy(self.query.universe, contact_computer.contact_frames)
+        contact_strategy_instance = self._contact_strategy(self.query.universe, contact_computer.contact_frames, self.params.get('norm_factor'))
         contact_strategy_instance.run()
         self._computed_contacts = contact_strategy_instance
 

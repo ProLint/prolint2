@@ -61,11 +61,9 @@ class Metric(ABC):
 
 class BaseContactStore:
     """Base class for storing contact. """
-    def __init__(self, ts, contact_frames, custom_multiplier: float = None, unit: Literal['us', 'ns'] = 'us'):
-        self.n_frames = ts.trajectory.n_frames
-        self.unit = unit
-        self.unit_divisor = 1000000 if unit == 'us' else 1000
-        self.multiplier = custom_multiplier if custom_multiplier is not None else ts.trajectory.dt / self.unit_divisor
+    def __init__(self, ts, contact_frames, norm_factor: float = 1.0):
+
+        self.norm_factor = float(norm_factor)
         self.contact_frames = contact_frames
 
         self._resids = ts.database.residues.resids

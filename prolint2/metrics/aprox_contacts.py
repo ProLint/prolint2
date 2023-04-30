@@ -33,6 +33,7 @@ class AproxContacts(BaseContactStore):
                 ids_to_filter = np.array(list(contact_frame.keys()))
                 lipid_ids = fast_filter_resids_by_resname(self._resids, self._resnames, ids_to_filter, lipid_resname)
                 for lipid_id in lipid_ids:
+                    # print ('-> ', contact_frame[lipid_id])
                     self._contacts[residue][lipid_resname][lipid_id] = contact_frame[lipid_id]
 
     def pooled_results(self, target_lipid_name: Union[str, None] = None) -> Dict[str, np.ndarray]:
@@ -55,7 +56,8 @@ class AproxContacts(BaseContactStore):
                 if target_lipid_name is None or lipid_name == target_lipid_name:
                     pooled_contact_array = []
                     for lipid_id_contacts in lipid_contacts.values():
-                        pooled_contact_array.append(len(lipid_id_contacts))
+                        lipid_contacts_count = len(lipid_id_contacts) * self.norm_factor
+                        pooled_contact_array.append(lipid_contacts_count)
                     pooled_results[residue][lipid_name].extend(pooled_contact_array)
         return pooled_results
             
@@ -84,7 +86,7 @@ class AproxContacts(BaseContactStore):
                     for lipid_id, contact_array in lipid_contacts.items():
                         ones_array = list(np.ones_like(contact_array))
                         computed_metric = getattr(np, metric)(ones_array)
-                        computed_contacts_per_id[lipid_id] = computed_metric
+                        computed_contacts_per_id[lipid_id] = float(computed_metric)
                         # print ('contact_array', lipid_name, lipid_id, computed_metric, metric)
                     computed_results[residue][lipid_name] = computed_contacts_per_id
         return computed_results
@@ -123,6 +125,6 @@ class AproxContacts(BaseContactStore):
                     for lipid_id, contact_array in lipid_contacts.items():
                         ones_array = list(np.ones_like(contact_array))
                         computed_metric = func(ones_array)
-                        computed_contacts_per_id[lipid_id] = computed_metric
+                        computed_contacts_per_id[lipid_id] = float(computed_metric)
                     computed_results[residue][lipid_name] = computed_contacts_per_id
         return computed_results

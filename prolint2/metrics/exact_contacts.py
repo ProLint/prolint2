@@ -141,6 +141,6 @@ class ExactContacts(BaseContactStore):
         durations = {}
         for k, arr in contact_frame.items():
             if k in lipid_ids:
-                durations[k] = fast_contiguous_segment_lengths(arr, self.multiplier)
+                durations[k] = fast_contiguous_segment_lengths(arr, self.norm_factor)
         
         return durations
