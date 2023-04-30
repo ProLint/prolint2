@@ -2,6 +2,7 @@ import os
 import ast
 from io import StringIO
 from collections import Counter
+from decimal import Decimal
 
 import MDAnalysis as mda
 from bottle import Bottle, redirect, static_file
@@ -264,15 +265,11 @@ class ProLintDashboard:
             for lipid, contact_counter in lipid_contacts.items():
                 # Sort the contact_counter dictionary by its values
                 sorted_contacts = sorted(contact_counter.items(), key=lambda x: x[1], reverse=True)
-                # sorted_contacts = sorted(contact_counter)
 
                 for lipid_id, freq in sorted_contacts:
                     # Exclude short-lived contacts
                     if freq <= contact_threshold:
                         continue
-
-                    freq = float(freq)
-                    # freq = float(f"{freq:.2f}"),
 
                     # Update lipid_frequency
                     if lipid_id in lipid_frequency[lipid]:
@@ -514,6 +511,7 @@ class ProLintDashboard:
         payload = self.payload.payload
 
         lipid_frequency, residue_contact_freq = self.sort_lipids()
+        print ('lipid_frequency', lipid_frequency)
         payload["top_lipids"] = lipid_frequency
         payload["lipid_contact_frames"] = residue_contact_freq
 
