@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Callable, Literal
 from prolint2.computers.contacts import ContactComputerBase, SerialContacts
 from prolint2.core.typing import NestedFloatDict, NestedIterFloatDict, NestedIterIntDict
@@ -9,7 +10,7 @@ class ContactsProvider:
     """
     Class that provides the contacts computation functionality.
     """
-    def __init__(self, query, database, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
+    def __init__(self, query, database, contact_frames=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
         self.query = query
         self.database = database
 
@@ -20,7 +21,7 @@ class ContactsProvider:
             'exact': ExactContacts,
             'aprox': AproxContacts
         }
-        self._computed_contacts = None
+        self._computed_contacts = None if contact_frames is None else contact_frames
         self._compute_strategy = compute_strategy
         self._contact_strategy = self._contact_counter[contact_strategy]
 
@@ -109,3 +110,16 @@ class ContactsProvider:
     def contact_frames(self) -> NestedIterIntDict:
         """The computed contacts."""
         return self._computed_contacts.contact_frames
+    
+    def intersection(self, other: 'ContactsProvider') -> 'ContactsProvider':
+        result_data = defaultdict(lambda: defaultdict(list))
+        
+        for residue_id, lipid_ids in self.contact_frames.items():
+            for lipid_id, frame_indices in lipid_ids.items():
+                if lipid_id in other.contact_frames[residue_id]:
+                    result_data[residue_id][lipid_id] = list(set(frame_indices).union(other.contact_frames[residue_id][lipid_id]))
+
+        return ContactsProvider(self.query, self.database, contact_frames=result_data) # TODO: I need to feed the data to exact or aprox
+
+    def __add__(self, other: 'ContactsProvider') -> 'ContactsProvider':
+        return self.intersection(other)

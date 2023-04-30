@@ -1,4 +1,5 @@
 import warnings
+from typing import Literal, get_args
 
 import MDAnalysis as mda
 
@@ -7,10 +8,18 @@ from prolint2.core.groups import ExtendedAtomGroup
 from prolint2.metrics.registries import MetricRegistry
 from prolint2.core.contact_provider import ContactsProvider
 
+from prolint2.config.units import UnitConversionFactor
+
+TimeUnitLiteral = Literal['fs', 'ps', 'ns', 'us', 'ms', 's']
+
+# Build VALID_UNITS from TimeUnitLiteral
+VALID_UNITS = get_args(TimeUnitLiteral)
+
+
 warnings.filterwarnings('ignore')
 class Universe(mda.Universe):
     """A subclass of MDAnalysis.Universe that adds a query and database attribute, and other useful methods."""
-    def __init__(self, *args, universe=None, query=None, database=None, **kwargs):
+    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'total_time', 'time_fraction'] = 'total_time', units: TimeUnitLiteral = 'us', **kwargs):
         if universe is not None:
             if isinstance(universe, mda.Universe):
                 topology = universe.filename
@@ -26,6 +35,12 @@ class Universe(mda.Universe):
 
         self.registry = MetricRegistry()
         self.contacts = ContactsProvider(self.query, self.database)
+
+        self._time_unit = self._set_default_time_unit()
+        self._units = units
+        self._normalizer = normalize_by
+        self._unit_conversion_factor = self._handle_units(self._units)
+        self._norm_factor = self._handle_normalizer(self._normalizer)
 
         self._add_macros()
 
@@ -45,6 +60,31 @@ class Universe(mda.Universe):
             database_selection_string = "not protein"
             database = self.select_atoms(database_selection_string)
         return ExtendedAtomGroup(database)
+
+    def _handle_units(self, units):
+        if isinstance(units, str):
+            if units in UnitConversionFactor.__members__:
+                units = UnitConversionFactor[units]
+            else:
+                raise ValueError(f"units argument must be one of {UnitConversionFactor.__members__}")
+        return UnitConversionFactor[self._time_unit].value / units.value
+
+    def _handle_normalizer(self, normalize_by):
+        if normalize_by not in ['counts', 'total_time', 'time_fraction']:
+            raise ValueError("normalize_by argument must be one of ['counts', 'total_time', 'time_fraction']")
+        norm_factors = {
+            'counts': 1,
+            'total_time': self.trajectory.dt * self._unit_conversion_factor,
+            'time_fraction': self.trajectory.dt / self.trajectory.totaltime
+        }
+        return norm_factors[normalize_by]
+
+    def _set_default_time_unit(self):
+        traj_time_unit = self.trajectory.units.get('time', None)
+        if traj_time_unit is None:
+            warnings.warn("Trajectory time unit is not set. Assuming 'ps'.")
+
+        return traj_time_unit if traj_time_unit is not None else 'ps'
 
     @property
     def query(self):
@@ -79,6 +119,27 @@ class Universe(mda.Universe):
     def compute_contacts(self, *args, **kwargs):
         """Compute contacts between the query and database AtomGroups."""
         return self.contacts.compute(*args, **kwargs)
+
+    @property
+    def units(self):
+        """The units of the trajectory time."""
+        return self._units
+    
+    @units.setter
+    def units(self, new_units):
+        self._unit_conversion_factor = self._handle_units(new_units)
+        self._units = new_units
+        # self._unit_conversion_factor = self._units
+
+    @property
+    def normalize_by(self):
+        """The normalizer of the trajectory time."""
+        return self._normalizer
+    
+    @normalize_by.setter
+    def normalize_by(self, new_normalizer):
+        self._norm_factor = self._handle_normalizer(new_normalizer)
+        self._normalizer = new_normalizer
 
     def __str__(self) -> str:
         return f"<ProLint Wrapper for {super().__str__()}>"
