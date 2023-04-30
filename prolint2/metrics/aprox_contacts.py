@@ -47,20 +47,6 @@ class AproxContacts:
                 for lipid_id in lipid_ids:
                     self._contacts[residue][lipid_resname][lipid_id] = contact_frame[lipid_id]
 
-
-        #         if len(lipid_resnames) != len(self._database_unique_resnames):
-        #             ids_to_filter = np.array(list(contact_frame.keys()))
-        #             lipid_ids = fast_filter_resids_by_resname(self._resids, self._resnames, ids_to_filter, lipid_resname)
-
-        #         for lipid_id, contact_list in contact_frame.items():
-        #             self._contacts[residue][lipid_id] = len(contact_list)
-
-        # for residue_id, lipid_data in self.contact_frames.items():
-        #     for lipid_id, contact_frame in lipid_data.items():
-        #         self._contacts[residue_id][lipid_id] = len(contact_frame)
-
-        # self._contacts = results
-
     def pooled_results(self, target_lipid_name: Union[str, None] = None) -> Dict[str, np.ndarray]:
         """Get the duration of lipid contacts for all lipid types pooled together.
 
@@ -74,10 +60,6 @@ class AproxContacts:
         Dict[str, np.ndarray]
             A dictionary of lipid contact durations for all lipid types.
         """
-        # if lipid_resnames is None:
-        #     lipid_resnames = self._database_unique_resnames
-        # elif isinstance(lipid_resnames, str):
-        #     lipid_resnames = [lipid_resnames]
 
         pooled_results = defaultdict(lambda: defaultdict(list))
         for residue, lipid_data in self._contacts.items():
@@ -85,8 +67,7 @@ class AproxContacts:
                 if target_lipid_name is None or lipid_name == target_lipid_name:
                     pooled_contact_array = []
                     for lipid_id_contacts in lipid_contacts.values():
-                        ones_array = np.ones(len(lipid_id_contacts))
-                        pooled_contact_array.extend(list(ones_array))
+                        pooled_contact_array.append(len(lipid_id_contacts))
                     pooled_results[residue][lipid_name].extend(pooled_contact_array)
         return pooled_results
             
