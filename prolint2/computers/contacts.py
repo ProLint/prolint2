@@ -84,7 +84,7 @@ class SerialContacts(ContactComputerBase):
                 existing_pairs.add((residue_id, lipid_id))
                 self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
-    def _conclude(self):
-        contacts = ExactContacts(self.query.universe, self.contact_frames)
-        contacts.run()
-        self.contacts = contacts
+    # def _conclude(self):
+    #     contacts = ExactContacts(self.query.universe, self.contact_frames)
+    #     contacts.run()
+    #     self.contacts = contacts
