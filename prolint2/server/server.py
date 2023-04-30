@@ -2,7 +2,6 @@ import os
 import ast
 from io import StringIO
 from collections import Counter
-from decimal import Decimal
 
 import MDAnalysis as mda
 from bottle import Bottle, redirect, static_file
@@ -120,118 +119,6 @@ class ProLintDashboard:
             if y not in categories:
                 categories.append(y)
         return gantt_data, categories
-
-    # @staticmethod
-    # def sort_lipids_old(self):
-    #     """
-    #     Sort lipid contacts according to their contact frequency, all the while keeping track
-    #     of residue IDs, and number of contacts with each residue.
-
-    #     Args:
-    #         ts (PL2): The ProLint2 object.
-
-    #     Returns:
-    #         t (dict): Stores lipid IDs and their contact frequency, sorted in descending order
-    #         g (dict): For each lipid ID, stores the residues in contact and the corresponding
-    #                 frequency.
-                    
-    #     """
-
-    #     def sort_tuple(tup):
-    #         tup.sort(key=lambda x: x[1], reverse=True)
-    #         return tup
-
-    #     # TODO:
-    #     # top lipid number should be put in the config.
-    #     contact_threshold = self.ts.trajectory.n_frames * 0.05
-
-    #     # initialize dictionary to store values:
-    #     t = {k: {} for k in self.ts.database.unique_resnames}
-    #     g = {}
-    #     for _, (residue, lipid_contacts) in enumerate(self.contacts.contacts2.items()):
-    #         for lipid, contact_counter in lipid_contacts.items():
-    #             top10_counter = contact_counter.most_common()
-    #             # top10_counter = sorted(contact_counter)
-    #             for (lipid_id, lipid_counter) in top10_counter:
-    #                 # Type conversion are necessary to ensure JSON serializability
-    #                 # Exclude short-lived contacts
-    #                 if lipid_counter <= contact_threshold:
-    #                     continue
-    #                 if lipid_id in t[lipid]:
-    #                     t[lipid][int(lipid_id)] += lipid_counter
-    #                     g[int(lipid_id)].append((int(residue), lipid_counter))
-    #                 else:
-    #                     t[lipid][int(lipid_id)] = lipid_counter
-    #                     g[int(lipid_id)] = [(int(residue), lipid_counter)]
-
-    #     for lipid, values in t.items():
-    #         t[lipid] = Counter(values).most_common()
-
-    #     # for lipid, values in g.items():
-    #     for lipid_id, vals in g.items():
-    #         g[lipid_id] = sort_tuple(vals)
-
-    #     return t, g
-
-    # def sort_lipids(self):
-    #     """
-    #     Sort lipid contacts according to their contact frequency, all the while keeping track
-    #     of residue IDs, and number of contacts with each residue.
-
-    #     Args:
-    #         ts (PL2): The ProLint2 object.
-
-    #     Returns:
-    #         lipid_frequency (dict): Stores lipid IDs and their contact frequency, sorted in descending order
-    #         residue_contact_freq (dict): For each lipid ID, stores the residues in contact and the corresponding
-    #                 frequency.
-                    
-    #     """
-
-    #     def sort_by_frequency(contact_list):
-    #         contact_list.sort(key=lambda x: x[1], reverse=True)
-    #         return contact_list
-
-    #     # TODO:
-    #     # top lipid number should be put in the config.
-    #     contact_threshold = self.ts.trajectory.n_frames * 0.05
-
-    #     # Initialize dictionaries to store values:
-    #     lipid_frequency = {lipid: {} for lipid in self.ts.database.unique_resnames}
-    #     residue_contact_freq = {}
-
-    #     for residue, lipid_contacts in self.contacts.contacts.items():
-    #         for lipid, contact_counter in lipid_contacts.items():
-    #             top_contacts = contact_counter.most_common()
-
-    #             for lipid_id, freq in top_contacts:
-    #                 # Exclude short-lived contacts
-    #                 if freq <= contact_threshold:
-    #                     continue
-
-    #                 # Update lipid_frequency
-    #                 if lipid_id in lipid_frequency[lipid]:
-    #                     lipid_frequency[lipid][int(lipid_id)] += freq
-    #                 else:
-    #                     lipid_frequency[lipid][int(lipid_id)] = freq
-
-    #                 # Update residue_contact_freq
-    #                 if int(lipid_id) in residue_contact_freq:
-    #                     residue_contact_freq[int(lipid_id)].append((int(residue), freq))
-    #                 else:
-    #                     residue_contact_freq[int(lipid_id)] = [(int(residue), freq)]
-
-    #     for lipid, values in lipid_frequency.items():
-    #         lipid_frequency[lipid] = Counter(values).most_common()
-
-    #     for lipid_id, vals in residue_contact_freq.items():
-    #         residue_contact_freq[lipid_id] = sort_by_frequency(vals)
-
-    #     # t, g = self.sort_lipids_old()
-    #     # assert t == lipid_frequency
-    #     # assert g == residue_contact_freq
-    #     return lipid_frequency, residue_contact_freq
-
 
     def sort_lipids(self):
         """
