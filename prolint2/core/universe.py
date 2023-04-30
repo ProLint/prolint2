@@ -77,6 +77,7 @@ class Universe(mda.Universe):
         self.database = new_database
 
     def compute_contacts(self, *args, **kwargs):
+        """Compute contacts between the query and database AtomGroups."""
         return self.contacts.compute(*args, **kwargs)
 
     def __str__(self) -> str:

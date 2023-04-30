@@ -148,7 +148,7 @@ class ProLintDashboard:
         lipid_frequency = {lipid: {} for lipid in self.ts.database.unique_resnames}
         residue_contact_freq = {}
 
-        for residue, lipid_contacts in self.contacts.compute('sum').items():
+        for residue, lipid_contacts in self.contacts.compute_metric('sum').items():
             for lipid, contact_counter in lipid_contacts.items():
                 # Sort the contact_counter dictionary by its values
                 sorted_contacts = sorted(contact_counter.items(), key=lambda x: x[1], reverse=True)

@@ -26,6 +26,7 @@ class SerialContacts(ContactComputerBase):
         self.db_resids = self.database.resids
         self.db_resnames = self.database.resnames
 
+        self.contacts = None
         self.contact_frames = defaultdict(lambda: defaultdict(list))
 
         self._validate_inputs()

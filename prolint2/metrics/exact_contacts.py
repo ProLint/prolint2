@@ -78,9 +78,9 @@ class ExactContacts(BaseContactStore):
             A dictionary of computed metrics for all lipids.
         """
 
-        computed_results = {}
+        computed_results = defaultdict(lambda: defaultdict(dict))
         for residue, lipid_data in self._contacts.items():
-            computed_results[residue] = {}
+            # computed_results[residue] = {}
             for lipid_name, lipid_contacts in lipid_data.items():
                 if target_lipid_name is None or lipid_name == target_lipid_name:
                     computed_contacts_per_id = {lipid_id: getattr(np, metric)(contact_array) for lipid_id, contact_array in lipid_contacts.items()}
