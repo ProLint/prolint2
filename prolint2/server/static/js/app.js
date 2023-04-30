@@ -38,8 +38,6 @@ fetch("/data/" + JSON.stringify(obj))
   .then((responseData) => {
 
     var contactData = responseData["data"];
-    console.log('pieData', responseData['pieData'])
-    console.log('contactData', contactData)
     console.log('responseData', responseData)
     var lipids = responseData["lipids"];
 

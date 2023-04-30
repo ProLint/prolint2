@@ -7,36 +7,6 @@ from prolint2.utils.utils import fast_unique_comparison
 from prolint2.metrics.exact_contacts import ExactContacts
 from prolint2.metrics.aprox_contacts import AproxContacts
 
-# def process_contact_items(contact_items):
-#     """
-#     Process the contact items to get the number of contacts per residue.
-#     """
-#     processed_items = {}
-#     for key, value in contact_items:
-#         processed_items[key] = Counter(value)
-#     return processed_items
-
-# def transform_contacts(contacts):
-#     """
-#     Transform the contacts to a dictionary of dictionaries.
-
-#     Parameters
-#     ----------
-#     contacts : dict
-#         Dictionary of contacts.
-
-#     Returns
-#     -------
-#     dict: Dictionary of dictionaries.
-
-#     """
-#     transformed_contacts = {}
-#     for key, value in contacts.items():
-#         transformed_contacts[key] = process_contact_items(value.items())
-#     return transformed_contacts
-
-
-
 class SerialContacts(ContactComputerBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups
@@ -56,8 +26,6 @@ class SerialContacts(ContactComputerBase):
         self.db_resids = self.database.resids
         self.db_resnames = self.database.resnames
 
-        self.contacts = None
-        # self.contacts2 = defaultdict(lambda: defaultdict(list))
         self.contact_frames = defaultdict(lambda: defaultdict(list))
 
         self._validate_inputs()
@@ -110,10 +78,9 @@ class SerialContacts(ContactComputerBase):
 
         existing_pairs = set()
         for unique_data in zip(residue_ids, lipid_ids, lipid_names):
-            residue_id, lipid_id, lipid_name = unique_data
+            residue_id, lipid_id, _ = unique_data
             if (residue_id, lipid_id) not in existing_pairs:
                 existing_pairs.add((residue_id, lipid_id))
-                # self.contacts2[residue_id][lipid_name].append(lipid_id)
                 self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
     def _conclude(self):

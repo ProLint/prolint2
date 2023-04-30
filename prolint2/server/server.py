@@ -398,7 +398,6 @@ class ProLintDashboard:
         payload = self.payload.payload
 
         lipid_frequency, residue_contact_freq = self.sort_lipids()
-        print ('lipid_frequency', lipid_frequency)
         payload["top_lipids"] = lipid_frequency
         payload["lipid_contact_frames"] = residue_contact_freq
 
