@@ -4,35 +4,36 @@ from MDAnalysis.lib.nsgrid import FastNS
 
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
-from prolint2.metrics.duration import ContactDurations
+from prolint2.metrics.exact_contacts import ExactContacts
+from prolint2.metrics.aprox_contacts import AproxContacts
 
-def process_contact_items(contact_items):
-    """
-    Process the contact items to get the number of contacts per residue.
-    """
-    processed_items = {}
-    for key, value in contact_items:
-        processed_items[key] = Counter(value)
-    return processed_items
+# def process_contact_items(contact_items):
+#     """
+#     Process the contact items to get the number of contacts per residue.
+#     """
+#     processed_items = {}
+#     for key, value in contact_items:
+#         processed_items[key] = Counter(value)
+#     return processed_items
 
-def transform_contacts(contacts):
-    """
-    Transform the contacts to a dictionary of dictionaries.
+# def transform_contacts(contacts):
+#     """
+#     Transform the contacts to a dictionary of dictionaries.
 
-    Parameters
-    ----------
-    contacts : dict
-        Dictionary of contacts.
+#     Parameters
+#     ----------
+#     contacts : dict
+#         Dictionary of contacts.
 
-    Returns
-    -------
-    dict: Dictionary of dictionaries.
+#     Returns
+#     -------
+#     dict: Dictionary of dictionaries.
 
-    """
-    transformed_contacts = {}
-    for key, value in contacts.items():
-        transformed_contacts[key] = process_contact_items(value.items())
-    return transformed_contacts
+#     """
+#     transformed_contacts = {}
+#     for key, value in contacts.items():
+#         transformed_contacts[key] = process_contact_items(value.items())
+#     return transformed_contacts
 
 
 
@@ -116,6 +117,6 @@ class SerialContacts(ContactComputerBase):
                 self.contact_frames[residue_id][lipid_id].append(self._frame_index)
 
     def _conclude(self):
-        contacts = ContactDurations(self.query.universe, self.contact_frames)
+        contacts = AproxContacts(self.query.universe, self.contact_frames)
         contacts.run()
         self.contacts = contacts

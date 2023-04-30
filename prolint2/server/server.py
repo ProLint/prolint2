@@ -262,7 +262,6 @@ class ProLintDashboard:
 
         for residue, lipid_contacts in self.contacts.compute('sum').items():
             for lipid, contact_counter in lipid_contacts.items():
-                # print (lipid, contact_counter)
                 # Sort the contact_counter dictionary by its values
                 sorted_contacts = sorted(contact_counter.items(), key=lambda x: x[1], reverse=True)
                 # sorted_contacts = sorted(contact_counter)
@@ -271,6 +270,8 @@ class ProLintDashboard:
                     # Exclude short-lived contacts
                     if freq <= contact_threshold:
                         continue
+
+                    freq = float(freq)
 
                     # Update lipid_frequency
                     if lipid_id in lipid_frequency[lipid]:
@@ -333,7 +334,6 @@ class ProLintDashboard:
         protein = metadata["protein"]
         metric = metadata.get('metric', '')
 
-        print(lipid, protein, metric)
         if lipid == "" and protein == "":
             # Starting setup:
             lipid = self.backend_data["lipids"][0]
@@ -344,7 +344,6 @@ class ProLintDashboard:
             table_data.append({"id": ix, "lipidID": lipid_id, "contactFrequency": freq})
 
         # Initiate ganttApp with the top lipid data
-        # print ('-> ', self.backend_data["top_lipids"])
         lipid_id = self.backend_data["top_lipids"][lipid][0][0]
         gantt_data, categories = self.get_gantt_app_data(
             self.backend_data["lipid_contact_frames"], lipid_id
@@ -372,7 +371,6 @@ class ProLintDashboard:
 
         # TODO:
         # Possibly, avoid single point of failure on these dictionary lookups?
-        # print (self.backend_data)
         response = {
             "data": self.backend_data["data"][protein][lipid],
             "proteins": self.backend_data["proteins"],
@@ -513,11 +511,10 @@ class ProLintDashboard:
         # payload = self.contacts.server_payload()
         self.payload = ServerPayload(self.contacts, self.ts)
         payload = self.payload.payload
-        print ('payload', payload.keys(), payload.get('lipids'))
 
-        t, g = self.sort_lipids()
-        payload["top_lipids"] = t
-        payload["lipid_contact_frames"] = g
+        lipid_frequency, residue_contact_freq = self.sort_lipids()
+        payload["top_lipids"] = lipid_frequency
+        payload["lipid_contact_frames"] = residue_contact_freq
 
         self.backend_data = payload
 

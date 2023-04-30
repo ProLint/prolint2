@@ -41,8 +41,8 @@ class Metric(ABC):
 
                 if contact_array:
                     for metric in self.metrics:
-                        if max(contact_array) > 1:
-                            print ('contact_array', residue_id, lipid_name, max(contact_array))
+                        # if max(contact_array) > 1:
+                        #     print ('contact_array', residue_id, lipid_name, max(contact_array))
                         value = metric.compute_metric(contact_array) * multiplier
                         # print ('value', residue_id, lipid_name, value, multiplier)
                         self.output_format.store_result(residue_id, lipid_name, metric.__class__.__name__, value)

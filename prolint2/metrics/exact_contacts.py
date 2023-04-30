@@ -1,14 +1,16 @@
 from typing import List, Dict, Literal, Callable, Union
 
 from collections import defaultdict
-from itertools import chain
 
 import numpy as np
 
-from prolint2.metrics.utils import fast_filter_resids_by_resname, fast_contiguous_segment_lengths
+from prolint2.metrics.utils import (
+    fast_filter_resids_by_resname, 
+    fast_contiguous_segment_lengths
+)
 
 
-class ContactDurations:
+class ExactContacts:
     """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts. """
     def __init__(self, ts, contact_frames, custom_multiplier: float = None, unit: Literal['us', 'ns'] = 'us'):
         self.n_frames = ts.trajectory.n_frames
@@ -21,8 +23,7 @@ class ContactDurations:
         self._resids = ts.database.residues.resids
         self._resnames = ts.database.residues.resnames
         self._database_unique_resnames = ts.database.unique_resnames
-        # self._lipid_resname_mask = {k: self._create_lipid_resname_mask(ts.database, k) for k in ts.database.unique_resnames}
-        self._durations = None
+        self._contacts = defaultdict(dict)
 
     def run(self, lipid_resnames: Union[str, List] = None) -> Dict[str, np.ndarray]:
         """Compute the duration of lipid contacts for all lipid types.
@@ -35,22 +36,19 @@ class ContactDurations:
         Returns
         -------
         Dict[str, np.ndarray]
-            A dictionary of lipid contact durations for all lipid types.
+            A dictionary of lipid contact durations for all lipid types. 
+            The output is stored in the `self._contacts` attribute.
         """
         if lipid_resnames is None:
             lipid_resnames = self._database_unique_resnames
         elif isinstance(lipid_resnames, str):
             lipid_resnames = [lipid_resnames]
 
-        results = defaultdict(dict)
         for residue, contact_frame in self.contact_frames.items():
             for lipid_resname in lipid_resnames:
-                # results[lipid_resname][residue] = self.compute(contact_frame, lipid_resname)
                 result = self.compute_lipid_durations(contact_frame, lipid_resname)
                 if len(result) > 0:
-                    results[residue][lipid_resname] = result
-
-        self._durations = results
+                    self._contacts[residue][lipid_resname] = result
 
     def compute_lipid_durations(self, contact_frame: Dict[int, List[int]], lipid_resname: str) -> np.ndarray:
         """Compute the duration of lipid contacts.
@@ -93,15 +91,14 @@ class ContactDurations:
         Dict[str, Dict[str, List[float]]]
             A dictionary of pooled results for all lipids.
         """
-        pooled_results = {}
-        for residue, lipid_data in self._durations.items():
-            pooled_results[residue] = {}
+        pooled_results = defaultdict(lambda: defaultdict(list))
+        for residue, lipid_data in self._contacts.items():
             for lipid_name, lipid_contacts in lipid_data.items():
                 if target_lipid_name is None or lipid_name == target_lipid_name:
                     pooled_contact_array = []
                     for lipid_id_contacts in lipid_contacts.values():
                         pooled_contact_array.extend(lipid_id_contacts)
-                    pooled_results[residue][lipid_name] = pooled_contact_array
+                    pooled_results[residue][lipid_name].extend(pooled_contact_array)
         return pooled_results
 
     def compute(self, metric: str, target_lipid_name=None):
@@ -150,7 +147,7 @@ class ContactDurations:
         """
 
         computed_results = {}
-        for residue, lipid_data in self.results.items():
+        for residue, lipid_data in self._contacts.items():
             computed_results[residue] = {}
             for lipid_name, lipid_contacts in lipid_data.items():
                 if target_lipid_name is None or lipid_name == target_lipid_name:
@@ -182,7 +179,7 @@ class ContactDurations:
         >>> cd.apply_function(lambda x: np.mean(x) / np.max(x), target_lipid_name='DOPC')
         """
         computed_results = {}
-        for residue, lipid_data in self.results.items():
+        for residue, lipid_data in self._contacts.items():
             computed_results[residue] = {}
             for lipid_name, lipid_contacts in lipid_data.items():
                 if target_lipid_name is None or lipid_name == target_lipid_name:
@@ -193,13 +190,13 @@ class ContactDurations:
     @property
     def results(self):
         """Get the computed contacts per lipid id. """
-        if self._durations is None:
+        if self._contacts is None:
             raise ValueError('No contacts have been computed yet. Call run() first.')
-        return self._durations
+        return self._contacts
 
     @property
     def contacts(self):
         """Get the computed contacts all pooled together. """
-        if self._durations is None:
+        if self._contacts is None:
             raise ValueError('No contacts have been computed yet. Call run() first.')
         return self.pooled_results()
