@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
+
+from typing import Type, Dict, List, Union, Callable, Iterable, Literal
+
+import numpy as np
 from scipy.optimize import curve_fit
 from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
 
-from typing import Type
+
 MetricRegistry = Type["registries.MetricRegistry"]
 
 class BaseMetric(ABC):
@@ -52,6 +57,79 @@ class Metric(ABC):
 
         return self.output_format.get_result()
 
+class BaseContactStore:
+    """Base class for storing contact. """
+    def __init__(self, ts, contact_frames, custom_multiplier: float = None, unit: Literal['us', 'ns'] = 'us'):
+        self.n_frames = ts.trajectory.n_frames
+        self.unit = unit
+        self.unit_divisor = 1000000 if unit == 'us' else 1000
+        self.multiplier = custom_multiplier if custom_multiplier is not None else ts.trajectory.dt / self.unit_divisor
+        self.contact_frames = contact_frames
+
+        self._resids = ts.database.residues.resids
+        self._resnames = ts.database.residues.resnames
+        self._database_unique_resnames = ts.database.unique_resnames
+        self._contacts = defaultdict(lambda: defaultdict(dict))
+
+    def run(self, lipid_resnames: Union[str, List] = None):
+        """Run the contact calculation for the given lipid resnames. If no resnames are given, all resnames are used. """
+        raise NotImplementedError("Subclasses should implement this method.")
+
+    def compute(self, metric: str, target_lipid_name=None):
+        """Compute a pre-defined metric for all lipids or a specific lipid.
+
+        Parameters
+        ----------
+        metric : str
+            The metric to compute. Must be one of 'max', 'sum', 'mean'.
+        target_lipid_name : str, optional
+            The name of the lipid to compute the metric for. If None, the metric will be computed for all lipids.
+
+        Returns
+        -------
+        Dict[str, Dict[str, Dict[int, float]]]
+            A dictionary of computed metrics for all lipids.
+
+        Examples
+        --------
+        >>> cd = AproxContacts(...)
+        >>> cd.run()
+        >>> cd.compute('max')
+        >>> cd.compute('sum', 'DOPC')
+        >>> cd.compute('median') # raises ValueError. Use `apply_function` instead.
+        """
+
+        if metric in ['max', 'sum', 'mean']:
+            return self.compute_metric(metric, target_lipid_name)
+        else:
+            raise ValueError("Invalid metric specified. Use 'max', 'sum', 'mean'. For more complex metrics, use `apply_function`.")
+
+    def compute_metric(self, metric: str, target_lipid_name=None):
+        """Compute the given metric for the given lipid name. """
+        raise NotImplementedError("Subclasses should implement this method.")
+    
+    def apply_function(self, func: Callable, target_lipid_name=None):
+        """Apply the given function to the contacts for the given lipid name. """
+        raise NotImplementedError("Subclasses should implement this method.")
+    
+    def pooled_results(self):
+        """Get the computed contacts all pooled together. """
+        raise NotImplementedError("Subclasses should implement this method.")
+    
+    @property
+    def results(self):
+        """Get the computed contacts per lipid id. """
+        if self._contacts is None:
+            raise ValueError('No contacts have been computed yet. Call run() first.')
+        return self._contacts
+
+    @property
+    def contacts(self):
+        """Get the computed contacts all pooled together. """
+        if self._contacts is None:
+            raise ValueError('No contacts have been computed yet. Call run() first.')
+        return self.pooled_results()
+    
 class FittingFunctionMeta(type):
     def __init__(cls, name, bases, dct):
         if not hasattr(cls, 'registry'):

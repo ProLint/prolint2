@@ -272,6 +272,7 @@ class ProLintDashboard:
                         continue
 
                     freq = float(freq)
+                    # freq = float(f"{freq:.2f}"),
 
                     # Update lipid_frequency
                     if lipid_id in lipid_frequency[lipid]:
