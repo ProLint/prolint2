@@ -53,7 +53,6 @@ class ServerPayload:
         residue_contacts = self.residue_contacts(lipid_type=lipid_type, metric=metric)
         # print ('residue_contacts', residue_contacts)
 
-        print ('---> ', self.database_resname_counts, self.database_resnames)
         lipid_counts = self.database_resname_counts
         total_lipid_sum = sum(lipid_counts.values())
         sub_data = []

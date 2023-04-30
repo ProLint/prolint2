@@ -85,7 +85,8 @@ class AproxContacts:
                 if target_lipid_name is None or lipid_name == target_lipid_name:
                     pooled_contact_array = []
                     for lipid_id_contacts in lipid_contacts.values():
-                        pooled_contact_array.extend(lipid_id_contacts)
+                        ones_array = np.ones(len(lipid_id_contacts))
+                        pooled_contact_array.extend(list(ones_array))
                     pooled_results[residue][lipid_name].extend(pooled_contact_array)
         return pooled_results
             
