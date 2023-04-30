@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from typing import Type, Dict, List, Union, Callable, Literal
+from typing import Type, List, Union, Callable, Literal
 
 from scipy.optimize import curve_fit
 from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
@@ -10,6 +10,7 @@ from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
 MetricRegistry = Type["registries.MetricRegistry"]
 
 class BaseMetric(ABC):
+    """Base class for all metrics classes that act on single frame contact Iterables."""
     name: str = None
     
     def __init__(self):
@@ -24,6 +25,7 @@ class BaseMetric(ABC):
         registry.register(cls.name, cls)
 
 class Metric(ABC):
+    """Base class for metric calculation."""
     def __init__(self, contacts, metrics, output_format: OutputFormat = DefaultOutputFormat(), lipid_type=None, clear=True):
         self.contact_input = dict(sorted(contacts.contacts.items()))
 
@@ -36,6 +38,7 @@ class Metric(ABC):
         self.lipid_type = lipid_type
 
     def compute(self, dt=1, totaltime=1):
+        """Compute the metric for the given contacts. """
         multiplier = dt / totaltime
         for residue_id, lipid_dict in self.contact_input.items():
             for lipid_name, contact_array in lipid_dict.items():
@@ -130,6 +133,7 @@ class BaseContactStore:
         return self.pooled_results()
     
 class FittingFunctionMeta(type):
+    """Metaclass for fitting functions."""
     def __init__(cls, name, bases, dct):
         if not hasattr(cls, 'registry'):
             cls.registry = {}
@@ -138,6 +142,7 @@ class FittingFunctionMeta(type):
         super().__init__(name, bases, dct)
 
 class FittingFunction(metaclass=FittingFunctionMeta):
+    """Base class for fitting functions."""
     name = None
     p0 = [1, 1, 1, 1]
     maxfev = 1000000

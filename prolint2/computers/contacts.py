@@ -1,11 +1,9 @@
-from collections import Counter, defaultdict
+from collections import defaultdict
 
 from MDAnalysis.lib.nsgrid import FastNS
 
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
-from prolint2.metrics.exact_contacts import ExactContacts
-from prolint2.metrics.aprox_contacts import AproxContacts
 
 class SerialContacts(ContactComputerBase):
     r"""
