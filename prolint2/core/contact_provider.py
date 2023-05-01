@@ -1,6 +1,9 @@
-from copy import deepcopy
 from collections import defaultdict
 from typing import Callable, Literal
+
+import numpy as np
+import pandas as pd
+
 from prolint2.computers.contacts import ContactComputerBase, SerialContacts
 from prolint2.core.typing import NestedFloatDict, NestedIterFloatDict, NestedIterIntDict, LipidId
 
@@ -69,6 +72,72 @@ class ComputedContacts:
         """The computed contacts."""
         return self._contact_strategy.contact_frames
 
+    def create_dataframe(self, n_frames: int) -> pd.DataFrame:
+        """Create a pandas DataFrame from the computed contacts.
+
+        Parameters
+        ----------
+        n_frames : int
+            The number of frames in the trajectory.
+
+        Returns
+        -------
+        pd.DataFrame
+            A pandas DataFrame with the computed contacts.
+        """
+        keys = []
+        contact_arrays = []
+        
+        for residue_id, lipid_name_dict in self.contact_frames.items():
+            for lipid_id, frame_indices in lipid_name_dict.items():
+                contact_array = np.zeros(n_frames, dtype=np.int8)
+                contact_array[frame_indices] = 1
+                
+                keys.append((residue_id, lipid_id))
+                contact_arrays.append(contact_array)
+
+        df = pd.DataFrame(contact_arrays, index=pd.MultiIndex.from_tuples(keys, names=['ResidueID', 'LipidId']))
+        df = df.sort_index(level=['ResidueID', 'LipidId'], ascending=[True, True])
+
+        return df
+
+    def get_lipids_by_residue_id(self, residue_id: int) -> list:
+        """Get all LipidIds that interact with the given ResidueID."""
+        return sorted(list(self.contact_frames[residue_id].keys()))
+
+    def get_residues_by_lipid_id(self, lipid_id: int) -> list:
+        """Get all ResidueIDs that interact with the given LipidId."""
+        residues = [residue_id for residue_id, lipid_name_dict in self.contact_frames.items() if lipid_id in lipid_name_dict.keys()]
+        return residues
+
+    def get_contact_data(self, residue_id: int, lipid_id: int, output: str = 'contacts') -> list:
+        """Get the contact data for a given residue and lipid.
+
+        Parameters
+        ----------
+        residue_id : int
+            The residue id.
+        lipid_id : int
+            The lipid id.
+        output : str, optional
+            The output format. Must be one of 'contacts' or 'indices'.
+
+        Returns
+        -------
+        list
+            A list of contacts or frame indices.
+        """
+        
+        frame_indices = self.contact_frames[residue_id][lipid_id]
+
+        if output == 'indices':
+            return frame_indices
+        else:
+            n_frames = max([max(frame_indices_list) for frame_indices_list in self.contact_frames[residue_id].values()]) + 1
+            contact_array = [1 if i in frame_indices else 0 for i in range(n_frames)]
+            return contact_array
+
+
     def intersection(self, other: 'ComputedContacts') -> 'ComputedContacts':
         """Compute the intersection of two contact providers. Note that ProLint contacts use a radial cutoff. 
         This means that the intersection between two contact providers (c1 and c2) will be equal to the contact provider 
@@ -103,7 +172,7 @@ class ComputedContacts:
                     result_data[residue_id][lipid_id] = other.contact_frames[residue_id][lipid_id]
 
         # Create a new instance of the contact strategy class
-        contact_instances = self._contact_strategy.__class__(self.provider.query.universe, deepcopy(result_data))
+        contact_instances = self._contact_strategy.__class__(self.provider.query.universe, result_data)
         contact_instances.run()
 
         return ComputedContacts(contact_instances, self.provider)
@@ -139,7 +208,7 @@ class ComputedContacts:
                     result_data[residue_id][lipid_id] = self.contact_frames[residue_id][lipid_id]
 
         # Create a new instance of the contact strategy class
-        contact_instances = self._contact_strategy.__class__(self.provider.query.universe, deepcopy(result_data))
+        contact_instances = self._contact_strategy.__class__(self.provider.query.universe, result_data)
         contact_instances.run()
 
         return ComputedContacts(contact_instances, self.provider)

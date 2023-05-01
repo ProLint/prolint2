@@ -10,13 +10,13 @@ from prolint2.core.contact_provider import ContactsProvider
 
 from prolint2.config.units import UnitConversionFactor
 
+warnings.filterwarnings('ignore')
+
 TimeUnitLiteral = Literal['fs', 'ps', 'ns', 'us', 'ms', 's']
 
 # Build VALID_UNITS from TimeUnitLiteral
 VALID_UNITS = get_args(TimeUnitLiteral)
 
-
-warnings.filterwarnings('ignore')
 class Universe(mda.Universe):
     """A subclass of MDAnalysis.Universe that adds a query and database attribute, and other useful methods."""
     def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'total_time', 'time_fraction'] = 'time_fraction', units: TimeUnitLiteral = 'us', **kwargs):
