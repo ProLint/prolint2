@@ -40,9 +40,7 @@ class Universe(mda.Universe):
             'norm_factor': self._handle_normalizer(normalize_by, units)
         }
 
-
         self.registry = MetricRegistry()
-        self.contacts = ContactsProvider(self.query, self.database, params=self.params)
 
         self._add_macros()
 
@@ -121,7 +119,8 @@ class Universe(mda.Universe):
 
     def compute_contacts(self, *args, **kwargs):
         """Compute contacts between the query and database AtomGroups."""
-        return self.contacts.compute(*args, **kwargs)
+        contacts_provider = ContactsProvider(self.query, self.database, params=self.params)
+        return contacts_provider.compute(*args, **kwargs)
 
     @property
     def units(self):

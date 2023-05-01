@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from typing import Type, List, Union, Callable, Literal
+from typing import Type, List, Union, Callable
 
 from scipy.optimize import curve_fit
 from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
