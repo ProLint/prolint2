@@ -127,4 +127,4 @@ class ContactsProvider:
         contact_strategy_instance = self._contact_strategy(self.query.universe, contact_computer.contact_frames, self.params.get('norm_factor'))
         contact_strategy_instance.run()
 
-        return ComputedContacts(contact_strategy_instance, self, self.params.get('norm_factor'))
+        return ComputedContacts(contact_strategy_instance, self)
