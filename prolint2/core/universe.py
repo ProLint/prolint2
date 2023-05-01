@@ -131,7 +131,8 @@ class Universe(mda.Universe):
     def units(self, new_units):
         self.params['unit_conversion_factor'] = self._handle_units(new_units)
         self.params['units'] = new_units
-
+        self.params['norm_factor'] = self._handle_normalizer(self.params['normalizer'], new_units)
+        
     @property
     def normalize_by(self):
         """The normalizer of the trajectory time."""

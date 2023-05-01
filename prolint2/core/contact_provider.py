@@ -127,7 +127,7 @@ class ComputedContacts:
         list
             A list of contacts or frame indices.
         """
-        
+
         frame_indices = self.contact_frames[residue_id][lipid_id]
 
         if output == 'indices':
@@ -173,6 +173,7 @@ class ComputedContacts:
 
         # Create a new instance of the contact strategy class
         contact_instances = self._contact_strategy.__class__(self.provider.query.universe, result_data)
+        contact_instances.norm_factor = self.provider.params.get('norm_factor', 1)
         contact_instances.run()
 
         return ComputedContacts(contact_instances, self.provider)
@@ -224,7 +225,7 @@ class ContactsProvider:
     """
     Class that provides the contacts computation functionality.
     """
-    def __init__(self, query, database, params=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'aprox'):
+    def __init__(self, query, database, params=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
         self.query = query
         self.database = database
 

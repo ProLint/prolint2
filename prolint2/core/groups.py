@@ -97,7 +97,7 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
     def add(self, resname=None, atomname=None, resnum=None, atomids=None):
         """Add atoms to the query or database."""
         selection_string = self._build_selection_string(resname, atomname, resnum, atomids)
-        new_group = self.select_atoms(selection_string)
+        new_group = self.universe.atoms.select_atoms(selection_string)
         new_group = self | new_group
 
         return self.__class__(new_group)
@@ -136,8 +136,9 @@ class ExtendedAtomGroup(mda.AtomGroup, PLAtomGroupBase):
         else:
             raise ValueError("out must be either list or dict")
 
-    def filter_resids_by_resname(self, resids: np.ndarray, resname: str):
+    def filter_resids_by_resname(self, resids: Iterable[int], resname: str):
         """Filter the residue IDs by residue name."""
+        resids = np.asarray(resids)
         all_resnames = self._stored_resnames
         all_resids = self._stored_resids
         # print ('shapes', all_resnames.shape, all_resids.shape, resids.shape)
