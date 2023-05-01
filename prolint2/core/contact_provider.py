@@ -1,9 +1,10 @@
 from copy import deepcopy
 from collections import defaultdict
-from typing import Callable, Literal, Union
+from typing import Callable, Literal
 from prolint2.computers.contacts import ContactComputerBase, SerialContacts
 from prolint2.core.typing import NestedFloatDict, NestedIterFloatDict, NestedIterIntDict, LipidId
 
+from prolint2.metrics.base import BaseContactStore
 from prolint2.metrics.exact_contacts import ExactContacts
 from prolint2.metrics.aprox_contacts import AproxContacts
 
@@ -11,14 +12,46 @@ from prolint2.config.units import DEFAULT_SIM_PARAMS
 
 
 class ComputedContacts:
-    def __init__(self, contact_strategy_instance: Union[ExactContacts, AproxContacts], provider: 'ContactsProvider'):
+    """A class to compute contacts between residues and lipids.
+
+    Parameters
+    ----------
+    contact_strategy_instance : BaseContactStore
+        An instance of a contact strategy class.
+    provider : ContactsProvider
+        The contact provider that will be used to compute contacts.
+        
+    """
+    def __init__(self, contact_strategy_instance: BaseContactStore, provider: 'ContactsProvider'):
         self._contact_strategy = contact_strategy_instance
         self.provider = provider
 
     def compute_metric(self, metric: str, target_lipid_name=None) -> NestedFloatDict:
+        """Compute a pre-defined metric for all lipids or a specific lipid.
+
+        Parameters
+        ----------
+        metric : str
+            The metric to compute. Must be one of 'max', 'sum', 'mean'.
+        target_lipid_name : str, optional
+            The name of the lipid to compute the metric for. If None, the metric will be computed for all lipids.
+
+        Returns
+        -------
+        Dict[str, Dict[str, Dict[int, float]]]
+            A dictionary of computed metrics for all lipids.
+
+        Examples
+        --------
+        >>> c.compute('max')
+        >>> c.compute('sum', 'DOPC')
+        >>> c.compute('median') # raises ValueError. Use `apply_function` instead.
+        """
+
         return self._contact_strategy.compute(metric, target_lipid_name=target_lipid_name)
 
     def apply_function(self, func: Callable, target_lipid_name=None) -> NestedFloatDict:
+        """Apply the given function to the contacts for the given lipid name. """
         return self._contact_strategy.apply_function(func, target_lipid_name=target_lipid_name)
 
     @property
@@ -37,6 +70,31 @@ class ComputedContacts:
         return self._contact_strategy.contact_frames
 
     def intersection(self, other: 'ComputedContacts') -> 'ComputedContacts':
+        """Compute the intersection of two contact providers. Note that ProLint contacts use a radial cutoff. 
+        This means that the intersection between two contact providers (c1 and c2) will be equal to the contact provider 
+        with the smallest cutoff. ProLint, however, defines the intersection between two contact providers (c1 and c2) to 
+        be equal to the lipid ids of the contact provider with the smallest cutoff, and the frame indices of the contact
+        provider with the largest cutoff. This way the intersection between two contact providers is meaningful and 
+        computationaly allows for chaining of contact providers (See example below).
+
+        Parameters
+        ----------
+        other : ComputedContacts
+            The other contact provider to compute the intersection with.
+
+        Returns
+        -------
+        ContactsProvider
+            A new contact provider with the intersection of the contacts of both contact providers.
+
+        Examples
+        --------
+        >>> ts = Universe('coordinates.gro', 'trajectory.xtc')
+        >>> c1 = ts.compute_contacts(cutoff=7)
+        >>> c2 = ts.compute_contacts(cutoff=8)
+        >>> c3 = c1 + c2 
+        >>> c1 + c2 == c2 + c1 # True
+        """
         result_data = defaultdict(lambda: defaultdict(list))
 
         for residue_id, lipid_ids in self.contact_frames.items():
@@ -51,6 +109,28 @@ class ComputedContacts:
         return ComputedContacts(contact_instances, self.provider)
 
     def difference(self, other: 'ComputedContacts') -> 'ComputedContacts':
+        """Compute the difference of two contact providers. Given two contact providers (c1 and c2), the difference
+        between them (c2 -c1) is defined as the contacts of c2 that are not present in c1.
+
+        Parameters
+        ----------
+        other : ComputedContacts
+            The other contact provider to compute the difference with.
+
+        Returns
+        -------
+        ContactsProvider
+            A new contact provider with the difference of the contacts of both contact providers.
+
+        Examples
+        --------
+        >>> ts = Universe('coordinates.gro', 'trajectory.xtc')
+        >>> c1 = ts.compute_contacts(cutoff=7)
+        >>> c2 = ts.compute_contacts(cutoff=8)
+        >>> c3 = c2 - c1
+        >>> c1 - c2 == c2 - c1 # False, c1 - c2 will be an empty contact provider if c1 is a subset of c2
+        """
+
         result_data = defaultdict(lambda: defaultdict(list))
 
         for residue_id, lipid_ids in self.contact_frames.items():
