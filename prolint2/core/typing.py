@@ -12,3 +12,7 @@ NestedDictT: TypeAlias = DefaultDict[ResidueID, DefaultDict[LipidName, Dict[Lipi
 NestedFloatDict: TypeAlias = NestedDictT[float]
 NestedIterFloatDict: TypeAlias = NestedDictT[Iterable[float]]
 NestedIterIntDict: TypeAlias = NestedDictT[Iterable[FrameIndex]]
+
+# TODO: Fix the type definitions above to this: 
+# NestedDictT: TypeAlias = DefaultDict[ResidueID, DefaultDict[LipidId, T]]
+# NestedIterIntDict: TypeAlias = NestedDictT[Iterable[FrameIndex]]
