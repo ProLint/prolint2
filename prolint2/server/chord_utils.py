@@ -3,26 +3,39 @@
 from inspect import ArgSpec
 import numpy as np
 from itertools import combinations
-from .utils import calculate_contact_intervals
+from prolint2.server.utils import calculate_contact_intervals
+
+# def per_lipid_contacts(ts, lipids, frame_cutoff=10):
+#     """
+#     Given a list of lipid IDs, returns a dict with these lipid IDs
+#     as keys, and values set to a dict containing the residues these lipids
+#     interact with as keys and the corresponding number of contacts as values.
+#     These contacts can be filtered using the `frame_cutoff` option.
+
+#     TODO:
+#     `frame_cutoff` should operate on a percentage of trajectory length.
+#     """
+#     results = {k: {} for k in lipids}
+#     for k, v in ts.contacts.contact_frames.items():
+#         if len(v) < frame_cutoff:
+#             continue
+#         # r, l = [int(x) for x in k.split(',')] # k used to be a string formatted as 'residue,lipid'
+#         # k now is a tuple of (residue, lipid)
+#         r, l = k
+#         if l in lipids:
+#             results[l][r] = len(v)
+#     return results
 
 def per_lipid_contacts(ts, lipids, frame_cutoff=10):
-    """
-    Given a list of lipid IDs, returns a dict with these lipid IDs
-    as keys, and values set to a dict containing the residues these lipids
-    interact with as keys and the corresponding number of contacts as values.
-    These contacts can be filtered using the `frame_cutoff` option.
-
-    TODO:
-    `frame_cutoff` should operate on a percentage of trajectory length.
-    """
     results = {k: {} for k in lipids}
-    for k, v in ts.contacts.contact_frames.items():
-        if len(v) < frame_cutoff:
-            continue
-        r, l = [int(x) for x in k.split(',')]
-        if l in lipids:
-            results[l][r] = len(v)
+    for residue_id, lipid_dict in ts.contacts.contact_frames.items():
+        for lipid_id, frames in lipid_dict.items():
+            if len(frames) < frame_cutoff:
+                continue
+            if lipid_id in lipids:
+                results[lipid_id][residue_id] = len(frames)
     return results
+
 
 def sort_dict(d, cutoff=None):
     """
@@ -98,17 +111,17 @@ def get_ordered_combinations(lipid_contacts):
 
     return ordered_combinations
 
-def shared_contacts(ts, top_lipids, lipid_contact_frames, *args, **kwargs):
+def shared_contacts(contacts, top_lipids, lipid_contact_frames, *args, **kwargs):
     """
     Aim: improve the shortcomings outlined in `get_ordered_combinations`.
     """
     lipid_shared_contacts = {}
     for lipid in top_lipids:
-        contact_intervals = calculate_contact_intervals(ts, lipid_contact_frames, lipid, *args, **kwargs)
+        contact_intervals = calculate_contact_intervals(contacts, lipid_contact_frames, lipid, *args, **kwargs)
         residue_contacts = {}
         for res1, res2 in combinations(contact_intervals.keys(), 2):
-            contacts = residue_pair_matching_contacts(contact_intervals[res1], contact_intervals[res2])
-            residue_contacts[f'{res1},{res2}'] = contacts
+            pair_contacts = residue_pair_matching_contacts(contact_intervals[res1], contact_intervals[res2])
+            residue_contacts[f'{res1},{res2}'] = pair_contacts
         lipid_shared_contacts[lipid] = residue_contacts
 
     shared_contacts_all = {}
@@ -167,8 +180,8 @@ def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
     node_links = list(combinations(nodes, 2))
     position_node_links = [x for x in node_links if x[0] == 0]
 
-    resnums = ts.query.selected.residues.resnums
-    resnames = ts.query.selected.residues.resnames
+    resnums = ts.query.residues.resnums
+    resnames = ts.query.residues.resnames
     node_names = {x[0]: f'{x[0]} {x[1]}' for x in list(zip(resnums, resnames))}
 
     chord_elements = []
@@ -196,7 +209,7 @@ def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
 
     return chord_elements
 
-def contact_chord(ts, top_lipid_ids, lipid_contact_frames, cutoff=100):
+def contact_chord(ts, contacts, top_lipid_ids, lipid_contact_frames, cutoff=100):
     """
     We call all functions here. We return the chord elements (these are the data
     amCharts needs to render nodes and links), we also return information on which
@@ -207,7 +220,7 @@ def contact_chord(ts, top_lipid_ids, lipid_contact_frames, cutoff=100):
     """
     # lipid_contacts = per_lipid_contacts(ts, top_lipid_ids)
     lipid_shared_contacts, ordered_combinations = shared_contacts(
-        ts,
+        contacts,
         top_lipid_ids,
         lipid_contact_frames,
         residues_to_show=30,
@@ -215,7 +228,7 @@ def contact_chord(ts, top_lipid_ids, lipid_contact_frames, cutoff=100):
         )
     # ordered_combinations = get_ordered_combinations(lipid_contacts)
     linked_nodes = get_linked_nodes(ordered_combinations, cutoff=cutoff)
-    nodes, hidden_node_indices = get_node_list(ts.query.selected.n_residues, linked_nodes)
+    nodes, hidden_node_indices = get_node_list(ts.query.n_residues, linked_nodes)
     chord_elements = get_chord_elements(ts, nodes, ordered_combinations, cutoff=cutoff)
 
     per_lipid_nodes = {}

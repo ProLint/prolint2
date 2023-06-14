@@ -161,7 +161,8 @@ export function pieApp(table, ganttReturnValue, heatmap, timeSeries, networkRoot
             // Update Circular App Data
             obj.protein = "Protein"
             obj.lipid = lipid
-            fetch('/data/' + JSON.stringify(obj))
+            obj.metric = document.getElementById("metric_button").value;
+            fetch('/metric/' + JSON.stringify(obj))
                 .then(response => response.json())
                 .then(responseData => {
 

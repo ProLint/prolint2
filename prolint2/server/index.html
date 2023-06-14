@@ -51,6 +51,19 @@
             </div>
         </div>
         <div class="row">
+            <div class="col-sm-7" style="background-color: white; position: relative; height: 50px; margin-top: 20px">
+                <div class="dropdown-wrapper">
+                    <span class="dropdown-label">Select contact metric</span>
+                    <select id="metric_button" class="custom-dropdown">
+                      <option value="sum" selected>Sum of all contacts</option>
+                      <option value="mean">Mean of contacts</option>
+                      <option value="max">Longest contact</option>
+                    </select>
+                  </div>
+            </div>
+        </div>
+
+        <div class="row">
             <div id="chartdiv" class="col-sm-7" style="background-color: white; position: relative;">
               <div id="chartdiv_z" style="width: 100%; height: 100%; position: absolute; padding-top: 30px;"></div>
               <div id="chartdiv_y" style="width: 100%; height: 100%; position: absolute; padding-top: 20px"></div>

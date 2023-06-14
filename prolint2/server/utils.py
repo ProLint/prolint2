@@ -22,14 +22,14 @@ def get_frame_contact_intervals(frames, tolerance=6):
             ranges_collect.append((range_start, el))
     return ranges_collect
 
-def calculate_contact_intervals(TS, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
     """
     TODO:
     write doc
     """
     contact_intervals = {}
     for res, _ in g[lipid_id][:residues_to_show]:
-        frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
+        frame_numbers = contacts.contact_frames[res][lipid_id]
         frame_intervals = get_frame_contact_intervals(frame_numbers)
         for start, end in frame_intervals:
             if end - start < intervals_to_filter_out:
@@ -42,14 +42,14 @@ def calculate_contact_intervals(TS, g, lipid_id, residues_to_show=15, intervals_
 
     return contact_intervals
 
-def amCharts_contact_intervals(TS, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+def amCharts_contact_intervals(contacts, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
     """
     TODO:
     write doc
     """
     contact_intervals = []
     for res, _ in g[lipid_id][:residues_to_show]:
-        frame_numbers = TS.contacts.contact_frames[f'{res},{lipid_id}']
+        frame_numbers = contacts.contact_frames[res][lipid_id]
         frame_intervals = get_frame_contact_intervals(frame_numbers)
         for start, end in frame_intervals:
             if end - start < intervals_to_filter_out:

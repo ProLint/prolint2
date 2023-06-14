@@ -76,7 +76,28 @@ place-content: center;
 background: #DAEDFB;
 } */
 
-button {
+.dropdown-wrapper {
+  display: flex;
+  align-items: center;
+  top: 15px; 
+}
+
+.dropdown-label {
+  margin-right: 0.5em;
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: var(--c);
+}
+
+.custom-dropdown {
+  width: 250px;
+  appearance: none;
+  /* Add the remaining styles from your previous custom-select rule */
+}
+
+
+button, select {
   --b: 1.5px; /* border thickness */
   --s: 0.02em; /* size of the corner */
   --c: #bd5532;
@@ -96,7 +117,9 @@ button {
   outline-offset: 0.2em;
 }
 button:hover,
-button:focus-visible {
+button:focus-visible,
+select:hover,
+select:focus-visible {
   --_p: 0px;
   outline-color: var(--c);
   outline-offset: 0.05em;
@@ -106,11 +129,25 @@ button:active {
   color: #fff;
 }
 
-button {
+button, select {
   font-family: system-ui, sans-serif;
   font-weight: bold;
   font-size: 1.5rem;
   cursor: pointer;
   border: none;
   margin: 0.1em;
+}
+
+select option {
+  background-color: #ffffff;
+  color: var(--c);
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding: 0.1em 0.3em;
+}
+
+select option:hover {
+  background-color: var(--c);
+  color: #ffffff;
 }

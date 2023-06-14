@@ -34,6 +34,10 @@ export function tableApp(responseData, ganttReturnValue, heatmap, networkRootRef
                     hozAlign: "center",
                     headerSort: false,
                     resizable: false,
+                    formatter: function(cell) {
+                        return parseFloat(cell.getValue()).toFixed(2);
+                    },
+                
                 },
             ]
         }],
