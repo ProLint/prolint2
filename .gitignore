@@ -110,3 +110,5 @@ ENV/
 prolint2/data/.*
 .DS_Store
 prolint2/.DS_Store
+prolint2/data/contacts.csv
+prolint2/data/contacts_metrics.csv

@@ -19,7 +19,7 @@ VALID_UNITS = get_args(TimeUnitLiteral)
 
 class Universe(mda.Universe):
     """A subclass of MDAnalysis.Universe that adds a query and database attribute, and other useful methods."""
-    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'total_time', 'time_fraction'] = 'time_fraction', units: TimeUnitLiteral = 'us', **kwargs):
+    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'actual_time', 'time_fraction'] = 'time_fraction', units: TimeUnitLiteral = 'us', **kwargs):
         if universe is not None:
             if isinstance(universe, mda.Universe):
                 topology = universe.filename
@@ -71,11 +71,11 @@ class Universe(mda.Universe):
         return UnitConversionFactor[time_unit].value / units.value
 
     def _handle_normalizer(self, normalize_by, units):
-        if normalize_by not in ['counts', 'total_time', 'time_fraction']:
-            raise ValueError("normalize_by argument must be one of ['counts', 'total_time', 'time_fraction']")
+        if normalize_by not in ['counts', 'actual_time', 'time_fraction']:
+            raise ValueError("normalize_by argument must be one of ['counts', 'actual_time', 'time_fraction']")
         norm_factors = {
             'counts': 1.0,
-            'total_time': float(self.trajectory.dt * self._handle_units(units)),
+            'actual_time': float(self.trajectory.dt * self._handle_units(units)),
             'time_fraction': float(self.trajectory.dt / self.trajectory.totaltime)
         }
         return norm_factors[normalize_by]

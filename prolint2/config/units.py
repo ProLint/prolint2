@@ -12,7 +12,7 @@ class UnitConversionFactor(Enum):
 
 DEFAULT_SIM_PARAMS = {
     'units': 'us',
-    'normalizer': 'total_time',
+    'normalizer': 'actual_time',
     'unit_conversion_factor': UnitConversionFactor.ps.value / UnitConversionFactor.us.value,
     'norm_factor': 1
 }
