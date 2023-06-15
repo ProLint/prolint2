@@ -66,17 +66,15 @@ def dashboard(
         contacts: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to import the results from a file (E.g.: "contacts.csv").')], 
          ):
     """[blue]ProLint v.2: Launching interactive dashboard to explore the results of lipid-protein interactions.[/blue] :sparkles:"""
-    # # Starting the server
-    # app = ProLintDashboard()
-    # app.start_server(payload={
-    #     'structure': structure, 
-    #     'trajectory': trajectory, 
-    #     'cutoff': cutoff, 
-    #     'export': export if export else None,
-
-    #     })
-    # import sys
-    # sys.exit()
+    # Starting the server
+    app = ProLintDashboard()
+    app.start_server(payload={
+        'structure': structure, 
+        'trajectory': trajectory, 
+        'contacts': contacts, 
+        })
+    import sys
+    sys.exit()
 
 @prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
 def plot(

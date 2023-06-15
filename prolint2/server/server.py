@@ -388,7 +388,7 @@ class ProLintDashboard:
 
         # if self.args.i_bool:
         #     self.ts = interactive_selection(self.ts)
-        self.contacts = self.ts.compute_contacts(cutoff=self.args['cutoff'])
+        self.contacts = self.ts.load_contacts_from_file(self.args['contacts'])
 
         # if self.args.e_file:
         #     self.contacts.export(self.args.e_file)

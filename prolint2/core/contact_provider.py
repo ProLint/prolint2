@@ -300,7 +300,7 @@ class ContactsProvider:
         df = pd.read_csv(file, index_col=[0, 1])
         contact_frames = defaultdict(lambda: defaultdict(list))
         for (residue_id, lipid_id) in df.index:
-            contact_frames[residue_id][lipid_id] = list(np.nonzero(df.loc[(residue_id, lipid_id)].to_numpy())[0])
+            contact_frames[residue_id][lipid_id] = np.nonzero(df.loc[(residue_id, lipid_id)].to_numpy())[0].tolist()
 
         # Count and store contacts
         contact_strategy_instance = self._contact_strategy(self.query.universe, contact_frames, self.params.get('norm_factor'))
