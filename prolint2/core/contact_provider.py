@@ -278,3 +278,32 @@ class ContactsProvider:
         contact_strategy_instance.run()
 
         return ComputedContacts(contact_strategy_instance, self)
+    
+
+    def load_from_file(self, file, **kwargs):
+        """
+        Load contacts from a file.
+
+        Parameters
+        ----------
+        file : str or pathlib.Path
+            The path to the file to load the contacts from.
+        **kwargs
+            Additional arguments to pass to the contact loader.
+        
+        Returns
+        -------
+        ComputedContacts
+            The computed contacts.
+        """
+        # get contact frames from file 
+        df = pd.read_csv(file, index_col=[0, 1])
+        contact_frames = defaultdict(lambda: defaultdict(list))
+        for (residue_id, lipid_id) in df.index:
+            contact_frames[residue_id][lipid_id] = list(np.nonzero(df.loc[(residue_id, lipid_id)].to_numpy())[0])
+
+        # Count and store contacts
+        contact_strategy_instance = self._contact_strategy(self.query.universe, contact_frames, self.params.get('norm_factor'))
+        contact_strategy_instance.run()
+
+        return ComputedContacts(contact_strategy_instance, self)

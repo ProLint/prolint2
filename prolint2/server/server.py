@@ -71,7 +71,7 @@ class ProLintDashboard:
         """
             Serve the PDB file to the client for use with Mol*.
         """
-        u = mda.Universe(self.args.structure, self.args.trajectory)
+        u = mda.Universe(self.args['structure'], self.args['trajectory'])
         protein = u.select_atoms("protein")
         pstream = mda.lib.util.NamedStream(StringIO(), "dummy.pdb")
         with mda.Writer(pstream, format="PDB") as w:
@@ -384,16 +384,15 @@ class ProLintDashboard:
             sys.exit(1)
 
         self.args = payload
-        self.ts = Universe(self.args.structure, self.args.trajectory)
+        self.ts = Universe(self.args['structure'], self.args['trajectory'])
 
-        if self.args.i_bool:
-            self.ts = interactive_selection(self.ts)
-        self.contacts = self.ts.compute_contacts(cutoff=self.args.cutoff)
+        # if self.args.i_bool:
+        #     self.ts = interactive_selection(self.ts)
+        self.contacts = self.ts.compute_contacts(cutoff=self.args['cutoff'])
 
-        if self.args.e_file:
-            self.contacts.export(self.args.e_file)
+        # if self.args.e_file:
+        #     self.contacts.export(self.args.e_file)
 
-        # payload = self.contacts.server_payload()
         self.payload = ServerPayload(self.contacts, self.ts)
         payload = self.payload.payload
 

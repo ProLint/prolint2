@@ -121,6 +121,11 @@ class Universe(mda.Universe):
         """Compute contacts between the query and database AtomGroups."""
         contacts_provider = ContactsProvider(self.query, self.database, params=self.params)
         return contacts_provider.compute(*args, **kwargs)
+    
+    def load_contacts_from_file(self, file, *args, **kwargs):
+        """Load contacts from a file."""
+        contacts_provider = ContactsProvider(self.query, self.database, params=self.params)
+        return contacts_provider.load_from_file(file, *args, **kwargs)
 
     @property
     def units(self):

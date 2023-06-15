@@ -5,14 +5,19 @@ r"""Argument parser to use prolint2 from the command-line
 :Year: 2022
 :Copyright: MIT License
 """
+import pickle
 
-import os
-import argparse
+import pathlib
+import typer
+from typing_extensions import Annotated
+from typer.core import TyperGroup
+from click import Context
 import configparser
 
 from prolint2 import get_config
 import prolint2._version as vers
 from prolint2.server.server import ProLintDashboard
+from prolint2.core.universe import Universe
 
 
 # Getting the config file
@@ -20,109 +25,66 @@ config = configparser.ConfigParser(allow_no_value=True)
 config.read(get_config())
 parameters_config = config["Parameters"]
 
+# fixing order of commands
+class OrderCommands(TyperGroup):
+  def list_commands(self, ctx: Context):
+    """Return list of commands in the order appear."""
+    return list(self.commands)    # get commands using self.commands
+
 # Creating the parser
-prolint2_parser = argparse.ArgumentParser(
-    prog="prolint2",
-    usage="%(prog)s [optional-arguments] structure_file trajectory_file",
-    description="Argument parser to use the prolint2 library directly from the command-line.",
-    formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-    epilog="Have fun getting lipid-protein contacts! :)\n",
-)
+prolint2 = typer.Typer(
+    help="[blue]Command-line version of the ProLint v.2 library.[/blue] :sparkles:",
+    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:",
+    rich_markup_mode="rich", 
+    add_completion=False,
+    cls=OrderCommands,
+    )
 
-prolint2_parser.version = vers.get_versions()["version"]
+# creating the run command
+@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
+def run(
+        structure: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the structure/topology file (E.g.: "coordinates.gro").')], 
+        trajectory: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the trajectory file (E.g.: "trajectory.xtc").')],
+        contacts: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to export the results to a file (E.g.: "contacts.csv").')],
+        cutoff: Annotated[float, typer.Option(show_default=True, help="cutoff distance to calculate lipid-protein interactions (in angstroms).")]=7,
+         ):
+    """[blue]ProLint v.2: Running calculation of lipid-protein interactions at a certain cutoff.[/blue] :sparkles:"""
+    System = Universe(structure, trajectory)
+    SystemContacts = System.compute_contacts(cutoff=cutoff)
+    df = SystemContacts.create_dataframe(System.trajectory.n_frames)
 
-# dealing with boolean arguments
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ("yes", "true", "t", "y", "1"):
-        return True
-    elif v.lower() in ("no", "false", "f", "n", "0"):
-        return False
-    else:
-        raise argparse.ArgumentTypeError("Boolean value expected.")
+    # save contacts to Pandas dataframe
+    df.to_csv(contacts)
 
+    
+        
+# creating the dashboard command
+@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
+def dashboard(
+        structure: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the structure/topology file (E.g.: "coordinates.gro").')], 
+        trajectory: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the trajectory file (E.g.: "trajectory.xtc").')],
+        contacts: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to import the results from a file (E.g.: "contacts.csv").')], 
+         ):
+    """[blue]ProLint v.2: Launching interactive dashboard to explore the results of lipid-protein interactions.[/blue] :sparkles:"""
+    # # Starting the server
+    # app = ProLintDashboard()
+    # app.start_server(payload={
+    #     'structure': structure, 
+    #     'trajectory': trajectory, 
+    #     'cutoff': cutoff, 
+    #     'export': export if export else None,
 
-# positional arguments
-# structure_file
-prolint2_parser.add_argument(
-    "structure", action="store", type=str, help="path to the structure/topology file."
-)
+    #     })
+    # import sys
+    # sys.exit()
 
-# trajectory_file
-prolint2_parser.add_argument(
-    "trajectory", action="store", type=str, help="path to the trajectory file."
-)
-
-# optional arguments
-# version
-prolint2_parser.add_argument("-v", "--version", action="version")
-
-# Cut-off
-prolint2_parser.add_argument(
-    "-c",
-    "--cutoff",
-    metavar="",
-    type=int,
-    help="distance cutoff to get the contacts (in angstroms).",
-    default=int(parameters_config["cutoff"]),
-    dest="cutoff",
-)
-
-# add lipids
-prolint2_parser.add_argument(
-    "-al",
-    "--add_lipid_types",
-    nargs="+",
-    metavar="",
-    help="additional lipid types to be included in the membrane group, supported lipid types are POPC, DPPC, DOPC, CHOL, CHL1, POPS and POPE.",
-    dest="other_lipids",
-    default=[],
-)
-
-# interactive mode
-prolint2_parser.add_argument(
-    "-i",
-    "--interactive",
-    metavar="",
-    type=str2bool,
-    nargs="?",
-    const=True,
-    default=False,
-    help="interactive selection of the groups for the calculation of the contacts.",
-    dest="i_bool",
-)
+@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
+def plot(
+        contacts: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the structure/topology file (E.g.: "coordinates.gro").')], 
+         ):
+    """[blue]ProLint v.2: Plotting paper quality graphs to visualize lipid-protein interactions.[/blue] :sparkles:"""
 
 
-def file_extension(choices, fname):
-    ext = os.path.splitext(fname)[1][1:]
-    if ext not in choices:
-        prolint2_parser.error(
-            "Filename for exporting contacts doesn't end with {}.".format(choices)
-        )
-    return fname
+if __name__ == "__main__":
+    prolint2()
 
-
-# export contacts data
-prolint2_parser.add_argument(
-    "-e",
-    "--export",
-    metavar="",
-    type=lambda s: file_extension(("csv"), s),
-    nargs="?",
-    help="exporting results of the contacts to a file.",
-    default=False,
-    const="contacts.csv",
-    dest="e_file",
-)
-
-# Executing the parse_args() method
-args = prolint2_parser.parse_args()
-
-# Starting the server
-# start_server(payload=args, reloader=False, i_bool=args.i_bool, e_file=args.e_file)
-app = ProLintDashboard()
-app.start_server(payload=args)
-import sys
-
-sys.exit()
