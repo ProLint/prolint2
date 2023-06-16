@@ -13,6 +13,14 @@ from prolint2.computers.distances import SerialDistances
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
+import configparser
+from prolint2 import get_config
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+parameters_config = config["Parameters"]
+
 class ProLintDashboard:
     """
     A dashboard for ProLint2. It is a fully functional web application that can be used to
@@ -78,7 +86,7 @@ class ProLintDashboard:
 
         return pstream.read()
 
-    def get_gantt_app_data(self, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+    def get_gantt_app_data(self, g, lipid_id, residues_to_show=int(parameters_config["residues_to_show"]), intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"])):
         """
         Get the data for the Gantt chart in the application.
 
@@ -179,7 +187,7 @@ class ProLintDashboard:
 
 
     @staticmethod
-    def get_frame_contact_intervals(frames, tolerance=6):
+    def get_frame_contact_intervals(frames, tolerance=int(parameters_config["tolerance"])):
         """
         Get the intervals of frames in which a contact is present.
 

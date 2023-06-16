@@ -5,6 +5,14 @@ from MDAnalysis.lib.nsgrid import FastNS
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
 
+import configparser
+from prolint2 import get_config
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+parameters_config = config["Parameters"]
+
 class SerialContacts(ContactComputerBase):
     r"""
     Class to get the distance-based contacts starting from two AtomGroups
@@ -12,7 +20,7 @@ class SerialContacts(ContactComputerBase):
 
     It inherits from the MDAnalysis AnalysisBase class.
     """
-    def __init__(self, universe, query, database, cutoff, **kwargs):
+    def __init__(self, universe, query, database, cutoff=float(parameters_config["cutoff"]), **kwargs):
 
         super().__init__(universe.universe.trajectory, **kwargs)
 

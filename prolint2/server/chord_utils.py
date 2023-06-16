@@ -5,6 +5,14 @@ import numpy as np
 from itertools import combinations
 from prolint2.server.utils import calculate_contact_intervals
 
+import configparser
+from prolint2 import get_config
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+parameters_config = config["Parameters"]
+
 # def per_lipid_contacts(ts, lipids, frame_cutoff=10):
 #     """
 #     Given a list of lipid IDs, returns a dict with these lipid IDs
@@ -223,8 +231,8 @@ def contact_chord(ts, contacts, top_lipid_ids, lipid_contact_frames, cutoff=100)
         contacts,
         top_lipid_ids,
         lipid_contact_frames,
-        residues_to_show=30,
-        intervals_to_filter_out=10
+        residues_to_show=int(parameters_config["residues_to_show"]),
+        intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"])
         )
     # ordered_combinations = get_ordered_combinations(lipid_contacts)
     linked_nodes = get_linked_nodes(ordered_combinations, cutoff=cutoff)

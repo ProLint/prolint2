@@ -2,7 +2,6 @@
 
 # Add imports here
 import os
-from .core import Universe
 
 # Handle versioneer
 from ._version import get_versions

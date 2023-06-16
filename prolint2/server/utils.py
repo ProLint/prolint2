@@ -1,6 +1,14 @@
 #!/usr/bin/env python
 
-def get_frame_contact_intervals(frames, tolerance=6):
+import configparser
+from prolint2 import get_config
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+parameters_config = config["Parameters"]
+
+def get_frame_contact_intervals(frames, tolerance=int(parameters_config["tolerance"])):
     """
     Get frame ranges.
 
@@ -22,7 +30,7 @@ def get_frame_contact_intervals(frames, tolerance=6):
             ranges_collect.append((range_start, el))
     return ranges_collect
 
-def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=int(parameters_config["residues_to_show"]), intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"])):
     """
     TODO:
     write doc
@@ -42,7 +50,7 @@ def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=15, inte
 
     return contact_intervals
 
-def amCharts_contact_intervals(contacts, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+def amCharts_contact_intervals(contacts, g, lipid_id, residues_to_show=int(parameters_config["residues_to_show"]), intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"])):
     """
     TODO:
     write doc

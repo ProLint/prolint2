@@ -1,13 +1,22 @@
 import warnings
 from typing import Literal, get_args
 
+import numpy as np
 import MDAnalysis as mda
 
+from prolint2 import get_config
 from prolint2.core.groups import ExtendedAtomGroup
 from prolint2.metrics.registries import MetricRegistry
 from prolint2.core.contact_provider import ContactsProvider
 
 from prolint2.config.units import UnitConversionFactor
+
+import configparser
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(get_config())
+parameters_config = config["Parameters"]
 
 warnings.filterwarnings('ignore')
 
@@ -18,7 +27,7 @@ VALID_UNITS = get_args(TimeUnitLiteral)
 
 class Universe(mda.Universe):
     """A subclass of MDAnalysis.Universe that adds a query and database attribute, and other useful methods."""
-    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'actual_time', 'time_fraction'] = 'time_fraction', units: TimeUnitLiteral = 'us', **kwargs):
+    def __init__(self, *args, universe=None, query=None, database=None, normalize_by: Literal['counts', 'actual_time', 'time_fraction'] = 'time_fraction', units: TimeUnitLiteral = 'us', add_lipid_types: list=[], **kwargs):
         if universe is not None:
             if isinstance(universe, mda.Universe):
                 topology = universe.filename
@@ -30,6 +39,13 @@ class Universe(mda.Universe):
             super().__init__(*args, **kwargs)
 
         self._query = self._handle_query(query)
+        # adding additional lipid types to the database
+        if add_lipid_types:
+            unique_lipids = parameters_config["lipid_types"] + ", " + ", ".join(add_lipid_types)
+            unique_lipids = np.unique(unique_lipids.split(", "))
+            config.set("Parameters", "lipid_types", ", ".join(unique_lipids))
+            with open(get_config(), "w") as configfile:
+                config.write(configfile, space_around_delimiters=True)
         self._database = self._handle_database(database)
 
         self.params = {
@@ -49,7 +65,23 @@ class Universe(mda.Universe):
 
     def _handle_database(self, database):
         if database is None:
-            database_selection_string = "not protein"
+            # defining lipid types to be included in the database
+            lipid_types = parameters_config["lipid_types"].split(", ")
+            not_protein_restypes = np.unique(
+                self.atoms.select_atoms("not protein").residues.resnames
+            )
+            membrane_restypes = []
+            for type in lipid_types:
+                if type in not_protein_restypes:
+                    membrane_restypes.append("resname " + type)
+            if len(membrane_restypes) == 1:
+                database_selection_string = membrane_restypes[0]
+            elif len(membrane_restypes) > 1:
+                database_selection_string = membrane_restypes[0]
+                for type in membrane_restypes[1:]:
+                    database_selection_string = database_selection_string + " or " + type
+            else:
+                print("There are not lipid residues in your system")
             database = self.select_atoms(database_selection_string)
         return ExtendedAtomGroup(database)
 
