@@ -112,3 +112,4 @@ prolint2/data/.*
 prolint2/.DS_Store
 prolint2/data/contacts.csv
 prolint2/data/contacts_metrics.csv
+prolint2/data/test.csv

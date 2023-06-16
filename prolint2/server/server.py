@@ -384,6 +384,7 @@ class ProLintDashboard:
             sys.exit(1)
 
         self.args = payload
+        self.port = self.args['port']
         self.ts = Universe(self.args['structure'], self.args['trajectory'])
 
         # if self.args.i_bool:
@@ -402,7 +403,7 @@ class ProLintDashboard:
 
         self.backend_data = payload
 
-        self.app.run(reloader=self.reloader, host="localhost", port=self.port, debug=self.debug_bool)
+        self.app.run(reloader=self.reloader, host=self.args['host'], port=self.port, debug=self.debug_bool)
 
 if __name__ == "__main__":
     app = ProLintDashboard(debug_bool=True)
