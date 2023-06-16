@@ -1,10 +1,10 @@
 import warnings
 from typing import Literal, get_args
 
+import os
 import numpy as np
 import MDAnalysis as mda
 
-from prolint2 import get_config
 from prolint2.core.groups import ExtendedAtomGroup
 from prolint2.metrics.registries import MetricRegistry
 from prolint2.core.contact_provider import ContactsProvider
@@ -15,7 +15,8 @@ import configparser
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
-config.read(get_config())
+config_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini")
+config.read(config_file)
 parameters_config = config["Parameters"]
 
 warnings.filterwarnings('ignore')
@@ -44,7 +45,7 @@ class Universe(mda.Universe):
             unique_lipids = parameters_config["lipid_types"] + ", " + ", ".join(add_lipid_types)
             unique_lipids = np.unique(unique_lipids.split(", "))
             config.set("Parameters", "lipid_types", ", ".join(unique_lipids))
-            with open(get_config(), "w") as configfile:
+            with open(config_file, "w") as configfile:
                 config.write(configfile, space_around_delimiters=True)
         self._database = self._handle_database(database)
 

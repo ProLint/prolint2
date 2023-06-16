@@ -8,8 +8,6 @@ r"""UFCC sample data
 import os
 
 # to get the paths relative to the root of the package
-from prolint2 import get_data
-
 
 class GIRKDataSample:
     """
@@ -29,7 +27,7 @@ class GIRKDataSample:
     """
 
     def __init__(self):
-        self.path = os.path.abspath(get_data())
+        self.path = os.path.join(os.path.abspath(os.path.dirname(__file__)), "data")
         self.coordinates = os.path.join(self.path, "coordinates.gro")
         self.trajectory = os.path.join(self.path, "trajectory.xtc")
 

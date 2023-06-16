@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
+import os
 import configparser
-from prolint2 import get_config
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
-config.read(get_config())
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini"))
 parameters_config = config["Parameters"]
 
 def get_frame_contact_intervals(frames, tolerance=int(parameters_config["tolerance"])):

@@ -5,12 +5,12 @@ from MDAnalysis.lib.nsgrid import FastNS
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
 
+import os
 import configparser
-from prolint2 import get_config
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
-config.read(get_config())
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini"))
 parameters_config = config["Parameters"]
 
 class SerialContacts(ContactComputerBase):
