@@ -4,8 +4,6 @@
 import os
 from .core import Universe
 
-from .interactive_sel import *
-
 # Handle versioneer
 from ._version import get_versions
 

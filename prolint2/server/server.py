@@ -8,7 +8,6 @@ from bottle import Bottle, redirect, static_file
 
 from prolint2.core.universe import Universe
 from prolint2.server.chord_utils import contact_chord
-from prolint2.interactive_sel import interactive_selection
 from prolint2.computers.payload import ServerPayload
 from prolint2.computers.distances import SerialDistances
 
@@ -386,13 +385,7 @@ class ProLintDashboard:
         self.args = payload
         self.port = self.args['port']
         self.ts = Universe(self.args['structure'], self.args['trajectory'])
-
-        # if self.args.i_bool:
-        #     self.ts = interactive_selection(self.ts)
         self.contacts = self.ts.load_contacts_from_file(self.args['contacts'])
-
-        # if self.args.e_file:
-        #     self.contacts.export(self.args.e_file)
 
         self.payload = ServerPayload(self.contacts, self.ts)
         payload = self.payload.payload
