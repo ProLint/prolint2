@@ -113,3 +113,12 @@ prolint2/.DS_Store
 prolint2/data/contacts.csv
 prolint2/data/contacts_metrics.csv
 prolint2/data/test.csv
+prolint2/data/GIRK/.trajectory.xtc_offsets.lock
+.gitignore
+prolint2/data/COX1/.trajectory.xtc_offsets.lock
+prolint2/data/COX1/.trajectory.xtc_offsets.npz
+prolint2/data/SMO/.trajectory.xtc_offsets.npz
+prolint2/data/SMO/.trajectory.xtc_offsets.lock
+.gitignore
+.gitignore
+prolint2/data/GIRK/.trajectory.xtc_offsets.npz
