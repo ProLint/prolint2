@@ -3,7 +3,6 @@ from typing import Literal, get_args
 
 import MDAnalysis as mda
 
-from prolint2.core.base import MacrosClass
 from prolint2.core.groups import ExtendedAtomGroup
 from prolint2.metrics.registries import MetricRegistry
 from prolint2.core.contact_provider import ContactsProvider
@@ -41,13 +40,6 @@ class Universe(mda.Universe):
         }
 
         self.registry = MetricRegistry()
-
-        self._add_macros()
-
-    def _add_macros(self):
-        macros_attr = MacrosClass(self)
-        self.atoms.universe.add_TopologyAttr(macros_attr)
-        macros_attr.set_macros_values(self.query)
 
     def _handle_query(self, query):
         if query is None:
