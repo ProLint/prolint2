@@ -42,12 +42,12 @@ class Universe(mda.Universe):
 
         self.registry = MetricRegistry()
 
-        self._add_macros()
+    #     self._add_macros()
 
-    def _add_macros(self):
-        macros_attr = MacrosClass(self)
-        self.atoms.universe.add_TopologyAttr(macros_attr)
-        macros_attr.set_macros_values(self.query)
+    # def _add_macros(self):
+    #     macros_attr = MacrosClass(self)
+    #     self.atoms.universe.add_TopologyAttr(macros_attr)
+    #     macros_attr.set_macros_values(self.query)
 
     def _handle_query(self, query):
         if query is None:
@@ -68,20 +68,38 @@ class Universe(mda.Universe):
             else:
                 raise ValueError(f"units argument must be one of {UnitConversionFactor.__members__}")
         time_unit = self._set_default_time_unit()
+        if time_unit is None: return 1.0
+
         return UnitConversionFactor[time_unit].value / units.value
 
     def _handle_normalizer(self, normalize_by, units):
         if normalize_by not in ['counts', 'actual_time', 'time_fraction']:
             raise ValueError("normalize_by argument must be one of ['counts', 'actual_time', 'time_fraction']")
+    
+        if getattr(self, 'trajectory', None) is None:
+            return {
+                'counts': 1.0,
+                'actual_time': 1.0,
+                'time_fraction': 1.0
+            }
+
+        t_time = self.trajectory.totaltime
+        totaltime = t_time if t_time is not None and t_time > 0 else 1
         norm_factors = {
             'counts': 1.0,
             'actual_time': float(self.trajectory.dt * self._handle_units(units)),
-            'time_fraction': float(self.trajectory.dt / self.trajectory.totaltime)
+            'time_fraction': float(self.trajectory.dt / totaltime)
         }
         return norm_factors[normalize_by]
 
     def _set_default_time_unit(self):
-        traj_time_unit = self.trajectory.units.get('time', None)
+        # check if self has trajectory attribute
+
+        if getattr(self, 'trajectory', None) is None:
+            return None
+        
+        unit = self.trajectory.units.get('time', None) if self.trajectory is not None else None
+        traj_time_unit = unit
         if traj_time_unit is None:
             warnings.warn("Trajectory time unit is not set. Assuming 'ps'.")
 
