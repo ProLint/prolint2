@@ -3,7 +3,7 @@ from typing import Literal, get_args
 
 import MDAnalysis as mda
 
-from prolint2.core.base import MacrosClass
+# from prolint2.core.base import MacrosClass
 from prolint2.core.groups import ExtendedAtomGroup
 from prolint2.metrics.registries import MetricRegistry
 from prolint2.core.contact_provider import ContactsProvider
@@ -135,9 +135,9 @@ class Universe(mda.Universe):
         """Update the database AtomGroup with a new AtomGroup."""
         self.database = new_database
 
-    def compute_contacts(self, *args, **kwargs):
+    def compute_contacts(self, *args, n_jobs=1, **kwargs):
         """Compute contacts between the query and database AtomGroups."""
-        contacts_provider = ContactsProvider(self.query, self.database, params=self.params)
+        contacts_provider = ContactsProvider(self.query, self.database, params=self.params, n_jobs=n_jobs)
         return contacts_provider.compute(*args, **kwargs)
 
     @property

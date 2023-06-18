@@ -4,7 +4,8 @@ from typing import Callable, Literal
 import numpy as np
 import pandas as pd
 
-from prolint2.computers.contacts import ContactComputerBase, SerialContacts
+from prolint2.computers.base import ContactComputerBase
+from prolint2.computers.contacts import SerialContacts, ParallelContacts
 from prolint2.core.typing import NestedFloatDict, NestedIterFloatDict, NestedIterIntDict, LipidId
 
 from prolint2.metrics.base import BaseContactStore
@@ -225,12 +226,14 @@ class ContactsProvider:
     """
     Class that provides the contacts computation functionality.
     """
-    def __init__(self, query, database, params=None, compute_strategy: Literal['default'] = 'default', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
+    def __init__(self, query, database, params=None, n_jobs=1, compute_strategy: Literal['serial', 'parallel'] = 'serial', contact_strategy: Literal['exact', 'aprox'] = 'exact'):
         self.query = query
         self.database = database
+        self.n_jobs = n_jobs
 
         self._contact_computers = {
-            'default': SerialContacts
+            'serial': SerialContacts,
+            'parallel': ParallelContacts
         }
         self._contact_counter = {
             'exact': ExactContacts,
@@ -248,7 +251,7 @@ class ContactsProvider:
         Parameters
         ----------
         strategy_or_computer : str or ContactComputerBase, optional
-            The strategy to compute contacts. If None, the default strategy is used.
+            The strategy to compute contacts. If None, the serial strategy is used.
         **kwargs
             Additional arguments to pass to the contact computer.
         
@@ -260,6 +263,9 @@ class ContactsProvider:
         if strategy_or_computer is None:
             strategy_or_computer = self._compute_strategy
 
+        if self.n_jobs > 1:
+            strategy_or_computer = 'parallel'
+            
         # Strategy to compute contacts (e.g. serial, parallel, etc.)
         if isinstance(strategy_or_computer, ContactComputerBase):
             contact_computer = strategy_or_computer
