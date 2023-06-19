@@ -78,7 +78,7 @@ class ParallelContacts(ContactComputerBase):
         blocks = self._get_block_slices()
         # results = Parallel(n_jobs=self.n_blocks)(delayed(self.analyze_block)(bs) for bs in blocks)
         with tqdm_joblib(tqdm(total=self.n_blocks)) as _:
-            results = Parallel(n_jobs=16)(delayed(self.analyze_block)(bs) for bs in blocks)
+            results = Parallel(n_jobs=self.n_blocks)(delayed(self.analyze_block)(bs) for bs in blocks)
 
         # Merge results
         for contact_frames in results:
