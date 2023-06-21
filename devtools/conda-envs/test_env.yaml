@@ -16,6 +16,7 @@ dependencies:
 
     # Package dependencies
   - mdanalysis  
+  - bottle
   - plotly
 
     # Pip-only installs
