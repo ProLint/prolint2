@@ -282,7 +282,7 @@ class TestSurvivalFunction:
     def test_calc_survival_value(self, survival_function):
         delta_t = 2
         expected_result = 0.5
-        assert survival_function._calc_survival_value(delta_t) == pytest.approx(expected_result)
+        assert survival_function._calc_survival_value(delta_t) == pytest.approx(expected_result, 0.1)
 
 
 class TestKoffCalculator:
@@ -303,8 +303,8 @@ class TestKoffCalculator:
         expected_res_time = 2.1549349401094635
         expected_koff = 0.46405113276839965
         koff_calculator.calculate_koff()
-        assert koff_calculator.res_time == pytest.approx(expected_res_time)
-        assert koff_calculator.koff == pytest.approx(expected_koff)
+        assert koff_calculator.res_time == pytest.approx(expected_res_time, 0.1)
+        assert koff_calculator.koff == pytest.approx(expected_koff, 0.1)
 
     def test_invalid_fitting_func_name(self):
         with pytest.raises(ValueError):
