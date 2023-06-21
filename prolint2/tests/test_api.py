@@ -1,5 +1,4 @@
 import warnings
-import MDAnalysis as mda
 import pandas as pd
 import pytest
 
