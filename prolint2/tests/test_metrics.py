@@ -288,9 +288,9 @@ class TestSurvivalFunction:
 class TestKoffCalculator:
     @pytest.fixture
     def koff_calculator(self):
-        durations = [1, 2, 3, 4, 5]
-        t_total = 10
-        timestep = 1
+        durations = [0.39, 0.79, 0.39, 0.39]
+        t_total = 4.8
+        timestep = 0.4
         fitting_func_name = 'bi_expo'
         return KoffCalculator(durations, t_total, timestep, fitting_func_name=fitting_func_name)
 
@@ -300,8 +300,8 @@ class TestKoffCalculator:
         assert koff_calculator._is_empty_or_zeros(np.array([0, 0, 0]))
 
     def test_calculate_koff(self, koff_calculator):
-        expected_res_time = 2.1549349401094635
-        expected_koff = 0.46405113276839965
+        expected_res_time = 0.384892
+        expected_koff = 2.59812
         koff_calculator.calculate_koff()
         assert koff_calculator.res_time == pytest.approx(expected_res_time, 0.1)
         assert koff_calculator.koff == pytest.approx(expected_koff, 0.1)
