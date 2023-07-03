@@ -393,7 +393,11 @@ class ProLintDashboard:
         self.args = payload
         self.port = self.args['port']
         self.ts = Universe(self.args['structure'], self.args['trajectory'])
-        self.contacts = self.ts.load_contacts_from_file(self.args['contacts'])
+        # load contacts from file if provided
+        if 'contacts' in self.args.keys():
+            self.contacts = self.ts.load_contacts_from_file(self.args['contacts'])
+        else:
+            self.contacts = self.ts.compute_contacts(cutoff=float(parameters_config["cutoff"]))
 
         self.payload = ServerPayload(self.contacts, self.ts)
         payload = self.payload.payload
