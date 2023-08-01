@@ -17,7 +17,7 @@ dependencies:
     # Package dependencies
   - mdanalysis  
   - bottle
-  - plotly
+  - requests
 
     # Pip-only installs
   - pip:

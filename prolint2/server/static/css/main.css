@@ -1,0 +1,153 @@
+.container {
+  width: 1200px;
+}
+#chartdiv {
+  height: 700px;
+  background-color: white;
+}
+
+#chartdiv2 {
+  height: 250px;
+  width: 650px;
+  background-color: white;
+}
+
+#chartdiv3 {
+  height: 300px;
+  background-color: white;
+}
+
+#lipid-table {
+  height: 300px;
+  background-color: white;
+}
+
+#chartdiv4 {
+  height: 300px;
+}
+
+.msp-plugin ::-webkit-scrollbar-thumb {
+  background-color: #474748 !important;
+}
+.viewerSection {
+  padding-top: 40px;
+}
+.controlsSection {
+  width: 100px;
+  height: 100px;
+  float: left;
+  padding: 40px 0 0 0;
+  margin-right: 30px;
+}
+.controlBox {
+  border: 1px solid lightgray;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+#myViewer {
+  float: left;
+  width: 500px;
+  height: 700px;
+  position: relative;
+}
+
+.tabulator-col-title {
+  text-align: center;
+}
+
+.tabulator-tableholder {
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+.tabulator-tableholder::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+.tabulator-col-title {
+  font-size: 12px;
+}
+
+/* body {
+height: 100vh;
+margin: 0;
+display: grid;
+grid-template-columns: auto auto;
+gap: 20px;
+place-content: center;
+background: #DAEDFB;
+} */
+
+.dropdown-wrapper {
+  display: flex;
+  align-items: center;
+  top: 15px; 
+}
+
+.dropdown-label {
+  margin-right: 0.5em;
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: var(--c);
+}
+
+.custom-dropdown {
+  width: 250px;
+  appearance: none;
+  /* Add the remaining styles from your previous custom-select rule */
+}
+
+
+button, select {
+  --b: 1.5px; /* border thickness */
+  --s: 0.02em; /* size of the corner */
+  --c: #bd5532;
+
+  padding: calc(0.05em + var(--s)) calc(0.3em + var(--s));
+  color: var(--c);
+  --_p: var(--s);
+  background: conic-gradient(
+      from 90deg at var(--b) var(--b),
+      #0000 90deg,
+      var(--c) 0
+    )
+    var(--_p) var(--_p) / calc(100% - var(--b) - 2 * var(--_p))
+    calc(100% - var(--b) - 2 * var(--_p));
+  transition: 0.3s linear, color 0s, background-color 0s;
+  outline: var(--b) solid #0000;
+  outline-offset: 0.2em;
+}
+button:hover,
+button:focus-visible,
+select:hover,
+select:focus-visible {
+  --_p: 0px;
+  outline-color: var(--c);
+  outline-offset: 0.05em;
+}
+button:active {
+  background: var(--c);
+  color: #fff;
+}
+
+button, select {
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  cursor: pointer;
+  border: none;
+  margin: 0.1em;
+}
+
+select option {
+  background-color: #ffffff;
+  color: var(--c);
+  font-family: system-ui, sans-serif;
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding: 0.1em 0.3em;
+}
+
+select option:hover {
+  background-color: var(--c);
+  color: #ffffff;
+}

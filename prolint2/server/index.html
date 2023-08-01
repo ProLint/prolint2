@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProLint2 Dashboard</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/stock.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/radar.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/flow.js"></script>
+
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator_simple.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="static/css/pdbe-molstar-3.1.0_vendor.css">
+    <link rel="stylesheet" type="text/css" href="static/css/main.css">
+</head>
+
+<body>
+
+    <div class="container" style="margin-top: 10px;">
+        <div class="row">
+            <div class="col-sm-7" style="background-color:white;">
+                <div id="chartdiv2" style="height: 200px"></div>
+            </div>
+            <div class="col-sm-5" style="background-color:white; ">
+                    <img src="static/images/logo.png" alt="ProLint Logo" style="padding-left: 185px; margin-bottom: -15px; height: 150px;">
+                    <h1 style=" text-align: center; padding-left: 35px; ">ProLint2 Dashboard</h1>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-2" style="background-color:white;">
+                <div id="lipid-table"></div>
+            </div>
+            <div class="col-sm-5" style="background-color: white;">
+                <div id="chartdiv3"></div>
+            </div>
+            <div class="col-sm-5" style="background-color: white;">
+                <div id="chartdiv4"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-7" style="background-color: white; position: relative; height: 50px; margin-top: 20px">
+                <div class="dropdown-wrapper">
+                    <span class="dropdown-label">Select contact metric</span>
+                    <select id="metric_button" class="custom-dropdown">
+                      <option value="sum" selected>Sum of all contacts</option>
+                      <option value="mean">Mean of contacts</option>
+                      <option value="max">Longest contact</option>
+                    </select>
+                  </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div id="chartdiv" class="col-sm-7" style="background-color: white; position: relative;">
+              <div id="chartdiv_z" style="width: 100%; height: 100%; position: absolute; padding-top: 30px;"></div>
+              <div id="chartdiv_y" style="width: 100%; height: 100%; position: absolute; padding-top: 20px"></div>
+              <div id="chartdiv_x" style="width: 100%; height: 100%; position: absolute; padding-top: 15px;"></div>
+              <button id="button_x" style="position: absolute; top: 20; left: 45%; --c: #373B44; --s:3px" data-app="app_x">Radial App</button>
+              <button id="button_y" style="position: absolute; top: 20; right: 0; --c: #373B44; --s:3px" data-app="app_y">Shared Contacts</button>
+              <button id="button_z" style="position: absolute; top: 20; left: 0; --c: #373B44; --s:3px" data-app="app_z">Time Series</button>
+
+            </div>
+            <div id="viewerContainer" class="col-sm-4" style="background-color: white;">
+                <div id="myViewer" class="col-sm-4" style="background-color: white;"></div>  
+            </div>
+          </div>
+          
+        </div>
+    </div>
+
+    <script>
+        function bringDivToFront(divId, buttonId) {
+        // Get the div element and its z-index
+        const div = document.getElementById(divId);
+
+        const chartdivs = document.querySelectorAll("#chartdiv > div");
+        chartdivs.forEach((chartdiv) => {
+            // chartdiv.style.pointerEvents = "none";
+            // chartdiv.style.visibility = "hidden";
+            chartdiv.style.display = "none";
+        });
+
+        // div.style.pointerEvents = "auto";
+        // div.style.visibility = "visible";
+        div.style.display = "block";
+
+        // Set the active/inactive classes on the buttons
+        const buttons = document.querySelectorAll("#chartdiv button");
+        buttons.forEach((button) => {
+            if (button.id === buttonId) {
+            button.classList.add("active");
+            button.classList.remove("inactive");
+            button.style.setProperty("--s", ".02em");
+            button.style.setProperty("--c", "#BD5532");
+            // change visibility of the div 
+            } else {
+            button.classList.remove("active");
+            button.classList.add("inactive");
+            button.style.setProperty("--s", "3px");
+            button.style.setProperty("--c", "#373B44");
+
+            }
+        });
+
+        }
+
+        document.getElementById("button_x").addEventListener("click", function() {
+            bringDivToFront("chartdiv_x", "button_x");
+        });
+
+        document.getElementById("button_y").addEventListener("click", function() {
+            bringDivToFront("chartdiv_y", "button_y");
+        });
+
+        document.getElementById("button_z").addEventListener("click", function() {
+            bringDivToFront("chartdiv_z", "button_z");
+        });
+
+        bringDivToFront("chartdiv_z", "button_z");
+
+
+    </script>
+    <script src="static/js/pdbe-molstar-plugin-3.1.0_vendor.js"></script>
+    <script type="module" src="static/js/app.js"></script>
+
+    <script>
+        var viewerInstance = new PDBeMolstarPlugin();
+
+        obj = {"abc": 1}
+        var options = {
+            customData: { url: '/pdb/' + JSON.stringify(obj), format: 'pdb', binary:false },
+            hideControls: true,
+            // hideCanvasControls: ['selection', 'animation', 'controlToggle'],
+            hideCanvasControls: ['animation'],
+            // visualStyle: 'molecular-surface'
+            // lighting: 'matte',
+            }
+
+            //Get element from HTML/Template to place the viewer
+            var viewerContainer = document.getElementById('myViewer');
+
+            //Call render method to display the 3D view
+            viewerInstance.render(viewerContainer, options);
+
+    </script>
+
+    <script src="static/js/mol.js"></script>
+
+
+</body>
+
+</html>
