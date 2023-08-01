@@ -1,6 +1,10 @@
 import os
 import pytest
-from prolint2.sampledata import GIRK, COX1, SMO
+from prolint2.sampledata import GIRKDataSample, COX1DataSample, SMODataSample
+
+GIRK = GIRKDataSample()
+COX1 = COX1DataSample()
+SMO = SMODataSample()
 
 @pytest.mark.parametrize("DataSample", [GIRK, COX1, SMO])
 def test_sampledata(DataSample):

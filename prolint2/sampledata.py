@@ -53,7 +53,7 @@ class GIRKDataSample:
             os.path.abspath(os.path.dirname(__file__)), "data/GIRK/"
         )
         if (
-            os.path.isfile(os.path.join(self.path, "coordinates.gro"))
+            os.path.isfile(os.path.join(self.path, "coordinates.gro")) is False
             or os.path.isfile(os.path.join(self.path, "trajectory.xtc")) is False
         ):
             file_download(
@@ -96,7 +96,7 @@ class COX1DataSample:
             os.path.abspath(os.path.dirname(__file__)), "data/COX1/"
         )
         if (
-            os.path.isfile(os.path.join(self.path, "coordinates.gro"))
+            os.path.isfile(os.path.join(self.path, "coordinates.gro")) is False
             or os.path.isfile(os.path.join(self.path, "trajectory.xtc")) is False
         ):
             file_download(
@@ -139,7 +139,7 @@ class SMODataSample:
             os.path.abspath(os.path.dirname(__file__)), "data/SMO/"
         )
         if (
-            os.path.isfile(os.path.join(self.path, "coordinates.gro"))
+            os.path.isfile(os.path.join(self.path, "coordinates.gro")) is False
             or os.path.isfile(os.path.join(self.path, "trajectory.xtc")) is False
         ):
             file_download(

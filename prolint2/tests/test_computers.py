@@ -5,8 +5,12 @@ from collections import defaultdict
 
 import MDAnalysis as mda
 from prolint2 import Universe
-from prolint2.sampledata import GIRK, COX1, SMO
+from prolint2.sampledata import GIRKDataSample, COX1DataSample, SMODataSample
 from prolint2.computers.contacts import SerialContacts
+
+GIRK = GIRKDataSample()
+COX1 = COX1DataSample()
+SMO = SMODataSample()
 
 warnings.filterwarnings('ignore')
 

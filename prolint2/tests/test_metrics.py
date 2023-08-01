@@ -3,7 +3,9 @@ import pytest
 from prolint2 import Universe
 from prolint2.metrics.aprox_contacts import AproxContacts
 from prolint2.metrics.exact_contacts import ExactContacts
-from prolint2.sampledata import GIRK
+from prolint2.sampledata import GIRKDataSample
+
+GIRK = GIRKDataSample()
 
 from prolint2.metrics.base import BaseMetric, Metric
 from prolint2.metrics.registries import MetricRegistry

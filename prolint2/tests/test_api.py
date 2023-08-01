@@ -7,7 +7,11 @@ from typing import Literal, get_args
 
 from prolint2 import Universe
 from prolint2.core.groups import ExtendedAtomGroup
-from prolint2.sampledata import GIRK, COX1, SMO
+from prolint2.sampledata import GIRKDataSample, COX1DataSample, SMODataSample
+
+GIRK = GIRKDataSample()
+COX1 = COX1DataSample()
+SMO = SMODataSample()
 
 warnings.filterwarnings('ignore')
 
