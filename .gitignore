@@ -129,3 +129,4 @@ prolint2/data/GIRK/trajectory.xtc
 prolint2/data/SMO/coordinates.gro
 prolint2/data/SMO/trajectory.xtc
 .gitignore
+docs/notebooks/plot_residue.py
