@@ -130,3 +130,7 @@ prolint2/data/SMO/coordinates.gro
 prolint2/data/SMO/trajectory.xtc
 .gitignore
 docs/notebooks/plot_residue.py
+docs/notebooks/plot_logo.py
+docs/notebooks/Figure_interactions.pdf
+.gitignore
+docs/notebooks/Figure_interactions_logo.pdf
