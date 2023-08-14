@@ -29,14 +29,11 @@ if __name__ == "__main__":
     # Define your data structure here: including the Prolint2 universe, the contacts and the metrics as needed
     # Example:
     from prolint2.sampledata import GIRKDataSample
-    from prolint2.metrics.metrics import Metric, MeanMetric
+    from prolint2.metrics.metrics import Metric, MeanMetric, SumMetric, MaxMetric
     GIRK = GIRKDataSample()
     u = Universe(GIRK.coordinates, GIRK.trajectory)
     contacts = u.compute_contacts(cutoff=7)
-    mean_instance = MeanMetric()
-    metric_instance = Metric(contacts, mean_instance)
-    mean_contacts = metric_instance.compute()
-    mean_contacts
+
 {}
     """.format(
         code_body, tail
@@ -272,3 +269,19 @@ class AxisIndex:
                 self.axis_start + len(self.breaks[self.page_idx][-1]),
                 self.axis_start + self.length - 1,
             )
+
+def get_metrics_for_radar(metrics, metric_names, resIDs=[], lipid=None):
+    metrics_radar = {}
+    for resi in resIDs:
+        metrics_radar[resi] = []
+        if resi in metrics.keys():
+            for metric in metric_names:
+                if metric in metrics[resi][lipid].keys():
+                    metrics_radar[resi].append(metrics[resi][lipid][metric])
+                else:
+                    metrics_radar[resi].append(0)
+        else:
+            for metric in metric_names:
+                metrics_radar[resi].append(0)
+
+    return metrics_radar, metric_names

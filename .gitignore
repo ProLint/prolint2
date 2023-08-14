@@ -136,3 +136,6 @@ docs/notebooks/Figure_interactions.pdf
 docs/notebooks/Figure_interactions_logo.pdf
 docs/notebooks/Figure_interactions_points.pdf
 docs/notebooks/point_distribution.py
+docs/notebooks/Figure_interactions_radar.pdf
+docs/notebooks/radar.py
+docs/notebooks/run_plots.sh

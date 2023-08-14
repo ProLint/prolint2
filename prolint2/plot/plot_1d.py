@@ -27,20 +27,34 @@ class Plotter1D:
         if show:
             plt.show()
 
-        if self.fig_close:
-            plt.close(fig)
-
     def generate_script(self, class_code, script_filename):
         # create a python script that generates the plot
         plotting_function_source = inspect.getsource(class_code)
-        if self.__class__.__name__ in ["ResiduePlot", "ResidueLogo"]:
+        if self.__class__.__name__ in ["ResiduePlot", "ResidueLogo", "PointDistribution"]:
             tail = """
+    mean_instance = MeanMetric()
+    metric_instance = Metric(contacts, mean_instance)
+    mean_contacts = metric_instance.compute()
+
     # Generate the plot
     PLOT = {}(u, mean_contacts, lipid='CHOL', metric_name='MeanMetric')
     PLOT.save_plot(show=False)
             """.format(
                 self.__class__.__name__
             )
+        elif self.__class__.__name__ in ["Radar"]:
+            tail = """
+    metric_instances_list = [MeanMetric(), SumMetric(), MaxMetric()]
+    metric_instance = Metric(contacts, metric_instances_list) 
+    contacts_out = metric_instance.compute()
+
+    # Generate the plot
+    PLOT = {}(contacts_out, resIDs=[2, 3, 5], lipid='POPS', metric_names=['MeanMetric', 'SumMetric', 'MaxMetric'])
+    PLOT.save_plot(show=False)
+            """.format(
+                self.__class__.__name__
+            )
+
         script_code = use_1d_script_template(plotting_function_source, tail)
 
         with open(script_filename, "w") as f:
