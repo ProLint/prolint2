@@ -222,3 +222,5 @@ class ResidueLogo(Plotter1D):
             else:
                 name, ext = os.path.splitext(self.fn)
                 fig.savefig("{}_{}{}".format(name, page_idx, ext), dpi=300)
+
+

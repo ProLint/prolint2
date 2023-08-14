@@ -17,6 +17,12 @@ from prolint2 import Universe
 from prolint2.plot.plot_1d import Plotter1D
 from prolint2.plot.utils import *
 
+## seaborn config for paper quality plots
+import seaborn as sns
+sns.set_context("paper")
+sns.set_style("whitegrid")
+sns.set_palette("colorblind")
+
 {} 
 
 if __name__ == "__main__":

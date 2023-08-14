@@ -134,3 +134,5 @@ docs/notebooks/plot_logo.py
 docs/notebooks/Figure_interactions.pdf
 .gitignore
 docs/notebooks/Figure_interactions_logo.pdf
+docs/notebooks/Figure_interactions_points.pdf
+docs/notebooks/point_distribution.py
