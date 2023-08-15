@@ -10,11 +10,10 @@ def use_1d_script_template(code_body, tail):
 import os
 import numpy as np
 import pandas as pd
-import logomaker
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from prolint2 import Universe
-from prolint2.plot.plot_1d import Plotter1D
+from prolint2.plot.plp import Plotter
 from prolint2.plot.utils import *
 
 ## seaborn config for paper quality plots
@@ -138,138 +137,6 @@ def get_metric_list_by_residues(universe, metric, lipid=None, metric_name=None):
     return np.array(metric_list)
 
 
-class AxisIndex:
-    """Build axes for logo figure."""
-
-    def __init__(self, residue_index, logos, interactions, length, gap):
-        self.page_idx = 0
-        self.length = length
-        self.gap = gap
-        self.residue_index = residue_index
-        self.logos = logos
-        self.interactions = interactions
-        self.axis_start = (residue_index[0] // length) * length
-        self.breaks = defaultdict(list)
-        self.breaks[self.page_idx].append([])
-        self.gray_areas = defaultdict(list)
-
-    def fill_missing(self, start_value, end_value):
-        for xloci in np.arange(start_value, end_value + 1):
-            self.breaks[self.page_idx][-1].append((xloci, "A", 0))
-        self.gray_areas[self.page_idx].append(
-            (len(self.breaks[self.page_idx]) - 1, start_value, end_value)
-        )
-
-    def new_axis(self, pointer):
-        self.breaks[self.page_idx].append([])
-        self.axis_start = self.residue_index[pointer]
-        self.breaks[self.page_idx][-1].append(
-            (
-                self.residue_index[pointer],
-                self.logos[pointer],
-                self.interactions[pointer],
-            )
-        )
-
-    def new_page(self, pointer):
-        if len(self.breaks[self.page_idx][-1]) < self.length:
-            self.fill_missing(
-                self.axis_start + len(self.breaks[self.page_idx][-1]),
-                self.axis_start + self.length - 1,
-            )
-        self.page_idx += 1
-        self.breaks[self.page_idx].append([])
-        self.axis_start = (self.residue_index[pointer] // self.length) * self.length
-        if self.axis_start != self.residue_index[pointer]:
-            self.fill_missing(self.axis_start, self.residue_index[pointer] - 1)
-        self.breaks[self.page_idx][-1].append(
-            (
-                self.residue_index[pointer],
-                self.logos[pointer],
-                self.interactions[pointer],
-            )
-        )
-
-    def new_gap(self, pointer):
-        gray_start = self.residue_index[pointer - 1] + 1
-        for xloci in np.arange(
-            self.residue_index[pointer - 1] + 1, self.residue_index[pointer]
-        ):
-            if xloci - self.axis_start < self.length:
-                self.breaks[self.page_idx][-1].append((xloci, "A", 0))
-            else:
-                self.gray_areas[self.page_idx].append(
-                    (len(self.breaks[self.page_idx]) - 1, gray_start, xloci - 1)
-                )
-                self.breaks[self.page_idx].append([])
-                self.breaks[self.page_idx][-1].append((xloci, "A", 0))
-                self.axis_start = xloci
-                gray_start = xloci
-        self.gray_areas[self.page_idx].append(
-            (
-                len(self.breaks[self.page_idx]) - 1,
-                gray_start,
-                self.residue_index[pointer] - 1,
-            )
-        )
-        self.breaks[self.page_idx][-1].append(
-            (
-                self.residue_index[pointer],
-                self.logos[pointer],
-                self.interactions[pointer],
-            )
-        )
-
-    def sort(self):
-        end = False
-        if self.axis_start != self.residue_index[0]:
-            self.fill_missing(self.axis_start, self.residue_index[0] - 1)
-        self.breaks[self.page_idx][-1].append(
-            (self.residue_index[0], self.logos[0], self.interactions[0])
-        )
-        pointer = 1
-        while not end:
-            if (
-                self.residue_index[pointer] - self.residue_index[pointer - 1] == 1
-                and self.residue_index[pointer] - self.axis_start < self.length
-            ):
-                self.breaks[self.page_idx][-1].append(
-                    (
-                        self.residue_index[pointer],
-                        self.logos[pointer],
-                        self.interactions[pointer],
-                    )
-                )
-                pointer += 1
-            elif (
-                self.residue_index[pointer] - self.residue_index[pointer - 1] == 1
-                and self.residue_index[pointer] - self.axis_start >= self.length
-            ):
-                self.new_axis(pointer)
-                pointer += 1
-            elif self.residue_index[pointer] - self.residue_index[pointer - 1] < 0:
-                self.new_page(pointer)
-                pointer += 1
-            elif (
-                1
-                < self.residue_index[pointer] - self.residue_index[pointer - 1]
-                <= self.gap
-            ):
-                self.new_gap(pointer)
-                pointer += 1
-            elif (
-                self.residue_index[pointer] - self.residue_index[pointer - 1] > self.gap
-            ):
-                self.new_page(pointer)
-                pointer += 1
-            if pointer == len(self.residue_index):
-                end = True
-        if len(self.breaks[self.page_idx][-1]) < self.length:
-            self.fill_missing(
-                self.axis_start + len(self.breaks[self.page_idx][-1]),
-                self.axis_start + self.length - 1,
-            )
-
 def get_metrics_for_radar(metrics, metric_names, resIDs=[], lipid=None):
     metrics_radar = {}
     for resi in resIDs:
@@ -285,3 +152,40 @@ def get_metrics_for_radar(metrics, metric_names, resIDs=[], lipid=None):
                 metrics_radar[resi].append(0)
 
     return metrics_radar, metric_names
+
+
+def compute_density(universe, lipids, size_in_mb):
+    frames = universe.trajectory.n_frames
+    selection_string = "resname {}".format(lipids[0])
+    if len(lipids) > 1:
+        for l in lipids[1:]:
+            selection_string += " or resname {}".format(l)
+
+    lipids_ag = universe.select_atoms(selection_string)
+    for ts in universe.trajectory:
+        if ts.frame == 0:
+            lipids_xyz = lipids_ag.positions
+        else:
+            lipids_xyz = np.append(lipids_xyz, lipids_ag.positions)
+
+    # Convert size from MB to Bytes
+    size = size_in_mb * (1024**2)  # 1 MB = 1024 * 1024 bytes
+
+    def slice_array(arr, slice_by):
+        mask = np.ones_like(arr, dtype=bool)
+        print(mask.shape)
+        mask[:: int(slice_by)] = False
+        print(mask[:: int(slice_by)].shape[0])
+        xshape = int(arr.shape[0] - mask[:: int(slice_by)].shape[0])
+        print(xshape)
+        arr = arr[mask].reshape(xshape, arr.shape[1], 3)
+        return arr
+
+    lipids_xyz = lipids_xyz.reshape((frames, lipids_ag.atoms.n_atoms, 3))
+
+    while lipids_xyz.nbytes > size:
+        lipids_xyz = slice_array(lipids_xyz, 10)
+
+    lipids_xyz = lipids_xyz.reshape(lipids_xyz.shape[0] * lipids_xyz.shape[1], 3)
+
+    return lipids_xyz
