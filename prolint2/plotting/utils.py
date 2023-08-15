@@ -13,8 +13,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from prolint2 import Universe
-from prolint2.plot.plp import Plotter
-from prolint2.plot.utils import *
+from prolint2.plotting import Plotter
+from prolint2.plotting.utils import *
 
 ## seaborn config for paper quality plots
 import seaborn as sns

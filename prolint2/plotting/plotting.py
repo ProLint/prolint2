@@ -172,8 +172,8 @@ class DensityMap(Plotter):
         lipid=None,
         bins=150,
         size_in_mb=50000,
-        colormap='viridis',
-        interpolation='nearest',
+        colormap="viridis",
+        interpolation="nearest",
         xlabel=None,
         ylabel=None,
         fn=None,
@@ -193,18 +193,24 @@ class DensityMap(Plotter):
         """Plot the preferential localization of lipids using 2D density maps."""
 
         # Compute the lipid coordinates
-        computed_coords = compute_density(self.universe, [self.lipid], self.size_in_mb) 
-                    
+        computed_coords = compute_density(self.universe, [self.lipid], self.size_in_mb)
+
         # Compute the lipid density
-        H, xe, ye = np.histogram2d(computed_coords[:, 0], computed_coords[:, 1], bins=self.bins, density=True)
+        H, xe, ye = np.histogram2d(
+            computed_coords[:, 0], computed_coords[:, 1], bins=self.bins, density=True
+        )
 
         # Generate the 2D histogram (density plot)
         fig, ax = plt.subplots(figsize=(8, 8))
 
         # Plot the density map
-        im = ax.imshow(H, interpolation=self.interpolation, origin='lower',
-                   extent=[xe[0], xe[-1], ye[0], ye[-1]],
-                   cmap=self.colormap)
+        im = ax.imshow(
+            H,
+            interpolation=self.interpolation,
+            origin="lower",
+            extent=[xe[0], xe[-1], ye[0], ye[-1]],
+            cmap=self.colormap,
+        )
         ax.grid(False)
 
         # Add colorbar
@@ -223,9 +229,3 @@ class DensityMap(Plotter):
         ax.set_yticklabels([])
 
         plt.tight_layout()
-
-
-
-
-
-        
