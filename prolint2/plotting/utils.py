@@ -154,12 +154,9 @@ def get_metrics_for_radar(metrics, metric_names, resIDs=[], lipid=None):
     return metrics_radar, metric_names
 
 
-def compute_density(universe, lipids, size_in_mb):
+def compute_density(universe, lipid, size_in_mb):
     frames = universe.trajectory.n_frames
-    selection_string = "resname {}".format(lipids[0])
-    if len(lipids) > 1:
-        for l in lipids[1:]:
-            selection_string += " or resname {}".format(l)
+    selection_string = "resname {}".format(lipid)
 
     lipids_ag = universe.select_atoms(selection_string)
     for ts in universe.trajectory:

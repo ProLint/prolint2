@@ -141,3 +141,6 @@ docs/notebooks/radar.py
 docs/notebooks/run_plots.sh
 docs/notebooks/Figure_density_map.pdf
 docs/notebooks/plot_2d.py
+docs/notebooks/density_map_CHOL.pdf
+docs/notebooks/metrics_comparison.pdf
+docs/notebooks/point_distribution_MeanMetric.pdf
