@@ -1,4 +1,6 @@
 import numpy as np
+import pandas as pd
+import MDAnalysis as mda
 from collections import defaultdict
 
 
@@ -205,3 +207,63 @@ def shift_range(values, new_min=0, new_max=1):
             new_value = new_min
         new_val.append(new_value)
     return new_val
+
+
+def get_lipid_contact_frequencies(u, contacts, lipid_type, frequency_filter=0.0):
+    """Get the lipid contact frequencies."""
+    lipid_contacts = {}
+    reslist = u.residues.resids.tolist()
+
+    for resid in contacts.contact_frames:
+        for lipid in contacts.contact_frames[resid]:
+            # filter by resname
+            if u.residues.resnames[reslist.index(lipid)] == lipid_type:
+                if lipid not in lipid_contacts.keys():
+                    lipid_contacts[lipid] = 0
+                lipid_contacts[lipid] += len(contacts.contact_frames[resid][lipid])
+
+    n_frames = u.trajectory.n_frames - 1
+
+    lipid_contacts = {
+        lipid: frames / n_frames
+        for lipid, frames in lipid_contacts.items()
+        if frames / n_frames > frequency_filter
+    }
+    temp = sorted(lipid_contacts.items(), key=lambda x: x[1], reverse=True)
+    return pd.DataFrame(
+        {"Lipip ID": [i[0] for i in temp], "Frequency": [i[1] for i in temp]}
+    )
+
+
+def find_continuous_chunks(lst):
+    result = []
+    current_chunk = []
+
+    for i, num in enumerate(lst):
+        if i == 0 or num != lst[i - 1] + 1:
+            if current_chunk:
+                result.append((current_chunk[0], current_chunk[-1]))
+                current_chunk = []
+            current_chunk.append(num)
+        else:
+            current_chunk.append(num)
+
+    if current_chunk:
+        result.append((current_chunk[0], current_chunk[-1]))
+
+    return result
+
+
+def inverse_dict_keys(d):
+    reversed_keys = list(d.keys())[::-1]
+    inverted_dict = {key: d[key] for key in reversed_keys}
+    return inverted_dict
+
+
+def create_logo_df(universe, metric, **kwargs):
+    # create pandas dataframe
+    resids = universe.query.residues.resids 
+    resnames = [mda.lib.util.convert_aa_code(x) for x in universe.query.residues.resnames]
+    res_metrics = get_metric_list_by_residues(universe, metric, **kwargs)
+    df = pd.DataFrame({"ResID": resids, "Resname": resnames, "Occupancy": [0.75] * len(resids), "Metric": res_metrics})
+    return df

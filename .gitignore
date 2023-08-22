@@ -144,3 +144,9 @@ docs/notebooks/plot_2d.py
 docs/notebooks/density_map_CHOL.pdf
 docs/notebooks/metrics_comparison.pdf
 docs/notebooks/point_distribution_MeanMetric.pdf
+docs/notebooks/logo_POPS_MeanMetric.pdf
+docs/notebooks/durations_gantt_POPS_2869.pdf
+.gitignore
+.gitignore
+docs/notebooks/logo.png
+docs/notebooks/durations_gantt_POPE_2329.pdf
