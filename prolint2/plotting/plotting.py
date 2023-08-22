@@ -5,8 +5,11 @@ import logomaker as lm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.patches import FancyBboxPatch
+from prolint2.computers.distances import SerialDistances
 import inspect
+import configparser
 from .utils import *
 
 ## seaborn config for paper quality plots
@@ -17,6 +20,11 @@ sns.set_style("whitegrid")
 sns.set_palette("colorblind")
 
 __all__ = ["Plotter", "PointDistribution", "Radar", "DensityMap", "DurationGantt"]
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini"))
+parameters_config = config["Parameters"]
 
 
 class Plotter:
@@ -36,7 +44,7 @@ class Plotter:
 
     def save_plot(self, **kwargs):
         self.create_plot(**kwargs)
-        plt.savefig(self.fn, dpi=300, bbox_inches='tight')
+        plt.savefig(self.fn, dpi=300, bbox_inches="tight")
 
     def generate_script(self, class_code, script_filename):
         # create a python script that generates the plot
@@ -179,8 +187,16 @@ class Radar(Plotter):
         ax.set_theta_direction(-1)
 
         ax.tick_params(axis="both", which="major", labelsize=10)
-        tt = ax.legend(loc="upper right", bbox_to_anchor=(1.15, 1.1), title="Residue ID", title_fontsize=12, prop={'family': "Arial Unicode MS", 'size': 12})
-        tt.set_title(title="Residue ID", prop={'family': "Arial Rounded MT Bold", 'size': 12})
+        tt = ax.legend(
+            loc="upper right",
+            bbox_to_anchor=(1.15, 1.1),
+            title="Residue ID",
+            title_fontsize=12,
+            prop={"family": "Arial Unicode MS", "size": 12},
+        )
+        tt.set_title(
+            title="Residue ID", prop={"family": "Arial Rounded MT Bold", "size": 12}
+        )
 
         if self.fn is None:
             self.fn = os.path.join(os.getcwd(), "metrics_comparison.pdf")
@@ -188,11 +204,17 @@ class Radar(Plotter):
             self.title = "Metrics comparison"
 
         # add labels and title
-        plt.yticks(fontname = "Arial Unicode MS")
-        plt.xticks(fontname = "Arial Rounded MT Bold")
+        plt.yticks(fontname="Arial Unicode MS")
+        plt.xticks(fontname="Arial Rounded MT Bold")
         plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
         plt.ylabel(self.ylabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
-        plt.title(self.title, fontsize=14, weight="bold", pad=30, fontfamily="Arial Rounded MT Bold")
+        plt.title(
+            self.title,
+            fontsize=14,
+            weight="bold",
+            pad=30,
+            fontfamily="Arial Rounded MT Bold",
+        )
         plt.tight_layout()
 
 
@@ -240,7 +262,9 @@ class DensityMap(Plotter):
         cax = divider.append_axes("right", size="5%", pad=0.05)
         cbar = plt.colorbar(im, cax=cax)
         # increase the font size
-        cbar.set_label(label="Density distribution", size=12, fontfamily='Arial Rounded MT Bold')
+        cbar.set_label(
+            label="Density distribution", size=12, fontfamily="Arial Rounded MT Bold"
+        )
         cbar.ax.tick_params(labelsize=12)
 
         # Remove labels and ticks
@@ -255,7 +279,13 @@ class DensityMap(Plotter):
             self.title = "Density map - {}".format(self.lipid)
 
         # add title
-        ax.set_title(self.title, fontsize=14, weight="bold", pad=15, fontfamily="Arial Rounded MT Bold")
+        ax.set_title(
+            self.title,
+            fontsize=14,
+            weight="bold",
+            pad=15,
+            fontfamily="Arial Rounded MT Bold",
+        )
         plt.tight_layout()
 
 
@@ -264,7 +294,6 @@ class DurationGantt(Plotter):
         self,
         universe,
         contacts,
-        lipid_type,
         xlabel=None,
         ylabel=None,
         fn=None,
@@ -274,18 +303,21 @@ class DurationGantt(Plotter):
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
         self.contacts = contacts
-        self.lipid_type = lipid_type
-        self.lipid_frequencies = None
 
-    def get_lipid_contact_durations(self, frequency_filter=20):
-        self.lipid_frequencies = get_lipid_contact_frequencies(
-            self.universe, self.contacts, self.lipid_type, frequency_filter
+    def get_lipid_contact_durations(self, lipid_type, frequency_filter=20):
+        return get_lipid_contact_frequencies(
+            self.universe, self.contacts, lipid_type, frequency_filter
         )
 
-    def create_plot(self, lipid_id=None, top_filter=10, **kwargs):
-        if self.lipid_frequencies is None:
-            raise ValueError("Please run get_lipid_contact_durations() first.")
-        elif lipid_id is None:
+    def create_plot(
+        self,
+        lipid_id=None,
+        top_filter=10,
+        continuity_filter=int(parameters_config["intervals_to_filter_out"]),
+        tolerance=int(parameters_config["tolerance"]),
+        **kwargs
+    ):
+        if lipid_id is None:
             raise ValueError("Please specify a lipid_id.")
         else:
             residues = self.contacts.get_residues_by_lipid_id(lipid_id=lipid_id)
@@ -298,8 +330,10 @@ class DurationGantt(Plotter):
 
             res_chunks = {}
             for res in top_residues:
-                res_chunks[res[0]] = find_continuous_chunks(
-                    self.contacts.contact_frames[res[0]][lipid_id]
+                res_chunks[res[0]] = get_frame_contact_intervals(
+                    self.contacts.contact_frames[res[0]][lipid_id],
+                    continuity_filter,
+                    tolerance,
                 )
 
             fig, ax = plt.subplots(figsize=(10, 6))
@@ -331,89 +365,129 @@ class DurationGantt(Plotter):
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(),
-                    "durations_gantt_{}_{}.pdf".format(self.lipid_type, lipid_id),
+                    "durations_gantt_lipidID_{}.pdf".format(lipid_id),
                 )
             if self.title is None:
-                self.title = "Lipid Contact Durations - {} {}".format(
-                    self.lipid_type, lipid_id
-                )
+                self.title = "Lipid Contact Durations - Lipid ID: {}".format(lipid_id)
             if self.xlabel is None:
                 self.xlabel = "Trajectory Frames"
             if self.ylabel is None:
                 self.ylabel = "Residue ID"
 
             # Set labels and title
-            ax.tick_params(axis='both', which='major', labelsize=12)
-            plt.xticks(fontname = "Arial Rounded MT Bold")
-            plt.yticks(fontname = "Arial Rounded MT Bold")
+            ax.tick_params(axis="both", which="major", labelsize=12)
+            plt.xticks(fontname="Arial Rounded MT Bold")
+            plt.yticks(fontname="Arial Rounded MT Bold")
             plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
             plt.ylabel(self.ylabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
-            ax.set_title(self.title, fontsize=14, weight="bold", pad=20, fontfamily="Arial Rounded MT Bold")
+            ax.set_title(
+                self.title,
+                fontsize=14,
+                weight="bold",
+                pad=20,
+                fontfamily="Arial Rounded MT Bold",
+            )
             plt.tight_layout()
 
 
 class LogoResidues(Plotter):
     def __init__(
-            self,
-            universe,
-            metric,
-            lipid_type=None,
-            metric_name=None,
-            xlabel=None,
-            ylabel=None,
-            fn=None,
-            title=None,
-            fig_size=(8, 8),
+        self,
+        universe,
+        metric,
+        lipid_type=None,
+        metric_name=None,
+        xlabel=None,
+        ylabel=None,
+        fn=None,
+        title=None,
+        fig_size=(8, 8),
     ):
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.lipid_type = lipid_type
         self.metric_name = metric_name
-        self.df = create_logo_df(universe, metric, lipid=lipid_type, metric_name=metric_name)
+        self.df = create_logo_df(
+            universe, metric, lipid=lipid_type, metric_name=metric_name
+        )
 
     def create_plot(self, **kwargs):
-        mat_df = lm.sequence_to_matrix(''.join(self.df['Resname'].to_list()))
+        mat_df = lm.sequence_to_matrix("".join(self.df["Resname"].to_list()))
 
         def ceildiv(number):
             if number % 75 == 0:
                 return number // 75
             else:
                 return number // 75 + 1
-            
-        n_rows = ceildiv(len(self.df['Resname']))
 
-        fig, axs = plt.subplots(n_rows, figsize=[10,(n_rows*0.75) + 0.4])
+        n_rows = ceildiv(len(self.df["Resname"]))
+
+        fig, axs = plt.subplots(n_rows, figsize=[10, (n_rows * 0.75) + 0.4])
 
         # create colormap based on Metric
-        cmap = mpl.cm.get_cmap('Blues')
-        norm = mpl.colors.Normalize(vmin=self.df['Metric'].min(), vmax=self.df['Metric'].max())
-        colors = [cmap(norm(value)) for value in self.df['Metric']]
+        cmap = mpl.cm.get_cmap("Blues")
+        norm = mpl.colors.Normalize(
+            vmin=self.df["Metric"].min(), vmax=self.df["Metric"].max()
+        )
+        colors = [cmap(norm(value)) for value in self.df["Metric"]]
         # colors
         if n_rows == 1:
-            ww_logo = lm.Logo(mat_df, ax=axs, color_scheme='silver', vpad=.4, font_name='Arial Rounded MT Bold') 
-            for residx, metric in enumerate(self.df['Metric']):
-                ww_logo.highlight_position(p=residx, color=list(colors[residx][:3]), alpha=1)
+            ww_logo = lm.Logo(
+                mat_df,
+                ax=axs,
+                color_scheme="silver",
+                vpad=0.4,
+                font_name="Arial Rounded MT Bold",
+            )
+            for residx, metric in enumerate(self.df["Metric"]):
+                ww_logo.highlight_position(
+                    p=residx, color=list(colors[residx][:3]), alpha=1
+                )
             ww_logo.style_spines(visible=False)
 
-            plt.xticks(range(0, len(self.df['Resname']), 5), self.df['ResID'][::5], rotation=0)
-            axs.tick_params(axis='x', which='major', labelsize=12)
+            plt.xticks(
+                range(0, len(self.df["Resname"]), 5), self.df["ResID"][::5], rotation=0
+            )
+            axs.tick_params(axis="x", which="major", labelsize=12)
             axs.set_yticks([])
             axs.grid(False)
         else:
-            magic_number = math.ceil(len(self.df['Resname'])/n_rows)
+            magic_number = math.ceil(len(self.df["Resname"]) / n_rows)
             for i in range(n_rows):
                 if i == n_rows - 1:
-                    ww_logo = lm.Logo(mat_df[i*magic_number:], ax=axs[i], color_scheme='silver', vpad=.4, font_name='Arial Rounded MT Bold')  
-                    ww_logo.ax.set_xticks(range(i*magic_number, len(self.df['Resname']), 5), self.df['ResID'][i*magic_number::5], rotation=0)
+                    ww_logo = lm.Logo(
+                        mat_df[i * magic_number :],
+                        ax=axs[i],
+                        color_scheme="silver",
+                        vpad=0.4,
+                        font_name="Arial Rounded MT Bold",
+                    )
+                    ww_logo.ax.set_xticks(
+                        range(i * magic_number, len(self.df["Resname"]), 5),
+                        self.df["ResID"][i * magic_number :: 5],
+                        rotation=0,
+                    )
                 else:
-                    ww_logo = lm.Logo(mat_df[i*magic_number:(i+1)*magic_number], ax=axs[i], color_scheme='silver', vpad=.4, font_name='Arial Rounded MT Bold')  
-                    ww_logo.ax.set_xticks(range(i*magic_number, (i+1)*magic_number, 5), self.df['ResID'][i*magic_number:(i+1)*magic_number:5], rotation=0)
+                    ww_logo = lm.Logo(
+                        mat_df[i * magic_number : (i + 1) * magic_number],
+                        ax=axs[i],
+                        color_scheme="silver",
+                        vpad=0.4,
+                        font_name="Arial Rounded MT Bold",
+                    )
+                    ww_logo.ax.set_xticks(
+                        range(i * magic_number, (i + 1) * magic_number, 5),
+                        self.df["ResID"][i * magic_number : (i + 1) * magic_number : 5],
+                        rotation=0,
+                    )
 
-                for residx, metric in enumerate(self.df['Metric']):
-                    ww_logo.highlight_position(p=residx, color=list(colors[residx][:3]), alpha=1)
+                for residx, metric in enumerate(self.df["Metric"]):
+                    ww_logo.highlight_position(
+                        p=residx, color=list(colors[residx][:3]), alpha=1
+                    )
                 ww_logo.style_spines(visible=False)
 
             for ax in axs.flat:
-                ax.tick_params(axis='x', which='major', labelsize=12)
+                ax.tick_params(axis="x", which="major", labelsize=12)
                 ax.set_yticks([])
                 ax.grid(False)
 
@@ -423,18 +497,115 @@ class LogoResidues(Plotter):
                 "logo_{}_{}.pdf".format(self.lipid_type, self.metric_name),
             )
         if self.title is None:
-            self.title = 'Logo based on {}'.format(self.metric_name)
+            self.title = "Logo based on {}".format(self.metric_name)
         if self.xlabel is None:
             self.xlabel = "Residue ID"
 
         # add unique xlabel
-        fig.text(0.5, -0.1/(n_rows - n_rows/2), self.xlabel, ha='center', fontsize=12, fontfamily='Arial Rounded MT Bold')
+        fig.text(
+            0.5,
+            -0.1 / (n_rows - n_rows / 2),
+            self.xlabel,
+            ha="center",
+            fontsize=12,
+            fontfamily="Arial Rounded MT Bold",
+        )
 
         # # add color bar to the bottom
-        cax = plt.axes([0.1, -0.3/(n_rows - n_rows/2), 0.8, 0.12/n_rows])
-        cbar = plt.colorbar(mpl.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax, orientation='horizontal', ticks=[self.df['Metric'].min(), self.df['Metric'].max()/2, self.df['Metric'].max()])
-        cbar.set_label(label=self.metric_name, size=12, fontfamily='Arial Rounded MT Bold')
+        cax = plt.axes([0.1, -0.3 / (n_rows - n_rows / 2), 0.8, 0.12 / n_rows])
+        cbar = plt.colorbar(
+            mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
+            cax=cax,
+            orientation="horizontal",
+            ticks=[
+                self.df["Metric"].min(),
+                self.df["Metric"].min() + (self.df["Metric"].max() - self.df["Metric"].min()) / 2,
+                self.df["Metric"].max(),
+            ],
+        )
+        cbar.set_label(
+            label=self.metric_name, size=12, fontfamily="Arial Rounded MT Bold"
+        )
         cbar.ax.tick_params(labelsize=12)
 
-        fig.suptitle(self.title, fontsize=14, weight="bold", fontfamily='Arial Rounded MT Bold')
+        fig.suptitle(
+            self.title, fontsize=14, weight="bold", fontfamily="Arial Rounded MT Bold"
+        )
         plt.tight_layout()
+
+
+class InteractionHeatMap(Plotter):
+    def __init__(
+            self,
+            universe,
+            contacts,
+            xlabel=None,
+            ylabel=None,
+            fn=None,
+            title=None,
+            fig_size=(8, 8),
+    ):
+        super().__init__(xlabel, ylabel, fn, title, fig_size)
+        self.universe = universe
+        self.contacts = contacts
+
+    def create_plot(self, residue_id=None, lipid_id=None, **kwargs):
+        if residue_id == None:
+            raise ValueError("Please specify a residue_id.")
+        elif lipid_id == None:
+            raise ValueError("Please specify a lipid_id.")
+        else:
+            ri = SerialDistances(self.universe, self.universe.query, self.universe.database, lipid_id, residue_id, self.contacts.contact_frames[residue_id][lipid_id])
+            ri.run(verbose=False)
+
+            hm_data = []
+            for rx, ra in enumerate(ri.resid_atomnames):
+                hm_data.append([])
+                for lx, la in enumerate(ri.lipid_atomnames):
+                    v = ri.distance_array[lx, rx]
+                    hm_data[rx].append(float(v))
+            min_value = ri.distance_array.min()
+            max_value = ri.distance_array.max()
+
+            fig, ax = plt.subplots(figsize=(8, 5))
+
+            # Define a custom color map
+            cmap = LinearSegmentedColormap.from_list('custom_cmap', ['#FDEDEC', '#E74C3C'])
+            cmap_r = reverse_colourmap(cmap)
+
+            heatmap = ax.pcolor(hm_data, cmap=cmap_r)
+
+            # Set axis labels
+            ax.set_yticks(np.arange(len(ri.resid_atomnames))+0.5, [])
+            ax.set_yticklabels(ri.resid_atomnames)
+            ax.set_xticks(np.arange(len(ri.lipid_atomnames))+0.5, [])
+            ax.set_xticklabels(ri.lipid_atomnames)
+
+            # Create colorbar
+            cbar = plt.colorbar(heatmap)
+            cbar.set_label(r'Distance ($\AA$)', size=12, fontfamily="Arial Rounded MT Bold")
+            cbar.ax.tick_params(labelsize=12)
+            cbar.set_ticks([min_value, min_value + (max_value - min_value) / 2, max_value])
+            cbar.ax.invert_yaxis()
+
+            if self.fn is None:
+                self.fn = os.path.join(
+                    os.getcwd(),
+                    "int_matrix_{}_{}_{}_{}.pdf".format(self.universe.residues.resnames[self.universe.residues.resids.tolist().index(residue_id)],residue_id, self.universe.residues.resnames[self.universe.residues.resids.tolist().index(lipid_id)], lipid_id),
+                )
+            if self.title is None:
+                self.title = 'Interactions matrix between {} {} and {} {}'.format(self.universe.residues.resnames[self.universe.residues.resids.tolist().index(residue_id)],residue_id, self.universe.residues.resnames[self.universe.residues.resids.tolist().index(lipid_id)], lipid_id)
+            if self.xlabel is None:
+                self.xlabel = 'Lipid atoms'
+            if self.ylabel is None:
+                self.ylabel = 'Residue atoms'
+
+            ax.tick_params(axis="both", which="major", labelsize=12)
+            plt.xticks(fontname="Arial Unicode MS")
+            plt.yticks(fontname="Arial Unicode MS")
+            plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
+            plt.ylabel(self.ylabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
+
+            ax.set_title(self.title, fontsize=14, weight="bold", pad=20, fontfamily="Arial Rounded MT Bold")
+            plt.tight_layout()
+

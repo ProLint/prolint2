@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
 import MDAnalysis as mda
-from collections import defaultdict
-
+import matplotlib as mpl
 
 def use_1d_script_template(code_body, tail):
     template = """
@@ -235,25 +234,6 @@ def get_lipid_contact_frequencies(u, contacts, lipid_type, frequency_filter=0.0)
     )
 
 
-def find_continuous_chunks(lst):
-    result = []
-    current_chunk = []
-
-    for i, num in enumerate(lst):
-        if i == 0 or num != lst[i - 1] + 1:
-            if current_chunk:
-                result.append((current_chunk[0], current_chunk[-1]))
-                current_chunk = []
-            current_chunk.append(num)
-        else:
-            current_chunk.append(num)
-
-    if current_chunk:
-        result.append((current_chunk[0], current_chunk[-1]))
-
-    return result
-
-
 def inverse_dict_keys(d):
     reversed_keys = list(d.keys())[::-1]
     inverted_dict = {key: d[key] for key in reversed_keys}
@@ -262,8 +242,68 @@ def inverse_dict_keys(d):
 
 def create_logo_df(universe, metric, **kwargs):
     # create pandas dataframe
-    resids = universe.query.residues.resids 
-    resnames = [mda.lib.util.convert_aa_code(x) for x in universe.query.residues.resnames]
+    resids = universe.query.residues.resids
+    resnames = [
+        mda.lib.util.convert_aa_code(x) for x in universe.query.residues.resnames
+    ]
     res_metrics = get_metric_list_by_residues(universe, metric, **kwargs)
-    df = pd.DataFrame({"ResID": resids, "Resname": resnames, "Occupancy": [0.75] * len(resids), "Metric": res_metrics})
+    df = pd.DataFrame(
+        {
+            "ResID": resids,
+            "Resname": resnames,
+            "Occupancy": [0.75] * len(resids),
+            "Metric": res_metrics,
+        }
+    )
     return df
+
+
+def get_frame_contact_intervals(frames, continuity_filter, tolerance):
+    """
+    Get the intervals of frames in which a contact is present.
+
+    Args:
+        frames (list): A list of frames in which a contact is present.
+        tolerance (int): The number of frames to tolerate before considering a new interval.
+
+    Returns:
+        ranges_collect (list): A list of tuples containing the start and end frames of each
+            interval.
+
+    """
+    ranges_collect = []
+    range_start = 0
+    for ix, el in enumerate(frames):
+        if ix == 0:
+            range_start = el
+            continue
+
+        prev_el = frames[ix - 1]
+        if not el - tolerance <= prev_el:
+            ranges_collect.append((range_start, prev_el))
+            range_start = el
+        if ix == len(frames) - 1:
+            ranges_collect.append((range_start, el))
+    return [
+        (pair[0], pair[1])
+        for pair in ranges_collect
+        if pair[1] - pair[0] >= continuity_filter
+    ]
+
+
+def reverse_colourmap(cmap, name = 'my_cmap_r'):    
+    reverse = []
+    k = []   
+
+    for key in cmap._segmentdata:    
+        k.append(key)
+        channel = cmap._segmentdata[key]
+        data = []
+
+        for t in channel:                    
+            data.append((1-t[0],t[2],t[1]))            
+        reverse.append(sorted(data))    
+
+    LinearL = dict(zip(k,reverse))
+    my_cmap_r = mpl.colors.LinearSegmentedColormap(name, LinearL) 
+    return my_cmap_r
