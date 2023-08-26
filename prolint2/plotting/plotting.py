@@ -49,54 +49,43 @@ class Plotter:
         title: str = None,
         fig_size: tuple = (8, 8),
     ):
-        self.xlabel = xlabel
-        self.ylabel = ylabel
-        self.fn = fn
-        self.title = title
-        self.fig_size = fig_size
+        # Constructor initializes the Plotter instance with provided parameters
+        self.xlabel = xlabel  # X-axis label for the plot
+        self.ylabel = ylabel  # Y-axis label for the plot
+        self.fn = fn  # File name to save the plot as an image
+        self.title = title  # Title of the plot
+        self.fig_size = fig_size  # Figure size (width, height) for the plot
 
     def save_plot(self, **kwargs):
+        # Generates the plot using create_plot method and saves it to the specified file
         self.create_plot(**kwargs)
         plt.savefig(self.fn, dpi=300, bbox_inches="tight")
 
     def generate_script(self, class_code, script_filename):
-        # create a python script that generates the plot
+        # Generates a Python script that generates the plot using provided class code
+        # Tail portion varies based on the class name and specific use case
+
+        # Extract the source code of the class_code passed as an argument
         plotting_function_source = inspect.getsource(class_code)
+
+        # Construct different tail sections based on the class name for specific use cases
         if self.__class__.__name__ in ["PointDistribution"]:
-            tail = """
-    mean_instance = MeanMetric()
-    metric_instance = Metric(contacts, mean_instance)
-    mean_contacts = metric_instance.compute()
-
-    # Generate the plot
-    PLOT = {}(u, mean_contacts, lipid='CHOL', metric_name='MeanMetric')
-    PLOT.save_plot()
-            """.format(
+            tail = point_distribution_tail(
                 self.__class__.__name__
-            )
+            )  # Tail script for PointDistribution case
+
         elif self.__class__.__name__ in ["Radar"]:
-            tail = """
-    metric_instances_list = [MeanMetric(), SumMetric(), MaxMetric()]
-    metric_instance = Metric(contacts, metric_instances_list) 
-    contacts_out = metric_instance.compute()
+            tail = radar_tail(self.__class__.__name__)  # Tail script for Radar case
 
-    # Generate the plot
-    PLOT = {}(contacts_out, resIDs=[2, 3, 5], lipid='POPS', metric_names=['MeanMetric', 'SumMetric', 'MaxMetric'])
-    PLOT.save_plot()
-            """.format(
-                self.__class__.__name__
-            )
         elif self.__class__.__name__ in ["DensityMap"]:
-            tail = """
-    # Generate the plot
-    PLOT = {}(u, lipid='CHOL')
-    PLOT.save_plot()
-            """.format(
+            tail = density_map_tail(
                 self.__class__.__name__
-            )
+            )  # Tail script for DensityMap case
 
+        # Combine class code and the corresponding tail script
         script_code = use_1d_script_template(plotting_function_source, tail)
 
+        # Write the generated script code to the specified file
         with open(script_filename, "w") as f:
             f.write(script_code)
 
@@ -112,18 +101,23 @@ class PointDistribution(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the PointDistribution instance.
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
         self.metric = metric
 
     def create_plot(self, lipid_type=None, metric_name=None, **kwargs):
         """Plot the distribution of a metric for each residue."""
+
         metric_names = []
+        # Collect all unique metric names from the metric dictionary
         for res in self.metric:
             for lip in self.metric[res]:
                 for key in self.metric[res][lip]:
                     if key not in metric_names:
                         metric_names.append(key)
+
         if lipid_type is None:
             raise ValueError("Please specify a lipid_type.")
         elif metric_name is None or metric_name not in metric_names:
@@ -131,13 +125,16 @@ class PointDistribution(Plotter):
                 "Please specify a valid metric name: {}.".format(metric_names)
             )
         else:
+            # Get the list of metric values for specified lipid_type and metric_name
             metric_list = get_metric_list_by_residues(
                 self.universe, self.metric, lipid_type, metric_name
             )
 
+            # Create a scatter plot
             fig, ax = plt.subplots(figsize=self.fig_size)
 
             if "palette" in kwargs:
+                # If palette is specified, use it for coloring scatter points
                 ax = sns.scatterplot(
                     x=self.universe.query.residues.resids,
                     y=metric_list,
@@ -148,17 +145,19 @@ class PointDistribution(Plotter):
                 sm = plt.cm.ScalarMappable(cmap=kwargs["palette"], norm=norm)
                 sm.set_array([])
 
-                # remove legend and add color bar
+                # Remove legend and add color bar
                 ax.get_legend().remove()
                 cbar = ax.figure.colorbar(sm)
                 cbar.ax.tick_params(labelsize=12)
             else:
+                # Create scatter plot without palette
                 ax = sns.scatterplot(
                     x=self.universe.query.residues.resids, y=metric_list, **kwargs
                 )
 
             ax.tick_params(axis="both", which="major", labelsize=12)
 
+            # Set default labels, filename, and title if not provided
             if self.xlabel is None:
                 self.xlabel = "Residue ID"
             if self.ylabel is None:
@@ -173,7 +172,7 @@ class PointDistribution(Plotter):
                     lipid_type, metric_name
                 )
 
-            # add labels and title
+            # Add labels and title to the plot
             plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
             plt.ylabel(self.ylabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
             plt.title(
@@ -195,16 +194,21 @@ class Radar(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the Radar object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
-        self.metric = metric
+        self.metric = metric  # Store the input metric data
 
     def create_plot(self, resIDs=None, lipid_type=None, metric_names=None, **kwargs):
         metric_names_aux = []
+        # Extract all unique metric names from the metric data
         for res in self.metric:
             for lip in self.metric[res]:
                 for key in self.metric[res][lip]:
                     if key not in metric_names_aux:
                         metric_names_aux.append(key)
+
+        # Check if the necessary inputs are provided
         if resIDs is None:
             raise ValueError("Please specify resIDs.")
         elif lipid_type is None:
@@ -216,19 +220,24 @@ class Radar(Plotter):
                 "Please specify valid metric names: {}.".format(metric_names_aux)
             )
         else:
+            # Retrieve relevant metric data for creating the radar plot
             metric_dict, metric_names = get_metrics_for_radar(
                 self.metric, metric_names, resIDs=resIDs, lipid=lipid_type
             )
+
+            # Calculate the number of variables (metrics) for the radar plot
             num_vars = len(metric_names)
             theta = np.linspace(0, 2 * np.pi, num_vars, endpoint=False)
             theta += np.pi / 2
 
+            # Create a polar plot
             fig, ax = plt.subplots(figsize=self.fig_size, subplot_kw={"polar": True})
             ax.set_xticks(theta)
             ax.set_xticklabels(metric_names)
             ax.tick_params(axis="x", pad=20)
             ax.yaxis.grid(True, linestyle="dashed", alpha=0.5)
 
+            # Plot radar lines and fill the areas
             for resi in metric_dict.keys():
                 values = metric_dict[resi]
                 xs = np.concatenate((theta, [theta[0]]))
@@ -239,6 +248,7 @@ class Radar(Plotter):
             ax.set_theta_offset(np.pi / 2)
             ax.set_theta_direction(-1)
 
+            # Customize tick labels and legend
             ax.tick_params(axis="both", which="major", labelsize=10)
             tt = ax.legend(
                 loc="upper right",
@@ -251,6 +261,7 @@ class Radar(Plotter):
                 title="Residue ID", prop={"family": "Arial Rounded MT Bold", "size": 12}
             )
 
+            # Set default values for filename and title if not provided
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(), "metrics_comparison_{}.pdf".format(lipid_type)
@@ -258,7 +269,7 @@ class Radar(Plotter):
             if self.title is None:
                 self.title = "Metrics comparison - {}".format(lipid_type)
 
-            # add labels and title
+            # Add labels and title to the plot
             plt.yticks(fontname="Arial Unicode MS")
             plt.xticks(fontname="Arial Rounded MT Bold")
             plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
@@ -283,6 +294,8 @@ class DensityMap(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the DensityMap object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
 
@@ -294,25 +307,25 @@ class DensityMap(Plotter):
             # Compute the lipid coordinates
             computed_coords = compute_density(self.universe, lipid_type, size_in_mb)
 
-            # Compute the lipid density
+            # Compute the lipid density using a 2D histogram
             H, xe, ye = np.histogram2d(
                 computed_coords[:, 0], computed_coords[:, 1], bins=bins, density=True
             )
 
-            # Generate the 2D histogram (density plot)
+            # Generate a figure and axes for the plot
             fig, ax = plt.subplots(figsize=self.fig_size)
 
-            # Plot the density map
+            # Plot the density map using imshow
             im = ax.imshow(
                 H, origin="lower", extent=[xe[0], xe[-1], ye[0], ye[-1]], **kwargs
             )
             ax.grid(False)
 
-            # Create colorbar of the same size as the plot
+            # Create a colorbar of the same size as the plot
             divider = make_axes_locatable(ax)
             cax = divider.append_axes("right", size="5%", pad=0.05)
             cbar = plt.colorbar(im, cax=cax)
-            # increase the font size
+            # Set colorbar label and font size
             cbar.set_label(
                 label="Density distribution",
                 size=12,
@@ -320,12 +333,13 @@ class DensityMap(Plotter):
             )
             cbar.ax.tick_params(labelsize=12)
 
-            # Remove labels and ticks
+            # Remove labels and ticks from the axes
             ax.set_xticks([])
             ax.set_yticks([])
             ax.set_xticklabels([])
             ax.set_yticklabels([])
 
+            # Set default filename and title if not provided
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(), "density_map_{}.pdf".format(lipid_type)
@@ -333,7 +347,7 @@ class DensityMap(Plotter):
             if self.title is None:
                 self.title = "Density map - {}".format(lipid_type)
 
-            # add title
+            # Add title to the plot
             ax.set_title(
                 self.title,
                 fontsize=14,
@@ -355,11 +369,14 @@ class DurationGantt(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the DurationGantt object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
         self.contacts = contacts
 
     def get_contact_durations(self, lipid_type, frequency_filter=20):
+        # Call the external function to get lipid contact durations
         return get_lipid_contact_durations(
             self.universe, self.contacts, lipid_type, frequency_filter
         )
@@ -375,15 +392,20 @@ class DurationGantt(Plotter):
         if lipid_id is None:
             raise ValueError("Please specify a lipid_id.")
         else:
+            # Get residues associated with the given lipid_id
             residues = self.contacts.get_residues_by_lipid_id(lipid_id=lipid_id)
             per_res_freq = {}
+
+            # Count the number of contacts for each residue
             for res in residues:
                 per_res_freq[res] = len(self.contacts.contact_frames[res][lipid_id])
-            # sort by values
+
+            # Sort residues by contact frequency
             temp = sorted(per_res_freq.items(), key=lambda x: x[1], reverse=True)
             top_residues = temp[:top_filter]
 
             res_chunks = {}
+            # Calculate contact intervals for top residues
             for res in top_residues:
                 res_chunks[res[0]] = get_frame_contact_intervals(
                     self.contacts.contact_frames[res[0]][lipid_id],
@@ -391,14 +413,16 @@ class DurationGantt(Plotter):
                     tolerance,
                 )
 
+            # Create the Gantt chart figure and axis
             fig, ax = plt.subplots(figsize=(10, 6))
 
-            # Create Gantt chart
+            # Plot Gantt chart for each residue's contact intervals
             for res, chunks in inverse_dict_keys(res_chunks).items():
                 for chunk in chunks:
                     ax.barh(str(res), chunk[1] - chunk[0], left=chunk[0], **kwargs)
 
             new_patches = []
+            # Customize the appearance of the bars in the Gantt chart
             for patch in reversed(ax.patches):
                 bb = patch.get_bbox()
                 color = patch.get_facecolor()
@@ -407,7 +431,6 @@ class DurationGantt(Plotter):
                     abs(bb.width),
                     abs(bb.height),
                     boxstyle="round,pad=-0.003,rounding_size=4",
-                    # boxstyle="round",
                     ec="none",
                     fc=color,
                     mutation_aspect=0.2,
@@ -417,6 +440,7 @@ class DurationGantt(Plotter):
             for patch in new_patches:
                 ax.add_patch(patch)
 
+            # Set default values for plot properties if not specified
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(),
@@ -456,17 +480,29 @@ class LogoResidues(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the LogoResidues object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
         self.metric = metric
 
-    def create_plot(self, lipid_type=None, metric_name=None, color_logo="silver", palette="Blues", **kwargs):
+    def create_plot(
+        self,
+        lipid_type=None,
+        metric_name=None,
+        color_logo="silver",
+        palette="Blues",
+        **kwargs
+    ):
+        # Extract unique metric names
         metric_names = []
         for res in self.metric:
             for lip in self.metric[res]:
                 for key in self.metric[res][lip]:
                     if key not in metric_names:
                         metric_names.append(key)
+
+        # Check input values and raise exceptions if necessary
         if lipid_type is None:
             raise ValueError("Please specify a lipid_type.")
         elif metric_name is None or metric_name not in metric_names:
@@ -474,11 +510,13 @@ class LogoResidues(Plotter):
                 "Please specify a valid metric name: {}.".format(metric_names)
             )
         else:
+            # Create DataFrame and matrix from the universe and metric data
             df = create_logo_df(
                 self.universe, self.metric, lipid=lipid_type, metric_name=metric_name
             )
             mat_df = lm.sequence_to_matrix("".join(df["Resname"].to_list()))
 
+            # Function to calculate number of rows for the subplot grid
             def ceildiv(number):
                 if number % 75 == 0:
                     return number // 75
@@ -487,16 +525,19 @@ class LogoResidues(Plotter):
 
             n_rows = ceildiv(len(df["Resname"]))
 
+            # Create a subplot grid
             fig, axs = plt.subplots(n_rows, figsize=[10, (n_rows * 0.75) + 0.4])
 
-            # create colormap based on Metric
+            # Create colormap based on Metric and normalize values
             cmap = mpl.cm.get_cmap(palette)
             norm = mpl.colors.Normalize(
                 vmin=df["Metric"].min(), vmax=df["Metric"].max()
             )
             colors = [cmap(norm(value)) for value in df["Metric"]]
-            # colors
+
+            # Process the subplot grid based on the number of rows
             if n_rows == 1:
+                # Create a Logo plot
                 ww_logo = lm.Logo(
                     mat_df,
                     ax=axs,
@@ -504,12 +545,13 @@ class LogoResidues(Plotter):
                     vpad=0.4,
                     font_name="Arial Rounded MT Bold",
                 )
+                # Highlight positions based on the color map
                 for residx, metric in enumerate(df["Metric"]):
                     ww_logo.highlight_position(
                         p=residx, color=list(colors[residx][:3]), alpha=1
                     )
                 ww_logo.style_spines(visible=False)
-
+                # Set x-axis ticks and labels
                 plt.xticks(
                     range(0, len(df["Resname"]), 5), df["ResID"][::5], rotation=0
                 )
@@ -517,9 +559,11 @@ class LogoResidues(Plotter):
                 axs.set_yticks([])
                 axs.grid(False)
             else:
+                # Determine the number of rows and create Logo plots accordingly
                 magic_number = math.ceil(len(df["Resname"]) / n_rows)
                 for i in range(n_rows):
                     if i == n_rows - 1:
+                        # Create a Logo plot for the last row
                         ww_logo = lm.Logo(
                             mat_df[i * magic_number :],
                             ax=axs[i],
@@ -534,6 +578,7 @@ class LogoResidues(Plotter):
                             rotation=0,
                         )
                     else:
+                        # Create a Logo plot for non-last rows
                         ww_logo = lm.Logo(
                             mat_df[i * magic_number : (i + 1) * magic_number],
                             ax=axs[i],
@@ -548,6 +593,7 @@ class LogoResidues(Plotter):
                             rotation=0,
                         )
 
+                    # Highlight positions based on the color map
                     for residx, metric in enumerate(df["Metric"]):
                         ww_logo.highlight_position(
                             p=residx, color=list(colors[residx][:3]), alpha=1
@@ -559,6 +605,7 @@ class LogoResidues(Plotter):
                     ax.set_yticks([])
                     ax.grid(False)
 
+            # Set default values for file name, title, and x-axis label if not provided
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(),
@@ -569,7 +616,7 @@ class LogoResidues(Plotter):
             if self.xlabel is None:
                 self.xlabel = "Residue ID"
 
-            # add unique xlabel
+            # Add x-axis label
             fig.text(
                 0.5,
                 -0.1 / (n_rows - n_rows / 2),
@@ -579,7 +626,7 @@ class LogoResidues(Plotter):
                 fontfamily="Arial Rounded MT Bold",
             )
 
-            # # add color bar to the bottom
+            # Add color bar to the bottom
             cax = plt.axes([0.1, -0.3 / (n_rows - n_rows / 2), 0.8, 0.12 / n_rows])
             cbar = plt.colorbar(
                 mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
@@ -596,6 +643,7 @@ class LogoResidues(Plotter):
             )
             cbar.ax.tick_params(labelsize=12)
 
+            # Set figure title and adjust layout
             fig.suptitle(
                 self.title,
                 fontsize=14,
@@ -616,16 +664,21 @@ class InteractionHeatMap(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the InteractionHeatMap object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
+        # Store universe and contacts information
         self.universe = universe
         self.contacts = contacts
 
-    def create_plot(self, residue_id=None, lipid_id=None, palette='Reds', **kwargs):
-        if residue_id == None:
+    def create_plot(self, residue_id=None, lipid_id=None, palette="Reds", **kwargs):
+        # Check if both residue_id and lipid_id are specified
+        if residue_id is None:
             raise ValueError("Please specify a residue_id.")
-        elif lipid_id == None:
+        elif lipid_id is None:
             raise ValueError("Please specify a lipid_id.")
         else:
+            # Calculate distances using SerialDistances
             ri = SerialDistances(
                 self.universe,
                 self.universe.query,
@@ -636,6 +689,7 @@ class InteractionHeatMap(Plotter):
             )
             ri.run(verbose=False)
 
+            # Initialize heatmap data
             hm_data = []
             for rx, ra in enumerate(ri.resid_atomnames):
                 hm_data.append([])
@@ -645,12 +699,14 @@ class InteractionHeatMap(Plotter):
             min_value = ri.distance_array.min()
             max_value = ri.distance_array.max()
 
+            # Create a new figure and axis
             fig, ax = plt.subplots(figsize=(8, 5))
 
             # Define color map
             cmap = mpl.cm.get_cmap(palette)
             cmap_r = reverse_colourmap(cmap)
 
+            # Create the heatmap
             heatmap = ax.pcolor(hm_data, cmap=cmap_r, **kwargs)
 
             # Set axis labels
@@ -670,6 +726,7 @@ class InteractionHeatMap(Plotter):
             )
             cbar.ax.invert_yaxis()
 
+            # Handle default values for fn, title, xlabel, and ylabel
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(),
@@ -700,12 +757,12 @@ class InteractionHeatMap(Plotter):
             if self.ylabel is None:
                 self.ylabel = "Residue atoms"
 
+            # Customize plot appearance
             ax.tick_params(axis="both", which="major", labelsize=12)
             plt.xticks(fontname="Arial Unicode MS")
             plt.yticks(fontname="Arial Unicode MS")
             plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
             plt.ylabel(self.ylabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
-
             ax.set_title(
                 self.title,
                 fontsize=14,
@@ -713,6 +770,8 @@ class InteractionHeatMap(Plotter):
                 pad=20,
                 fontfamily="Arial Rounded MT Bold",
             )
+
+            # Ensure plot layout
             plt.tight_layout()
 
 
@@ -727,24 +786,30 @@ class RadarMetrics(Plotter):
         title=None,
         fig_size=(10, 10),
     ):
+        # Initialize the RadarMetrics object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
         self.metric = metric
 
-    def create_plot(self, lipid=None, metric_name=None, palette='Reds', **kwargs):
+    def create_plot(self, lipid=None, metric_name=None, palette="Reds", **kwargs):
+        # Check for required arguments
         if lipid is None:
             raise ValueError("Please specify a lipid.")
         elif metric_name is None:
             raise ValueError("Please specify a metric_name.")
         else:
+            # Get a list of metrics for the given lipid and metric_name
             metrics = get_metric_list_by_residues(
                 self.universe, self.metric, lipid, metric_name
             )
 
+            # Calculate the number of variables and the corresponding angles for the radar chart
             num_vars = len(metrics)
             theta = np.linspace(0, 2 * np.pi - np.pi / 6, num_vars, endpoint=False)
             theta += np.pi / 12
 
+            # Create the radar chart figure and axis
             fig, ax = plt.subplots(figsize=self.fig_size, subplot_kw={"polar": True})
             ax.set_theta_zero_location("S")
             ax.set_theta_direction(-1)
@@ -754,12 +819,12 @@ class RadarMetrics(Plotter):
                 np.max(metrics) - np.min(metrics)
             )
 
-            # Plot the radar chart
+            # Plot the radar chart bars
             radar_bar = ax.bar(
                 theta, metrics, width=0.01, alpha=0.5, color=cmap(rescale(metrics))
             )
 
-            # customize x-axis
+            # Customize x-axis ticks and labels
             ax.set_xticks(theta[::magic_number])
             ax.set_xticklabels(
                 [
@@ -777,7 +842,7 @@ class RadarMetrics(Plotter):
             ax.xaxis.grid(True, linestyle="dashed", alpha=0.5)
             plt.xlim(0, 2 * np.pi)
 
-            # customize y-axis
+            # Customize y-axis
             ax.set_yticks([0, max(metrics) / 2, max(metrics)])
             for loc in [0, max(metrics) / 2, max(metrics)]:
                 ax.text(
@@ -796,7 +861,7 @@ class RadarMetrics(Plotter):
             ax.set_thetamin(15)
             ax.set_thetamax(345)
 
-            # customize colorbar
+            # Customize colorbar
             sm = ScalarMappable(
                 cmap=cmap, norm=plt.Normalize(min(metrics), max(metrics))
             )
@@ -813,6 +878,7 @@ class RadarMetrics(Plotter):
                 ]
             )
 
+            # Set default values if not provided
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(),
@@ -823,6 +889,7 @@ class RadarMetrics(Plotter):
             if self.ylabel is None:
                 self.ylabel = metric_name
 
+            # Add y-axis label
             ax.text(
                 0.0,
                 -0.4 * max(metrics),
@@ -832,6 +899,7 @@ class RadarMetrics(Plotter):
                 fontsize=12,
                 fontfamily="Arial Rounded MT Bold",
             )
+            # Add main title
             fig.suptitle(
                 self.title,
                 fontsize=14,
@@ -839,7 +907,7 @@ class RadarMetrics(Plotter):
                 fontfamily="Arial Rounded MT Bold",
             )
 
-            plt.tight_layout()
+            plt.tight_layout()  # Adjust layout to prevent overlapping
 
 
 class SharedContacts(Plotter):
@@ -853,39 +921,53 @@ class SharedContacts(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
+        # Initialize the SharedContacts object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
         self.contacts = contacts
 
-    def create_plot(self, lipid_type=None, label_size=6, palette='Reds', **kwargs):
+    def create_plot(self, lipid_type=None, label_size=6, palette="Reds", **kwargs):
+        # Ensure a lipid_type is provided
         if lipid_type is None:
             raise ValueError("Please specify a lipid_type.")
         else:
+            # Get top lipid contact frequencies and related data
             top_lipids, residue_contact_freq = get_lipid_contact_frequencies(
                 self.universe, self.contacts, lipid_type
             )
+
+            # Calculate chord diagram elements and related data
             chord_elements, hidden_node_indices, per_lipid_nodes = contact_chord(
                 self.universe, self.contacts, top_lipids, residue_contact_freq
             )
+
+            # Create DataFrame from chord elements and filter non-zero values
             df = pd.DataFrame(chord_elements)
             df = df[df["value"] != 0]
-            uniques_labels = np.unique(
+
+            # Extract unique labels from data
+            unique_labels = np.unique(
                 df["to"].unique().tolist() + df["from"].unique().tolist()
             )
-            n_nodes = len(uniques_labels) + len(hidden_node_indices)
+
+            # Calculate total number of nodes
+            n_nodes = len(unique_labels) + len(hidden_node_indices)
+
+            # Extract edges data from DataFrame
             edges = df.to_dict("records")
 
-            # create plot
+            # Create plot figure and axis
             fig, ax = plt.subplots(figsize=self.fig_size)
 
             # Create a directed graph
             G = nx.DiGraph()
 
-            # create list with ordered unique labels
-            labels = uniques_labels.tolist()
+            # Sort unique labels
+            labels = unique_labels.tolist()
             labels.sort(key=lambda x: (int(x.split(" ")[0])))
 
-            # create list of color values for nodes
+            # Calculate color values for nodes
             color_values = []
             for lab in labels:
                 value = 0
@@ -894,29 +976,34 @@ class SharedContacts(Plotter):
                         value += j["value"]
                 color_values.append(value)
 
-            # Add nodes with labels
+            # Add nodes with labels to the graph
             for node in range(n_nodes):
                 G.add_node(node)
 
+            # Create a circular layout for the graph
             pos = nx.circular_layout(G)
 
             # Calculate an offset angle of 90 degrees in radians
             offset_angle = math.radians(-90)
 
-            # Apply the offset angle to each node's angle
+            # Apply offset angle to each node's position
             for node, (x, y) in pos.items():
                 angle = math.atan2(-y, x)
                 new_angle = angle + offset_angle
                 radius = math.sqrt(x**2 + y**2)
                 pos[node] = (radius * math.cos(new_angle), radius * math.sin(new_angle))
 
-            # Draw nodes and labels
+            # Draw nodes and labels while considering angles for alignment
             for i in hidden_node_indices:
                 G.remove_node(i)
 
             # Create a layout
             nx.draw_networkx_nodes(
-                G, pos, node_size=10, node_color=color_values, cmap=mpl.cm.get_cmap(palette)
+                G,
+                pos,
+                node_size=10,
+                node_color=color_values,
+                cmap=mpl.cm.get_cmap(palette),
             )
 
             # adding labels to nodes
@@ -956,7 +1043,7 @@ class SharedContacts(Plotter):
                 t.set_rotation_mode("anchor")
                 t.set_clip_on(False)
 
-            # Draw edges
+            # Draw edges and apply radial arcs
             for node_i, label_i in dict(G.nodes(data=True)).items():
                 for node_j, label_j in dict(G.nodes(data=True)).items():
                     if (label_i["label"], label_j["label"]) in [
@@ -990,7 +1077,7 @@ class SharedContacts(Plotter):
                     connectionstyle="arc3,rad={}".format(rad),
                 )
 
-            # Add color bar
+            # Add color bar to the plot
             sm = plt.cm.ScalarMappable(
                 cmap=mpl.cm.get_cmap(palette),
                 norm=plt.Normalize(vmin=min(color_values), vmax=max(color_values)),
@@ -1012,11 +1099,14 @@ class SharedContacts(Plotter):
                 ]
             )
 
+            # Set default filename and title if not provided
             if self.fn is None:
                 self.fn = os.path.join(
                     os.getcwd(),
                     "shared_contacts_{}.pdf".format(lipid_type),
                 )
+
+            # Add title, adjust layout, and finalize the plot
             if self.title is None:
                 self.title = "Shared Contacts | {}".format(lipid_type)
 
@@ -1026,6 +1116,7 @@ class SharedContacts(Plotter):
                 weight="bold",
                 fontfamily="Arial Rounded MT Bold",
             )
+
             plt.grid(False)
             ax.axis("off")
             plt.tight_layout()

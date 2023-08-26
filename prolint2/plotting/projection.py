@@ -15,39 +15,53 @@ def show_contact_projection(
     cmap="Reds",
     frame_idx=None,
 ):
+    # Obtain a list of metrics calculated for each residue
     metric_list = get_metric_list_by_residues(
         universe, metric, lipid=lipid, metric_name=metric_name
     )
-
+    
+    # Create a dictionary mapping residue indices to their corresponding metrics
     metric_dict = {
         res_id: metric_list[idx]
         for idx, res_id in enumerate(universe.query.residues.resindices)
     }
-
+    
+    # Calculate the maximum metric value
     max_metric = max(metric_list)
+    
+    # Obtain the list of residue names in the database
     dat_resnames = universe.database.residues.resnames
+    
+    # Create a dictionary that assigns the maximum metric value to lipids and 0 to other residues
     metric_dist2 = {
         res_id: max_metric if dat_resnames[idx] == lipid else 0
         for idx, res_id in enumerate(universe.database.residues.resindices)
     }
-
+    
+    # Update the metric dictionary with lipid-specific metrics
     metric_dict.update(metric_dist2)
-
+    
+    # Generate a list of atomic B-factors using the calculated metric values
     atomic_bfactors = [metric_dict[x] for x in universe.atoms.resindices]
-
+    
+    # Get a colormap for B-factor coloring
     bf_cmap = cm.get_cmap(cmap)
-
+    
+    # Convert B-factor values to color hex codes using the colormap
     colors = [mpl.colors.to_hex(x) for x in bf_cmap(shift_range(atomic_bfactors))]
+    
+    # Create a color scheme with B-factor-based coloring
     cs = [[y, str(universe.atoms.resindices[x])] for x, y in enumerate(colors)]
-
     scheme = nv.color._ColorScheme(cs, "bf")
-
+    
+    # Generate visualization using NGLView
     if frame_idx is not None:
+        # Visualize a specific frame
         universe.trajectory[frame_idx]
-
         universe.query.atoms.write("temp.pdb")
         universe.database.atoms.write("temp2.pdb")
-
+        
+        # Load structures and create the visualization
         with open("temp.pdb", "r") as myfile:
             with open("temp2.pdb") as myfile2:
                 query_structure = nv.TextStructure(myfile.read())
@@ -57,6 +71,8 @@ def show_contact_projection(
                 view.add_component(database_structure)
                 view.clear_representations(component=0)
                 view.clear_representations(component=1)
+                
+                # Add representations based on chosen styles (surface or other)
                 if query_repr == "surface":
                     view.add_representation(
                         "surface",
@@ -69,16 +85,19 @@ def show_contact_projection(
                     view.add_representation(query_repr, component=0, color=scheme)
                 view.add_representation(database_repr, component=1, color=scheme)
                 view.center(component=0)
-
+        
+        # Remove temporary files
         os.remove("temp.pdb")
         os.remove("temp2.pdb")
-
     else:
+        # Visualize the entire trajectory
         view = nv.NGLWidget()
         view.add_trajectory(nv.MDAnalysisTrajectory(universe.query))
         view.add_trajectory(nv.MDAnalysisTrajectory(universe.database))
         view.clear_representations(component=0)
         view.clear_representations(component=1)
+        
+        # Add representations based on chosen styles (surface or other)
         if query_repr == "surface":
             view.add_representation(
                 "surface", surfaceType="av", probeRadius=2.1, component=0, color=scheme
@@ -87,5 +106,7 @@ def show_contact_projection(
             view.add_representation(query_repr, component=0, color=scheme)
         view.add_representation(database_repr, component=1, color=scheme)
         view.center(component=0)
-
+    
+    # Return the visualization and color scheme
     return view, scheme
+
