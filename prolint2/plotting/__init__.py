@@ -11,4 +11,8 @@ __all__ = [
     "Radar",
     "DensityMap",
     "DurationGantt",
+    "LogoResidues",
+    "InteractionHeatMap",
+    "RadarMetrics",
+    "SharedContacts",
 ]

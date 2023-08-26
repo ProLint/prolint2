@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import MDAnalysis as mda
 import matplotlib as mpl
+from collections import Counter
 
 def use_1d_script_template(code_body, tail):
     template = """
@@ -208,7 +209,7 @@ def shift_range(values, new_min=0, new_max=1):
     return new_val
 
 
-def get_lipid_contact_frequencies(u, contacts, lipid_type, frequency_filter=0.0):
+def get_lipid_contact_durations(u, contacts, lipid_type, frequency_filter=0.0):
     """Get the lipid contact frequencies."""
     lipid_contacts = {}
     reslist = u.residues.resids.tolist()
@@ -307,3 +308,46 @@ def reverse_colourmap(cmap, name = 'my_cmap_r'):
     LinearL = dict(zip(k,reverse))
     my_cmap_r = mpl.colors.LinearSegmentedColormap(name, LinearL) 
     return my_cmap_r
+
+
+def get_lipid_contact_frequencies(u, contacts, lipid_type):
+    """Get the lipid contact frequencies."""
+    def sort_by_frequency(contact_list):
+        contact_list.sort(key=lambda x: x[1], reverse=True)
+        return contact_list
+
+    contact_threshold = 0
+
+    # Initialize dictionaries to store values:
+    lipid_frequency = {lipid: {} for lipid in u.database.unique_resnames}
+    residue_contact_freq = {}
+
+    for residue, lipid_contacts in contacts.compute_metric('sum').items():
+        for lipid, contact_counter in lipid_contacts.items():
+            # Sort the contact_counter dictionary by its values
+            sorted_contacts = sorted(contact_counter.items(), key=lambda x: x[1], reverse=True)
+
+            for lipid_id, freq in sorted_contacts:
+                # Exclude short-lived contacts
+                if freq <= contact_threshold:
+                    continue
+
+                # Update lipid_frequency
+                if lipid_id in lipid_frequency[lipid]:
+                    lipid_frequency[lipid][int(lipid_id)] += freq
+                else:
+                    lipid_frequency[lipid][int(lipid_id)] = freq
+
+                # Update residue_contact_freq
+                if int(lipid_id) in residue_contact_freq:
+                    residue_contact_freq[int(lipid_id)].append((int(residue), freq))
+                else:
+                    residue_contact_freq[int(lipid_id)] = [(int(residue), freq)]
+
+    for lipid, values in lipid_frequency.items():
+        lipid_frequency[lipid] = Counter(values).most_common()
+
+    for lipid_id, vals in residue_contact_freq.items():
+        residue_contact_freq[lipid_id] = sort_by_frequency(vals)
+
+    return [x[0] for x in lipid_frequency[lipid_type]], residue_contact_freq
