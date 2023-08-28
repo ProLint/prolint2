@@ -18,11 +18,11 @@ dependencies:
   - mdanalysis  
   - bottle
   - requests
-  - networkx
 
     # Pip-only installs
   - pip:
       - logomaker
+      - networkx
     #  - pmda
   #  - codecov
 
