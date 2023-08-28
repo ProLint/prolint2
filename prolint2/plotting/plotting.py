@@ -127,7 +127,7 @@ class PointDistribution(Plotter):
         self.universe = universe
         self.metric = metric
 
-    def create_plot(self, lipid_type=None, metric_name=None, **kwargs):
+    def create_plot(self, res_ids=None, lipid_type=None, metric_name=None, **kwargs):
         """Plot the distribution of a metric for each residue."""
 
         metric_names = []
@@ -146,8 +146,8 @@ class PointDistribution(Plotter):
             )
         else:
             # Get the list of metric values for specified lipid_type and metric_name
-            metric_list = get_metric_list_by_residues(
-                self.universe, self.metric, lipid_type, metric_name
+            res_list, metric_list = get_metric_list_by_residues(
+                self.universe, self.metric, lipid_type, metric_name, res_list=res_ids
             )
 
             # Create a scatter plot
@@ -156,7 +156,7 @@ class PointDistribution(Plotter):
             if "palette" in kwargs:
                 # If palette is specified, use it for coloring scatter points
                 ax = sns.scatterplot(
-                    x=self.universe.query.residues.resids,
+                    x=res_list,
                     y=metric_list,
                     hue=metric_list,
                     **kwargs
@@ -172,7 +172,7 @@ class PointDistribution(Plotter):
             else:
                 # Create scatter plot without palette
                 ax = sns.scatterplot(
-                    x=self.universe.query.residues.resids, y=metric_list, **kwargs
+                    x=res_list, y=metric_list, **kwargs
                 )
 
             ax.tick_params(axis="both", which="major", labelsize=12)
@@ -507,6 +507,7 @@ class LogoResidues(Plotter):
         metric_name=None,
         color_logo="silver",
         palette="Blues",
+        res_ids=None,
         **kwargs
     ):
         # Extract unique metric names
@@ -527,7 +528,7 @@ class LogoResidues(Plotter):
         else:
             # Create DataFrame and matrix from the universe and metric data
             df = create_logo_df(
-                self.universe, self.metric, lipid=lipid_type, metric_name=metric_name
+                self.universe, self.metric, lipid=lipid_type, metric_name=metric_name, res_list=res_ids
             )
             mat_df = lm.sequence_to_matrix("".join(df["Resname"].to_list()))
 
@@ -807,7 +808,7 @@ class RadarMetrics(Plotter):
         self.universe = universe
         self.metric = metric
 
-    def create_plot(self, lipid=None, metric_name=None, palette="Reds", **kwargs):
+    def create_plot(self, res_ids=None, lipid=None, metric_name=None, palette="Reds", **kwargs):
         # Check for required arguments
         if lipid is None:
             raise ValueError("Please specify a lipid.")
@@ -815,8 +816,8 @@ class RadarMetrics(Plotter):
             raise ValueError("Please specify a metric_name.")
         else:
             # Get a list of metrics for the given lipid and metric_name
-            metrics = get_metric_list_by_residues(
-                self.universe, self.metric, lipid, metric_name
+            resids, metrics = get_metric_list_by_residues(
+                self.universe, self.metric, lipid, metric_name, res_list=res_ids
             )
 
             # Calculate the number of variables and the corresponding angles for the radar chart
@@ -829,6 +830,8 @@ class RadarMetrics(Plotter):
             ax.set_theta_zero_location("S")
             ax.set_theta_direction(-1)
             magic_number = len(metrics) // 32
+            if magic_number == 0:
+                magic_number = 1
             cmap = mpl.cm.get_cmap(palette)
             rescale = lambda metrics: (metrics - np.min(metrics)) / (
                 np.max(metrics) - np.min(metrics)
@@ -840,15 +843,16 @@ class RadarMetrics(Plotter):
             )
 
             # Customize x-axis ticks and labels
+            resnames = [self.universe.query.residues.resnames[j] for j in [self.universe.query.residues.resids.tolist().index(i) for i in resids]]
             ax.set_xticks(theta[::magic_number])
             ax.set_xticklabels(
                 [
                     "{} {}".format(
-                        self.universe.query.residues.resnames[i],
-                        self.universe.query.residues.resids[i],
+                        resnames[i],
+                        resids[i],
                     )
                     for i in range(
-                        0, len(self.universe.query.residues.resids), magic_number
+                        0, len(resids), magic_number
                     )
                 ],
                 fontfamily="Arial Rounded MT Bold",

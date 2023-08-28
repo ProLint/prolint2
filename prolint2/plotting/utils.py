@@ -185,7 +185,7 @@ def shared_contacts_tail(name):
     )
 
 
-def get_metric_list_by_residues(universe, metric, lipid=None, metric_name=None):
+def get_metric_list_by_residues(universe, metric, lipid=None, metric_name=None, res_list=None):
     """
     Get a list of metric values for a given lipid and metric name.
 
@@ -198,8 +198,11 @@ def get_metric_list_by_residues(universe, metric, lipid=None, metric_name=None):
     Returns:
     - A NumPy array containing the extracted metric values.
     """
-    # Extract residue IDs from the universe
-    resids = universe.query.residues.resids
+    if res_list is None:
+        # Extract residue IDs from the universe
+        resids = universe.query.residues.resids
+    else:
+        resids = res_list
     metric_list = []  # List to store extracted metric values
 
     # Loop through each residue ID
@@ -298,7 +301,7 @@ def get_metric_list_by_residues(universe, metric, lipid=None, metric_name=None):
             )  # If residue ID is not in the metric dictionary, append 0
 
     # Convert the list to a NumPy array and return
-    return np.array(metric_list)
+    return resids, np.array(metric_list)
 
 
 def get_metrics_for_radar(metrics, metric_names, resIDs=[], lipid=None):
@@ -466,16 +469,13 @@ def inverse_dict_keys(d):
 
 
 def create_logo_df(universe, metric, **kwargs):
-    # Extract residue IDs from the provided universe
-    resids = universe.query.residues.resids
+    # Calculate the specified metric values for each residue using provided kwargs
+    resids, res_metrics = get_metric_list_by_residues(universe, metric, **kwargs)
 
     # Convert amino acid codes to full names for each residue
     resnames = [
-        mda.lib.util.convert_aa_code(x) for x in universe.query.residues.resnames
+        mda.lib.util.convert_aa_code(x) for x in [universe.query.residues.resnames[j] for j in [universe.query.residues.resids.tolist().index(i) for i in resids]]
     ]
-
-    # Calculate the specified metric values for each residue using provided kwargs
-    res_metrics = get_metric_list_by_residues(universe, metric, **kwargs)
 
     # Create a pandas DataFrame to store the logo data
     df = pd.DataFrame(
