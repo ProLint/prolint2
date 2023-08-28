@@ -3,6 +3,11 @@ from prolint2.plotting.plotting import (
     PointDistribution,
     Radar,
     DensityMap,
+    DurationGantt,
+    LogoResidues,
+    InteractionHeatMap,
+    RadarMetrics,
+    SharedContacts,
 )
 
 __all__ = [
