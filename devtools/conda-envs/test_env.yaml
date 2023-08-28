@@ -18,6 +18,8 @@ dependencies:
   - mdanalysis  
   - bottle
   - requests
+  - logomaker
+  - networkx
 
     # Pip-only installs
   - pip:
