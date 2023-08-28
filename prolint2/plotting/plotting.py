@@ -34,11 +34,6 @@ __all__ = [
     "SharedContacts",
 ]
 
-# Getting the config file
-config = configparser.ConfigParser(allow_no_value=True)
-config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini"))
-parameters_config = config["Parameters"]
-
 
 class Plotter:
     def __init__(
@@ -81,6 +76,31 @@ class Plotter:
             tail = density_map_tail(
                 self.__class__.__name__
             )  # Tail script for DensityMap case
+
+        elif self.__class__.__name__ in ["DurationGantt"]:
+            tail = duration_gantt_tail(
+                self.__class__.__name__,
+            )  # Tail script for DurationGantt case
+
+        elif self.__class__.__name__ in ["LogoResidues"]:
+            tail = logo_tail(
+                self.__class__.__name__
+            )  # Tail script for LogoResidues case
+
+        elif self.__class__.__name__ in ["InteractionHeatMap"]:
+            tail = interaction_map_tail(
+                self.__class__.__name__
+            )  # Tail script for InteractionHeatMap case
+
+        elif self.__class__.__name__ in ["RadarMetrics"]:
+            tail = radar_metrics_tail(
+                self.__class__.__name__
+            )  # Tail script for RadarMetrics case
+
+        elif self.__class__.__name__ in ["SharedContacts"]:
+            tail = shared_contacts_tail(
+                self.__class__.__name__
+            )  # Tail script for SharedContacts case
 
         # Combine class code and the corresponding tail script
         script_code = use_1d_script_template(plotting_function_source, tail)
@@ -382,12 +402,7 @@ class DurationGantt(Plotter):
         )
 
     def create_plot(
-        self,
-        lipid_id=None,
-        top_filter=10,
-        continuity_filter=int(parameters_config["intervals_to_filter_out"]),
-        tolerance=int(parameters_config["tolerance"]),
-        **kwargs
+        self, lipid_id=None, top_filter=10, continuity_filter=10, tolerance=6, **kwargs
     ):
         if lipid_id is None:
             raise ValueError("Please specify a lipid_id.")
@@ -1108,7 +1123,7 @@ class SharedContacts(Plotter):
 
             # Add title, adjust layout, and finalize the plot
             if self.title is None:
-                self.title = "Shared Contacts | {}".format(lipid_type)
+                self.title = "Shared Contacts - {}".format(lipid_type)
 
             fig.suptitle(
                 self.title,

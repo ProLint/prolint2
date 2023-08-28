@@ -12,11 +12,18 @@ def use_1d_script_template(code_body, tail):
 # -*- coding: utf-8 -*-
 
 import os
+import math
 import numpy as np
 import pandas as pd
+import logomaker as lm
+import networkx as nx
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.cm import ScalarMappable
+from matplotlib.patches import FancyBboxPatch
 from prolint2 import Universe
+from prolint2.computers.distances import SerialDistances
+from prolint2.server.chord_utils import contact_chord
 from prolint2.plotting import Plotter
 from prolint2.plotting.utils import *
 
@@ -47,13 +54,14 @@ if __name__ == "__main__":
 # Defining tail strings for different Plotter classes
 def point_distribution_tail(name):
     return """
+    # Define the metric to be plotted
     mean_instance = MeanMetric()
     metric_instance = Metric(contacts, mean_instance)
     mean_contacts = metric_instance.compute()
 
     # Generate the plot
-    PLOT = {}(u, mean_contacts, lipid='CHOL', metric_name='MeanMetric')
-    PLOT.save_plot()
+    PLOT = {}(u, mean_contacts, fig_size=(8, 5))
+    PLOT.save_plot(lipid_type='CHOL', metric_name='MeanMetric', linewidth=0.24, palette='flare')
             """.format(
         name
     )
@@ -66,8 +74,8 @@ def radar_tail(name):
     contacts_out = metric_instance.compute()
 
     # Generate the plot
-    PLOT = {}(contacts_out, resIDs=[2, 3, 5], lipid='POPS', metric_names=['MeanMetric', 'SumMetric', 'MaxMetric'])
-    PLOT.save_plot()
+    PLOT = {}(contacts_out, fig_size=(6, 6))
+    PLOT.save_plot(resIDs=[2, 3, 5], lipid_type='POPS', metric_names=['MeanMetric', 'SumMetric', 'MaxMetric'], marker='o', markersize=3, linewidth=2, alpha=0.7)
             """.format(
         name
     )
@@ -76,8 +84,69 @@ def radar_tail(name):
 def density_map_tail(name):
     return """
     # Generate the plot
-    PLOT = {}(u, lipid='CHOL')
-    PLOT.save_plot()
+    PLOT = {}(u, fig_size=(10, 10))
+    PLOT.save_plot(lipid_type='CHOL', interpolation='nearest', cmap='viridis')
+            """.format(
+        name
+    )
+
+
+def duration_gantt_tail(name):
+    return """
+    # Generate the plot
+    PLOT = {}(u, contacts, fig_size=(8, 8))
+    PLOT.get_contact_durations('POPE', frequency_filter=10)
+    PLOT.save_plot(lipid_id = 2329, top_filter=15)
+            """.format(
+        name
+    )
+
+
+def logo_tail(name):
+    return """
+    # Define the metric to be plotted
+    mean_instance = MeanMetric()
+    metric_instance = Metric(contacts, mean_instance)
+    mean_contacts = metric_instance.compute()
+
+    # Generate the plot
+    PLOT = {}(u, mean_contacts, fig_size=(10, 10))
+    PLOT.save_plot(lipid_type='POPE', metric_name='MeanMetric')
+            """.format(
+        name
+    )
+
+
+def interaction_map_tail(name):
+    return """
+    # Generate the plot
+    PLOT = {}(u, contacts, fig_size=(10, 10))
+    PLOT.save_plot(residue_id=685, lipid_id=2329, palette='Reds')
+            """.format(
+        name
+    )
+
+
+def radar_metrics_tail(name):
+    return """
+    # Define the metric to be plotted
+    mean_instance = MeanMetric()
+    metric_instance = Metric(contacts, mean_instance)
+    mean_contacts = metric_instance.compute()
+
+    # Generate the plot
+    PLOT = {}(u, mean_contacts, fig_size=(10, 10))
+    PLOT.save_plot(lipid='POPE', metric_name='MeanMetric', palette='plasma')
+            """.format(
+        name
+    )
+
+
+def shared_contacts_tail(name):
+    return """
+    # Generate the plot
+    PLOT = {}(u, contacts, fig_size=(12, 12))
+    PLOT.save_plot(lipid_type='POPS', label_size=9, palette='plasma')
             """.format(
         name
     )
