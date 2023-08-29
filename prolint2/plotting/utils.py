@@ -158,6 +158,16 @@ def interaction_map_tail(name):
     )
 
 
+def two_point_distance_evolution_tail(name):
+    return """
+    # Initialize the plotting class and generate the plot
+    # PLOT = {}(u, fig_size=(7, 5))
+    # PLOT.save_plot(lipid_id = 2329, residue_id = 685, unit = 'time', smooth_line = True, n_points = 250, useOffset = True)
+            """.format(
+        name
+    )
+
+
 def radar_metrics_tail(name):
     return """
     # Define and initialize desired metrics for analyzing the contacts
@@ -185,7 +195,9 @@ def shared_contacts_tail(name):
     )
 
 
-def get_metric_list_by_residues(universe, metric, lipid=None, metric_name=None, res_list=None):
+def get_metric_list_by_residues(
+    universe, metric, lipid=None, metric_name=None, res_list=None
+):
     """
     Get a list of metric values for a given lipid and metric name.
 
@@ -474,7 +486,11 @@ def create_logo_df(universe, metric, **kwargs):
 
     # Convert amino acid codes to full names for each residue
     resnames = [
-        mda.lib.util.convert_aa_code(x) for x in [universe.query.residues.resnames[j] for j in [universe.query.residues.resids.tolist().index(i) for i in resids]]
+        mda.lib.util.convert_aa_code(x)
+        for x in [
+            universe.query.residues.resnames[j]
+            for j in [universe.query.residues.resids.tolist().index(i) for i in resids]
+        ]
     ]
 
     # Create a pandas DataFrame to store the logo data

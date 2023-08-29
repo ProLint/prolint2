@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import FancyBboxPatch
 from prolint2.computers.distances import SerialDistances
+from prolint2.computers.distances import TwoPointDistances
 from matplotlib.cm import ScalarMappable
 import inspect
-import configparser
+from scipy import interpolate
 from prolint2.server.chord_utils import contact_chord
 from .utils import *
 
@@ -32,6 +33,7 @@ __all__ = [
     "InteractionHeatMap",
     "RadarMetrics",
     "SharedContacts",
+    "TwoPointDistanceEvolution",
 ]
 
 
@@ -102,6 +104,11 @@ class Plotter:
                 self.__class__.__name__
             )  # Tail script for SharedContacts case
 
+        elif self.__class__.__name__ in ["TwoPointDistanceEvolution"]:
+            tail = two_point_distance_evolution_tail(
+                self.__class__.__name__
+            )  # Tail script for TwoPointDistanceEvolution case
+
         # Combine class code and the corresponding tail script
         script_code = use_1d_script_template(plotting_function_source, tail)
 
@@ -156,10 +163,7 @@ class PointDistribution(Plotter):
             if "palette" in kwargs:
                 # If palette is specified, use it for coloring scatter points
                 ax = sns.scatterplot(
-                    x=res_list,
-                    y=metric_list,
-                    hue=metric_list,
-                    **kwargs
+                    x=res_list, y=metric_list, hue=metric_list, **kwargs
                 )
                 norm = plt.Normalize(metric_list.min(), metric_list.max())
                 sm = plt.cm.ScalarMappable(cmap=kwargs["palette"], norm=norm)
@@ -171,9 +175,7 @@ class PointDistribution(Plotter):
                 cbar.ax.tick_params(labelsize=12)
             else:
                 # Create scatter plot without palette
-                ax = sns.scatterplot(
-                    x=res_list, y=metric_list, **kwargs
-                )
+                ax = sns.scatterplot(x=res_list, y=metric_list, **kwargs)
 
             ax.tick_params(axis="both", which="major", labelsize=12)
 
@@ -528,7 +530,11 @@ class LogoResidues(Plotter):
         else:
             # Create DataFrame and matrix from the universe and metric data
             df = create_logo_df(
-                self.universe, self.metric, lipid=lipid_type, metric_name=metric_name, res_list=res_ids
+                self.universe,
+                self.metric,
+                lipid=lipid_type,
+                metric_name=metric_name,
+                res_list=res_ids,
             )
             mat_df = lm.sequence_to_matrix("".join(df["Resname"].to_list()))
 
@@ -678,7 +684,7 @@ class InteractionHeatMap(Plotter):
         ylabel=None,
         fn=None,
         title=None,
-        fig_size=(8, 8),
+        fig_size=(8, 5),
     ):
         # Initialize the InteractionHeatMap object with specified plot attributes
         # Inherits from Plotter and sets plot labels, title, and figure size.
@@ -716,7 +722,7 @@ class InteractionHeatMap(Plotter):
             max_value = ri.distance_array.max()
 
             # Create a new figure and axis
-            fig, ax = plt.subplots(figsize=(8, 5))
+            fig, ax = plt.subplots(figsize=self.fig_size)
 
             # Define color map
             cmap = mpl.cm.get_cmap(palette)
@@ -791,6 +797,113 @@ class InteractionHeatMap(Plotter):
             plt.tight_layout()
 
 
+class TwoPointDistanceEvolution(Plotter):
+    def __init__(
+        self,
+        universe,
+        xlabel=None,
+        ylabel=None,
+        fn=None,
+        title=None,
+        fig_size=(7, 5),
+    ):
+        # Initialize the TwoPointDistances object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
+        super().__init__(xlabel, ylabel, fn, title, fig_size)
+        # Store universe and contacts information
+        self.universe = universe
+
+    def create_plot(
+        self,
+        lipid_id=None,
+        residue_id=None,
+        lipid_atomname=None,
+        residue_atomname=None,
+        unit="frame",
+        smooth_line=False,
+        n_points=250,
+        useOffset=True,
+        **kwargs
+    ):
+        # check if both residue_id and lipid_id are specified
+        if residue_id is None:
+            raise ValueError("Please specify a residue_id.")
+        elif lipid_id is None:
+            raise ValueError("Please specify a lipid_id.")
+        else:
+            # calculate distances using TwoPointDistances
+            tpd = TwoPointDistances(
+                self.universe,
+                self.universe.query,
+                self.universe.database,
+                lipid_id,
+                residue_id,
+                lipid_sel=lipid_atomname,
+                residue_sel=residue_atomname,
+                unit=unit,
+            )
+            tpd.run(verbose=False)
+
+            print(tpd.result_array.tolist()[0])
+
+            # create a new figure and axis
+            fig, ax = plt.subplots(figsize=self.fig_size)
+
+            # create the line plot
+            if smooth_line:
+                # x_new, bspline, y_new
+                x_new = np.linspace(
+                    tpd.time_array.min(), tpd.time_array.max(), n_points
+                )
+                bspline = interpolate.make_interp_spline(
+                    tpd.time_array, tpd.result_array
+                )
+                y_new = bspline(x_new)
+                sns.lineplot(x=x_new, y=y_new, ax=ax, **kwargs)
+            else:
+                sns.lineplot(x=tpd.time_array, y=tpd.result_array, ax=ax, **kwargs)
+
+            # Handle default values for fn, title, xlabel, and ylabel
+            if self.fn is None:
+                self.fn = os.path.join(
+                    os.getcwd(),
+                    "distances_lipidID_{}_residueID_{}.pdf".format(
+                        lipid_id,
+                        residue_id,
+                    ),
+                )
+            if self.title is None:
+                self.title = "Distances between Lipid ID: {} and Residue ID: {}".format(
+                    lipid_id,
+                    residue_id,
+                )
+            if self.xlabel is None:
+                if unit == "frame":
+                    self.xlabel = "Trajectory Frames"
+                elif unit == "time":
+                    self.xlabel = "Trajectory Time (ps)"
+            if self.ylabel is None:
+                self.ylabel = r"Distance ($\AA$)"
+
+            # Customize plot appearance
+            ax.tick_params(axis="both", which="major", labelsize=12)
+            plt.xticks(fontname="Arial Unicode MS")
+            plt.yticks(fontname="Arial Unicode MS")
+            plt.xlabel(self.xlabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
+            plt.ylabel(self.ylabel, fontsize=12, fontfamily="Arial Rounded MT Bold")
+            plt.ticklabel_format(axis="both", useOffset=useOffset)
+            ax.set_title(
+                self.title,
+                fontsize=14,
+                weight="bold",
+                pad=15,
+                fontfamily="Arial Rounded MT Bold",
+            )
+
+            # Ensure plot layout
+            plt.tight_layout()
+
+
 class RadarMetrics(Plotter):
     def __init__(
         self,
@@ -808,7 +921,9 @@ class RadarMetrics(Plotter):
         self.universe = universe
         self.metric = metric
 
-    def create_plot(self, res_ids=None, lipid=None, metric_name=None, palette="Reds", **kwargs):
+    def create_plot(
+        self, res_ids=None, lipid=None, metric_name=None, palette="Reds", **kwargs
+    ):
         # Check for required arguments
         if lipid is None:
             raise ValueError("Please specify a lipid.")
@@ -843,7 +958,13 @@ class RadarMetrics(Plotter):
             )
 
             # Customize x-axis ticks and labels
-            resnames = [self.universe.query.residues.resnames[j] for j in [self.universe.query.residues.resids.tolist().index(i) for i in resids]]
+            resnames = [
+                self.universe.query.residues.resnames[j]
+                for j in [
+                    self.universe.query.residues.resids.tolist().index(i)
+                    for i in resids
+                ]
+            ]
             ax.set_xticks(theta[::magic_number])
             ax.set_xticklabels(
                 [
@@ -851,9 +972,7 @@ class RadarMetrics(Plotter):
                         resnames[i],
                         resids[i],
                     )
-                    for i in range(
-                        0, len(resids), magic_number
-                    )
+                    for i in range(0, len(resids), magic_number)
                 ],
                 fontfamily="Arial Rounded MT Bold",
             )

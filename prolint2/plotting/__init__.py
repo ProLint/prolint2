@@ -8,6 +8,7 @@ from prolint2.plotting.plotting import (
     InteractionHeatMap,
     RadarMetrics,
     SharedContacts,
+    TwoPointDistanceEvolution,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "InteractionHeatMap",
     "RadarMetrics",
     "SharedContacts",
+    "TwoPointDistanceEvolution",
 ]
