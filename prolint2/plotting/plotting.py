@@ -843,9 +843,7 @@ class TwoPointDistanceEvolution(Plotter):
                 unit=unit,
             )
             tpd.run(verbose=False)
-
-            print(tpd.result_array.tolist()[0])
-
+            
             # create a new figure and axis
             fig, ax = plt.subplots(figsize=self.fig_size)
 

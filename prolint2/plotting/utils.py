@@ -24,6 +24,7 @@ import seaborn as sns
 sns.set_context("paper")
 sns.set_style("whitegrid")
 sns.set_palette("colorblind")
+from scipy import interpolate
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.cm import ScalarMappable
@@ -32,6 +33,7 @@ from prolint2 import Universe
 from prolint2.plotting.utils import *
 from prolint2.plotting import Plotter
 from prolint2.computers.distances import SerialDistances
+from prolint2.computers.distances import TwoPointDistances
 from prolint2.server.chord_utils import contact_chord
 
 # Instructions for Use:
@@ -161,8 +163,8 @@ def interaction_map_tail(name):
 def two_point_distance_evolution_tail(name):
     return """
     # Initialize the plotting class and generate the plot
-    # PLOT = {}(u, fig_size=(7, 5))
-    # PLOT.save_plot(lipid_id = 2329, residue_id = 685, unit = 'time', smooth_line = True, n_points = 250, useOffset = True)
+    PLOT = {}(u, fig_size=(7, 5))
+    PLOT.save_plot(lipid_id = 2329, residue_id = 685, unit = 'time', smooth_line = True, n_points = 250, useOffset = True)
             """.format(
         name
     )
