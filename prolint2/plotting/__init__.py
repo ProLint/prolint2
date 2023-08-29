@@ -9,6 +9,7 @@ from prolint2.plotting.plotting import (
     RadarMetrics,
     SharedContacts,
     TwoPointDistanceEvolution,
+    MosaicsGridData,
 )
 
 __all__ = [
@@ -22,4 +23,5 @@ __all__ = [
     "RadarMetrics",
     "SharedContacts",
     "TwoPointDistanceEvolution",
+    "MosaicsGridData",
 ]

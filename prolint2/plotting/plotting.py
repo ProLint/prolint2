@@ -34,6 +34,7 @@ __all__ = [
     "RadarMetrics",
     "SharedContacts",
     "TwoPointDistanceEvolution",
+    "MosaicsGridData",
 ]
 
 
@@ -108,9 +109,16 @@ class Plotter:
             tail = two_point_distance_evolution_tail(
                 self.__class__.__name__
             )  # Tail script for TwoPointDistanceEvolution case
+        elif self.__class__.__name__ in ["MosaicsGridData"]:
+            tail = mosaics_grid_data_tail(
+                self.__class__.__name__
+            )  # Tail script for MosaicsGridData case
 
         # Combine class code and the corresponding tail script
-        script_code = use_1d_script_template(plotting_function_source, tail)
+        if self.__class__.__name__ in ["MosaicsGridData"]:
+            script_code = use_mosaics_script_template(plotting_function_source, tail)
+        else:
+            script_code = use_1d_script_template(plotting_function_source, tail)
 
         # Write the generated script code to the specified file
         with open(script_filename, "w") as f:
@@ -843,7 +851,7 @@ class TwoPointDistanceEvolution(Plotter):
                 unit=unit,
             )
             tpd.run(verbose=False)
-            
+
             # create a new figure and axis
             fig, ax = plt.subplots(figsize=self.fig_size)
 
@@ -1256,3 +1264,73 @@ class SharedContacts(Plotter):
             plt.grid(False)
             ax.axis("off")
             plt.tight_layout()
+
+
+class MosaicsGridData(Plotter):
+    def __init__(
+        self,
+        grid_data,
+        xlabel=None,
+        ylabel=None,
+        fn=None,
+        title=None,
+        fig_size=(10, 10),
+    ):
+        # Initialize the MosaicsGridData object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
+        super().__init__(xlabel, ylabel, fn, title, fig_size)
+        # load grid data from file
+        self.grid_data = np.loadtxt(grid_data)
+
+    def create_plot(self, frame=None, prop_label=None, **kwargs):
+        if prop_label is None:
+            prop_label = "Property"
+
+        # Generate a figure and axis for the plot
+        fig, ax = plt.subplots(figsize=self.fig_size)
+
+        # Create heatmap using the grid data
+        if frame is None:
+            im = ax.imshow(self.grid_data, origin="lower", **kwargs)
+        else:
+            im = ax.imshow(
+                self.grid_data[frame:-frame, frame:-frame], origin="lower", **kwargs
+            )
+
+        ax.grid(False)
+
+        # Create a colorbar of the same size as the plot
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = plt.colorbar(im, cax=cax)
+        # Set colorbar label and font size
+        cbar.set_label(
+            label=prop_label,
+            size=12,
+            fontfamily="Arial Rounded MT Bold",
+        )
+        cbar.ax.tick_params(labelsize=12)
+
+        # Remove labels and ticks from the axes
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_xticklabels([])
+        ax.set_yticklabels([])
+
+        # Set default filename and title if not provided
+        if self.fn is None:
+            self.fn = os.path.join(
+                os.getcwd(), "mosaics_grid_data_{}.pdf".format(prop_label)
+            )
+        if self.title is None:
+            self.title = "Mosaics Grid Data - {}".format(prop_label)
+
+        # Add title to the plot
+        ax.set_title(
+            self.title,
+            fontsize=14,
+            weight="bold",
+            pad=15,
+            fontfamily="Arial Rounded MT Bold",
+        )
+        plt.tight_layout()

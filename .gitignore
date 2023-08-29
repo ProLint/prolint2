@@ -134,3 +134,14 @@ docs/notebooks/*pdf
 
 
 docs/notebooks/run_plots.sh
+docs/notebooks/delta_z.dat
+prolint2/data/GIRK/all.crd
+prolint2/data/GIRK/delta_z.dat
+prolint2/data/GIRK/example.png
+prolint2/data/GIRK/heatmap_template.gnu
+prolint2/data/GIRK/kk.pdb
+prolint2/data/GIRK/lower_z_rho.dat
+prolint2/data/GIRK/lower_z.dat
+prolint2/data/GIRK/trajectory.xtc.info
+prolint2/data/GIRK/upper_z_rho.dat
+prolint2/data/GIRK/upper_z.dat
