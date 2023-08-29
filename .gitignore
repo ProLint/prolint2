@@ -105,7 +105,6 @@ ENV/
 # There are reports this comes from LLVM profiling, but also Xcode 9.
 *profraw
 
-
 # data for tests
 prolint2/data/.*
 .DS_Store
@@ -119,8 +118,6 @@ prolint2/data/COX1/.trajectory.xtc_offsets.lock
 prolint2/data/COX1/.trajectory.xtc_offsets.npz
 prolint2/data/SMO/.trajectory.xtc_offsets.npz
 prolint2/data/SMO/.trajectory.xtc_offsets.lock
-.gitignore
-.gitignore
 prolint2/data/GIRK/.trajectory.xtc_offsets.npz
 prolint2/data/COX1/coordinates.gro
 prolint2/data/COX1/trajectory.xtc
@@ -130,18 +127,6 @@ prolint2/data/SMO/coordinates.gro
 prolint2/data/SMO/trajectory.xtc
 docs/notebooks/*py
 docs/notebooks/*pdf
-
-
-
 docs/notebooks/run_plots.sh
 docs/notebooks/delta_z.dat
-prolint2/data/GIRK/all.crd
-prolint2/data/GIRK/delta_z.dat
-prolint2/data/GIRK/example.png
-prolint2/data/GIRK/heatmap_template.gnu
-prolint2/data/GIRK/kk.pdb
-prolint2/data/GIRK/lower_z_rho.dat
-prolint2/data/GIRK/lower_z.dat
-prolint2/data/GIRK/trajectory.xtc.info
-prolint2/data/GIRK/upper_z_rho.dat
-prolint2/data/GIRK/upper_z.dat
+prolint2/data/long_test_case/*
