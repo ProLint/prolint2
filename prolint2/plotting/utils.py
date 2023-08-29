@@ -63,13 +63,6 @@ if __name__ == "__main__":
     coordinates_file = GIRK.coordinates
     trajectory_file = GIRK.trajectory
     u = Universe(coordinates_file, trajectory_file)
-
-    # Compute contacts in the universe based on a distance cutoff
-    # Users can adjust the 'cutoff' parameter according to their needs
-    contacts = u.compute_contacts(cutoff=7)
-
-    # At this point, the 'contacts' variable contains information about
-    # lipid-protein interactions within the specified cutoff distance.
 {}
     """.format(
         code_body, tail
@@ -118,6 +111,13 @@ if __name__ == "__main__":
 # Defining tail strings for different Plotter classes
 def point_distribution_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Define and initialize desired metrics for analyzing the contacts
     # The code below is just an example, the users can define the metrics  
     # to use based on their analysis goals
@@ -135,6 +135,13 @@ def point_distribution_tail(name):
 
 def radar_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Define and initialize desired metrics for analyzing the contacts
     # The code below is just an example, the users can define the metrics  
     # to use based on their analysis goals
@@ -162,6 +169,13 @@ def density_map_tail(name):
 
 def duration_gantt_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Initialize the plotting class and generate the plot
     PLOT = {}(u, contacts, fig_size=(8, 8))
     PLOT.get_contact_durations('POPE', frequency_filter=10)
@@ -173,6 +187,13 @@ def duration_gantt_tail(name):
 
 def logo_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Define and initialize desired metrics for analyzing the contacts
     # The code below is just an example, the users can define the metrics  
     # to use based on their analysis goals
@@ -190,6 +211,13 @@ def logo_tail(name):
 
 def interaction_map_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Initialize the plotting class and generate the plot
     PLOT = {}(u, contacts, fig_size=(10, 10))
     PLOT.save_plot(residue_id=685, lipid_id=2329, palette='Reds')
@@ -210,6 +238,13 @@ def two_point_distance_evolution_tail(name):
 
 def radar_metrics_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Define and initialize desired metrics for analyzing the contacts
     # The code below is just an example, the users can define the metrics  
     # to use based on their analysis goals
@@ -227,6 +262,13 @@ def radar_metrics_tail(name):
 
 def shared_contacts_tail(name):
     return """
+
+    # Compute contacts in the universe based on a distance cutoff
+    # Users can adjust the 'cutoff' parameter according to their needs
+    contacts = u.compute_contacts(cutoff=7)
+
+    # At this point, the 'contacts' variable contains information about
+    # lipid-protein interactions within the specified cutoff distance.
     # Initialize the plotting class and generate the plot
     PLOT = {}(u, contacts, fig_size=(12, 12))
     PLOT.save_plot(lipid_type='POPS', label_size=9, palette='plasma')
