@@ -329,7 +329,7 @@ class DensityMap(Plotter):
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
 
-    def create_plot(self, lipid_type=None, bins=150, size_in_mb=50000, **kwargs):
+    def create_plot(self, lipid_type=None, bins=150, size_in_mb=50000, frame=None, **kwargs):
         """Plot the preferential localization of lipids using 2D density maps."""
         if lipid_type is None:
             raise ValueError("Please specify a lipid_type.")
@@ -346,9 +346,17 @@ class DensityMap(Plotter):
             fig, ax = plt.subplots(figsize=self.fig_size)
 
             # Plot the density map using imshow
-            im = ax.imshow(
-                H, origin="lower", extent=[xe[0], xe[-1], ye[0], ye[-1]], **kwargs
-            )
+            if frame is None:
+                im = ax.imshow(
+                    H, origin="lower", extent=[xe[0], xe[-1], ye[0], ye[-1]], **kwargs
+                )
+            else:
+                im = ax.imshow(
+                    H[frame : -frame, frame : -frame],
+                    origin="lower",
+                    extent=[xe[0], xe[-1], ye[0], ye[-1]],
+                    **kwargs,
+                )
             ax.grid(False)
 
             # Create a colorbar of the same size as the plot
