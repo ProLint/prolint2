@@ -241,7 +241,7 @@ class ContactsProvider:
 
         self.params = params if params is not None else DEFAULT_SIM_PARAMS
 
-    def compute(self, strategy_or_computer=None, **kwargs):
+    def compute(self, strategy_or_computer=None, start=None, stop=None, step=1, **kwargs):
         """
         Compute contacts between the query and the database.
 
@@ -271,7 +271,7 @@ class ContactsProvider:
             contact_computer = contact_computer_class(
                 self.query.universe, self.query, self.database, **kwargs
             )
-        contact_computer.run(verbose=True)
+        contact_computer.run(verbose=True, start=start, stop=stop, step=step)
 
         # Strategy to count and store contacts (e.g. exact, aprox, etc.)
         contact_strategy_instance = self._contact_strategy(self.query.universe, contact_computer.contact_frames, self.params.get('norm_factor'))

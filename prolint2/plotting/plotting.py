@@ -413,10 +413,10 @@ class DurationGantt(Plotter):
         self.universe = universe
         self.contacts = contacts
 
-    def get_contact_durations(self, lipid_type, frequency_filter=20):
+    def get_contact_durations(self, lipid_type, **kwargs):
         # Call the external function to get lipid contact durations
         return get_lipid_contact_durations(
-            self.universe, self.contacts, lipid_type, frequency_filter
+            self.universe, self.contacts, lipid_type, **kwargs
         )
 
     def create_plot(
@@ -579,7 +579,7 @@ class LogoResidues(Plotter):
                 ww_logo = lm.Logo(
                     mat_df,
                     ax=axs,
-                    color_scheme="silver",
+                    color_scheme=color_logo,
                     vpad=0.4,
                     font_name="Arial Rounded MT Bold",
                 )
@@ -605,7 +605,7 @@ class LogoResidues(Plotter):
                         ww_logo = lm.Logo(
                             mat_df[i * magic_number :],
                             ax=axs[i],
-                            color_scheme="silver",
+                            color_scheme=color_logo,
                             vpad=0.4,
                             font_name="Arial Rounded MT Bold",
                             **kwargs
@@ -958,9 +958,7 @@ class RadarMetrics(Plotter):
             fig, ax = plt.subplots(figsize=self.fig_size, subplot_kw={"polar": True})
             ax.set_theta_zero_location("S")
             ax.set_theta_direction(-1)
-            magic_number = len(metrics) // 32
-            if magic_number == 0:
-                magic_number = 1
+            magic_number = len(metrics) // 32 + 1
             cmap = mpl.cm.get_cmap(palette)
             rescale = lambda metrics: (metrics - np.min(metrics)) / (
                 np.max(metrics) - np.min(metrics)
@@ -1290,9 +1288,11 @@ class MosaicsGridData(Plotter):
         # load grid data from file
         self.grid_data = np.loadtxt(grid_data)
 
-    def create_plot(self, frame=None, prop_label=None, **kwargs):
+    def create_plot(self, frame=None, prop_label=None, nan_to_zero=False, **kwargs):
         if prop_label is None:
             prop_label = "Property"
+        if nan_to_zero:
+            self.grid_data = np.nan_to_num(self.grid_data)
 
         # Generate a figure and axis for the plot
         fig, ax = plt.subplots(figsize=self.fig_size)

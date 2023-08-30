@@ -513,7 +513,7 @@ def shift_range(values, new_min=0, new_max=1):
     return new_val
 
 
-def get_lipid_contact_durations(u, contacts, lipid_type, frequency_filter=0.0):
+def get_lipid_contact_durations(u, contacts, lipid_type, frequency_filter=0.0, n_frames=1):
     """Get the lipid contact frequencies."""
 
     # Initialize a dictionary to store lipid contact counts
@@ -533,9 +533,6 @@ def get_lipid_contact_durations(u, contacts, lipid_type, frequency_filter=0.0):
 
                 # Increment the contact count for the lipid
                 lipid_contacts[lipid] += len(contacts.contact_frames[resid][lipid])
-
-    # Calculate the total number of frames (trajectory snapshots)
-    n_frames = u.trajectory.n_frames - 1
 
     # Filter lipid_contacts based on the specified frequency_filter
     lipid_contacts = {
