@@ -175,7 +175,7 @@ class MultiplePointDistribution(Plotter):
         if self.fn is None:
             self.fn = os.path.join(
                 os.getcwd(),
-                "point_distribution_{}_{}.pdf".format(lipid_type, metric_name),
+                "multiple_point_distribution.pdf",
             )
         if self.title is None:
             if rows == "metrics":
@@ -191,7 +191,6 @@ class MultiplePointDistribution(Plotter):
             fontfamily="Arial Rounded MT Bold",
         )
         plt.tight_layout()
-
 
 
 class MultipleRadar(Plotter):
@@ -211,55 +210,43 @@ class MultipleRadar(Plotter):
         self.universe = universe
         self.metric = metric
 
-    def _plot_single(self, lipid_type, metric_name, axis, res_ids=None, **kwargs):
+    def _plot_single(
+        self, lipid_type, metric_name, axis, theta, res_ids=None, **kwargs
+    ):
         # Get a list of metrics for the given lipid and metric_name
         res_list, metric_list = get_metric_list_by_residues(
             self.universe, self.metric, lipid_type, metric_name, res_list=res_ids
         )
 
-        # Calculate the number of variables and the corresponding angles for the radar chart
-        num_vars = len(metric_list)
-        theta = np.linspace(0, 2 * np.pi - np.pi / 6, num_vars, endpoint=False)
-        theta += np.pi / 12
-
         axis.set_theta_zero_location("S")
         axis.set_theta_direction(-1)
-        magic_number = len(metrics) // 32 + 1
-        cmap = mpl.cm.get_cmap(palette)
-        rescale = lambda metrics: (metrics - np.min(metrics)) / (
-            np.max(metrics) - np.min(metrics)
-        )
 
         # Plot the radar chart bars
-        axis = axis.bar(
-            theta, metrics, width=0.01, alpha=0.5, color=cmap(rescale(metrics))
-        )
+        axis.bar(theta, metric_list, width=0.02, alpha=0.5, **kwargs)
 
-        # Customize x-axis ticks and labels
-        resnames = [
-            self.universe.query.residues.resnames[j]
-            for j in [
-                self.universe.query.residues.resids.tolist().index(i)
-                for i in resids
-            ]
-        ]
-        axis.set_xticks(theta[::magic_number])
-        axis.set_xticklabels(
-            [
-                "{} {}".format(
-                    resnames[i],
-                    resids[i],
-                )
-                for i in range(0, len(resids), magic_number)
-            ],
+        axis.set_xlim(0, 2 * np.pi)
+        axis.xaxis.grid(True, linestyle="dashed", alpha=0.5)
+        axis.set_yticks([max(metric_list) / 2, max(metric_list)])
+        axis.set_yticklabels([])
+
+        axis.tick_params(axis="x", pad=10, labelsize=8)
+        axis.yaxis.grid(True, linestyle="dashed", alpha=0.5)
+        axis.set_rlabel_position(0)
+        axis.set_thetamin(15)
+        axis.set_thetamax(345)
+
+        axis.set_title(
+            "{} | {}".format(lipid_type, metric_name),
+            fontsize=11,
+            pad=10,
             fontfamily="Arial Rounded MT Bold",
         )
-        axis.tick_params(axis="x", pad=20, labelsize=12)
-        axis.xaxis.grid(True, linestyle="dashed", alpha=0.5)
 
         return axis
 
-    def create_plot(self, rows="metrics", res_ids=None, decimals=1, **kwargs):
+    def create_plot(
+        self, rows="metrics", res_ids=None, decimals=1, magic_number=None, **kwargs
+    ):
         if rows not in ["metrics", "lipids"]:
             raise ValueError("rows must be either 'metrics' or 'lipids'.")
 
@@ -289,20 +276,42 @@ class MultipleRadar(Plotter):
             n_rows = n_lipids
             n_cols = n_metrics
 
-        # set default labels
-        if self.xlabel is None:
-            self.xlabel = "Residue ID"
-        if self.ylabel is None:
-            self.ylabel = "Metric Value"
+        resids_total_list = self.universe.query.residues.resids.tolist()
+        if res_ids is None:
+            res_list = resids_total_list
+        else:
+            res_list = res_ids
+
+        resnames = [
+            self.universe.query.residues.resnames[j]
+            for j in [resids_total_list.index(i) for i in res_list]
+        ]
+
+        # Calculate the number of variables and the corresponding angles for the radar chart
+        num_vars = len(res_list)
+        theta = np.linspace(0, 2 * np.pi - np.pi / 6, num_vars, endpoint=False)
+        theta += np.pi / 12
+
+        if magic_number is None:
+            magic_number = len(res_list) // 15 + 1
 
         if rows == "metrics":
             fig, axes = plt.subplots(
-                n_rows, n_cols, figsize=self.fig_size, sharex=True, sharey="row", subplot_kw={"polar": True}
+                n_rows,
+                n_cols,
+                figsize=self.fig_size,
+                sharey="row",
+                subplot_kw={"polar": True},
             )
             if n_rows == 1 and n_cols > 1:
                 for i, lipid_type in enumerate(self.universe.database.unique_resnames):
                     axes[i] = self._plot_single(
-                        lipid_type, metric_names[0], axes[i], res_ids=res_ids, **kwargs
+                        lipid_type,
+                        metric_names[0],
+                        axes[i],
+                        theta,
+                        res_ids=res_ids,
+                        **kwargs
                     )
             elif n_rows > 1 and n_cols == 1:
                 for i, metric_name in enumerate(metric_names):
@@ -310,6 +319,7 @@ class MultipleRadar(Plotter):
                         self.universe.database.unique_resnames[0],
                         metric_name,
                         axes[i],
+                        theta,
                         res_ids=res_ids,
                         **kwargs
                     )
@@ -320,12 +330,17 @@ class MultipleRadar(Plotter):
                             lipid_type,
                             metric_name,
                             axes[j, i],
+                            theta,
                             res_ids=res_ids,
                             **kwargs
                         )
         elif rows == "lipids":
             fig, axes = plt.subplots(
-                n_rows, n_cols, figsize=self.fig_size, sharex=True, sharey="col", subplot_kw={"polar": True}
+                n_rows,
+                n_cols,
+                figsize=self.fig_size,
+                sharey="col",
+                subplot_kw={"polar": True},
             )
             if n_rows == 1 and n_cols > 1:
                 for i, metric_name in enumerate(metric_names):
@@ -333,13 +348,19 @@ class MultipleRadar(Plotter):
                         self.universe.database.unique_resnames[0],
                         metric_name,
                         axes[i],
+                        theta,
                         res_ids=res_ids,
                         **kwargs
                     )
             elif n_rows > 1 and n_cols == 1:
                 for i, lipid_type in enumerate(self.universe.database.unique_resnames):
                     axes[i] = self._plot_single(
-                        lipid_type, metric_names[0], axes[i], res_ids=res_ids, **kwargs
+                        lipid_type,
+                        metric_names[0],
+                        axes[i],
+                        theta,
+                        res_ids=res_ids,
+                        **kwargs
                     )
             else:
                 for i, lipid_type in enumerate(self.universe.database.unique_resnames):
@@ -348,38 +369,54 @@ class MultipleRadar(Plotter):
                             lipid_type,
                             metric_name,
                             axes[i, j],
+                            theta,
                             res_ids=res_ids,
                             **kwargs
                         )
 
-        # # format decimal places in yaxis labels
-        # for ax in axes.flat:
-        #     ax.yaxis.set_major_formatter(FormatStrFormatter("%.{}f".format(decimals)))
+        for ax in axes.flat:
+            ax.set_xticks(theta[::magic_number])
+            ax.set_xticklabels(
+                [
+                    "{} {}".format(
+                        resnames[i],
+                        res_list[i],
+                    )
+                    for i in range(0, len(res_list), magic_number)
+                ],
+                fontfamily="Arial Unicode MS",
+            )        
 
-        # # adding ylabel to the first column
-        # if n_rows == 1:
-        #     axes[0].set_ylabel(self.ylabel, fontsize=12, fontfamily="Arial Unicode MS")
-        # else:
-        #     for ax in axes[:, 0]:
-        #         ax.set_ylabel(self.ylabel, fontsize=12, fontfamily="Arial Unicode MS")
+        for ax in axes.flat:
+            yticks = ax.get_yticks()
+            for loc in yticks:
+                ax.text(
+                    0.0,
+                    loc,
+                    str(round(float(loc), decimals)),
+                    ha="center",
+                    va="top",
+                    fontsize=8,
+                    fontfamily="Arial Unicode MS",
+                )
 
-        # # Set default filename, and title if not provided
-        # if self.fn is None:
-        #     self.fn = os.path.join(
-        #         os.getcwd(),
-        #         "point_distribution_{}_{}.pdf".format(lipid_type, metric_name),
-        #     )
-        # if self.title is None:
-        #     if rows == "metrics":
-        #         self.title = "Point distributions - Metrics x Lipid types"
-        #     else:
-        #         self.title = "Point distributions - Lipid types x Metrics"
+        # Set default filename, and title if not provided
+        if self.fn is None:
+            self.fn = os.path.join(
+                os.getcwd(),
+                "multiple_radars.pdf",
+            )
+        if self.title is None:
+            if rows == "metrics":
+                self.title = "Radar - Metrics x Lipid types"
+            else:
+                self.title = "Radar - Lipid types x Metrics"
 
-        # # # Add title to the plot
-        # fig.suptitle(
-        #     self.title,
-        #     fontsize=14,
-        #     weight="bold",
-        #     fontfamily="Arial Rounded MT Bold",
-        # )
+        # # Add title to the plot
+        fig.suptitle(
+            self.title,
+            fontsize=14,
+            weight="bold",
+            fontfamily="Arial Rounded MT Bold",
+        )
         plt.tight_layout()
