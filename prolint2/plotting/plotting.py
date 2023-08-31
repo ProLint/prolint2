@@ -31,7 +31,7 @@ __all__ = [
     "DurationGantt",
     "LogoResidues",
     "InteractionHeatMap",
-    "RadarMetrics",
+    "MetricsComparison",
     "SharedContacts",
     "TwoPointDistanceEvolution",
     "MosaicsGridData",
@@ -214,7 +214,7 @@ class PointDistribution(Plotter):
             plt.tight_layout()
 
 
-class Radar(Plotter):
+class MetricsComparison(Plotter):
     def __init__(
         self,
         metric,
@@ -224,7 +224,7 @@ class Radar(Plotter):
         title=None,
         fig_size=(8, 8),
     ):
-        # Initialize the Radar object with specified plot attributes
+        # Initialize the MetricsComparison object with specified plot attributes
         # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.metric = metric  # Store the input metric data
@@ -918,7 +918,7 @@ class TwoPointDistanceEvolution(Plotter):
             plt.tight_layout()
 
 
-class RadarMetrics(Plotter):
+class Radar(Plotter):
     def __init__(
         self,
         universe,
@@ -929,7 +929,7 @@ class RadarMetrics(Plotter):
         title=None,
         fig_size=(10, 10),
     ):
-        # Initialize the RadarMetrics object with specified plot attributes
+        # Initialize the Radar object with specified plot attributes
         # Inherits from Plotter and sets plot labels, title, and figure size.
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
