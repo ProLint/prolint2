@@ -72,7 +72,7 @@ class Plotter:
                 self.__class__.__name__
             )  # Tail script for PointDistribution case
 
-        elif self.__class__.__name__ in ["Radar"]:
+        elif self.__class__.__name__ in ["MetricsComparison"]:
             tail = radar_tail(self.__class__.__name__)  # Tail script for Radar case
 
         elif self.__class__.__name__ in ["DensityMap"]:
@@ -95,7 +95,7 @@ class Plotter:
                 self.__class__.__name__
             )  # Tail script for InteractionHeatMap case
 
-        elif self.__class__.__name__ in ["RadarMetrics"]:
+        elif self.__class__.__name__ in ["Radar"]:
             tail = radar_metrics_tail(
                 self.__class__.__name__
             )  # Tail script for RadarMetrics case

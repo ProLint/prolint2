@@ -130,3 +130,5 @@ docs/notebooks/*pdf
 docs/notebooks/run_plots.sh
 docs/notebooks/delta_z.dat
 prolint2/data/long_test_case/*
+docs/notebooks/pope_both_rho_norm.dat
+docs/notebooks/popg_both_rho_norm.dat

@@ -27,6 +27,8 @@ sns.set_palette("colorblind")
 
 __all__ = [
     "MultiplePointDistribution",
+    "MultipleRadar",
+    "MultipleMosaics",
 ]
 
 
@@ -385,7 +387,7 @@ class MultipleRadar(Plotter):
                     for i in range(0, len(res_list), magic_number)
                 ],
                 fontfamily="Arial Unicode MS",
-            )        
+            )
 
         for ax in axes.flat:
             yticks = ax.get_yticks()
@@ -419,4 +421,175 @@ class MultipleRadar(Plotter):
             weight="bold",
             fontfamily="Arial Rounded MT Bold",
         )
+        plt.tight_layout()
+
+
+class MultipleMosaics(Plotter):
+    def __init__(
+        self,
+        list_of_grids,
+        xlabel=None,
+        ylabel=None,
+        fn=None,
+        title=None,
+        fig_size=(10, 10),
+    ):
+        # Initialize the MosaicsGridData object with specified plot attributes
+        # Inherits from Plotter and sets plot labels, title, and figure size.
+        super().__init__(xlabel, ylabel, fn, title, fig_size)
+        # load grid data from file
+        self.grid_data_list = [np.loadtxt(file) for file in list_of_grids]
+
+    def _plot_single(self, grid_data, axis, frame=None, title=None, v_min=None, v_max=None, **kwargs):
+        # Create heatmap using the grid data
+        if frame is None:
+            if v_min is not None:
+                im = axis.imshow(grid_data, origin="lower", vmin=v_min, vmax=v_max, **kwargs)
+            else:
+                im = axis.imshow(grid_data, origin="lower", **kwargs)
+        else:
+            if v_min is not None:
+                im = axis.imshow(
+                    grid_data[frame:-frame, frame:-frame], origin="lower", vmin=v_min, vmax=v_max, **kwargs
+                )
+            else:
+                im = axis.imshow(
+                    grid_data[frame:-frame, frame:-frame], origin="lower", **kwargs
+                )
+
+        axis.grid(False)
+
+        # Create a colorbar of the same size as the plot
+        divider = make_axes_locatable(axis)
+        cax = divider.append_axes("right", size="5%", pad=0.05)
+        cbar = plt.colorbar(im, cax=cax)
+        # Set colorbar label and font size
+        cbar.ax.tick_params(labelsize=12)
+
+        # Remove labels and ticks from the axes
+        axis.set_xticks([])
+        axis.set_yticks([])
+        axis.set_xticklabels([])
+        axis.set_yticklabels([])
+
+        # Add title to the plot
+        if title is not None:
+            axis.set_title(
+                title,
+                fontsize=12,
+                weight="bold",
+                pad=15,
+                fontfamily="Arial Rounded MT Bold",
+            )
+
+    def create_plot(
+        self, shape: tuple, frame=None, nan_to_zero=False, titles=None, share_limits=False, **kwargs
+    ):
+        if len(shape) != 2:
+            raise ValueError("shape must be a tuple of length 2.")
+        elif shape[0] * shape[1] != len(self.grid_data_list):
+            raise ValueError(
+                "The number of grids must be equal to the product of the shape."
+            )
+        elif len(self.grid_data_list) == 1:
+            raise ValueError(
+                "You only have one grid. We encourage you to use a single plot instead."
+            )
+        if titles is not None:
+            if len(titles) != len(self.grid_data_list):
+                raise ValueError(
+                    "titles must have the same length as the number of grids."
+                )
+        if nan_to_zero:
+            self.grid_data_list = [np.nan_to_num(arr) for arr in self.grid_data_list]
+        if share_limits:
+            v_min = 0
+            v_max = 0
+            for grid_data in self.grid_data_list:
+                v_min = min(v_min, np.nanmin(grid_data))
+                v_max = max(v_max, np.nanmax(grid_data))
+
+        n_rows = shape[0]
+        n_cols = shape[1]
+
+        # Generate a figure and axis for the plot
+        fig, axes = plt.subplots(
+            n_rows,
+            n_cols,
+            figsize=self.fig_size,
+        )
+
+        if n_rows == 1 or n_cols == 1:
+            for i, grid_data in enumerate(self.grid_data_list):
+                if titles is None:
+                    if share_limits:
+                        self._plot_single(grid_data, axes[i], frame=frame, v_min=v_min, v_max=v_max, **kwargs)
+                    else:
+                        self._plot_single(grid_data, axes[i], frame=frame, **kwargs)
+                else:
+                    if share_limits:
+                        self._plot_single(
+                            grid_data,
+                            axes[i],
+                            frame=frame,
+                            title=titles[i],
+                            v_min=v_min,
+                            v_max=v_max,
+                            **kwargs
+                        )
+                    else:
+                        self._plot_single(
+                            grid_data, axes[i], frame=frame, title=titles[i], **kwargs
+                        )
+        else:
+            for i, grid_data in enumerate(self.grid_data_list):
+                if titles is None:
+                    if share_limits:
+                        self._plot_single(
+                            grid_data,
+                            axes[i // n_cols, i % n_cols],
+                            frame=frame,
+                            v_min=v_min,
+                            v_max=v_max,
+                            **kwargs
+                        )
+                    else:
+                        self._plot_single(
+                            grid_data, axes[i // n_cols, i % n_cols], frame=frame, **kwargs
+                        )
+                else:
+                    if share_limits:
+                        self._plot_single(
+                            grid_data,
+                            axes[i // n_cols, i % n_cols],
+                            frame=frame,
+                            title=titles[i],
+                            v_min=v_min,
+                            v_max=v_max,
+                            **kwargs
+                        )
+                    else:
+                        self._plot_single(
+                            grid_data,
+                            axes[i // n_cols, i % n_cols],
+                            frame=frame,
+                            title=titles[i] ** kwargs,
+                        )
+
+        # # Set default filename and title if not provided
+        # if self.fn is None:
+        #     self.fn = os.path.join(
+        #         os.getcwd(), "mosaics_grid_data_{}.pdf".format(prop_label)
+        #     )
+        # if self.title is None:
+        #     self.title = "Mosaics Grid Data - {}".format(prop_label)
+
+        # # Add title to the plot
+        # ax.set_title(
+        #     self.title,
+        #     fontsize=14,
+        #     weight="bold",
+        #     pad=15,
+        #     fontfamily="Arial Rounded MT Bold",
+        # )
         plt.tight_layout()

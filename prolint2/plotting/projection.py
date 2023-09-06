@@ -10,19 +10,22 @@ def show_contact_projection(
     metric,
     metric_name=None,
     lipid=None,
+    res_ids=None,
     query_repr="surface",
     database_repr="spacefill",
     cmap="Reds",
     frame_idx=None,
 ):
     # Obtain a list of metrics calculated for each residue
-    metric_list = get_metric_list_by_residues(
-        universe, metric, lipid=lipid, metric_name=metric_name
+    res_list, metric_list = get_metric_list_by_residues(
+        universe, metric, lipid=lipid, metric_name=metric_name, res_list=res_ids
     )
     
+    all_resids = universe.query.residues.resids.tolist()
+
     # Create a dictionary mapping residue indices to their corresponding metrics
     metric_dict = {
-        res_id: metric_list[idx]
+        res_id: metric_list[res_list.index(all_resids[idx])] if all_resids[idx] in res_list else 0
         for idx, res_id in enumerate(universe.query.residues.resindices)
     }
     
