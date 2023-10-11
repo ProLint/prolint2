@@ -18,7 +18,7 @@ Table of contents
 =================
 - [Installation](#installation)
 - [Basic examples](#basic-examples)
-- [How to contribute](#how-to-contribute)
+- [How to contribute?](#how-to-contribute)
 - [License](#license)
 - [Copyright](#copyright)
 - [Acknowledgements](#acknowledgements)

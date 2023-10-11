@@ -41,6 +41,15 @@ ProLint2 is an efficient and user-friendly framework for the automated analysis 
 ..  figure:: _static/fvg.png
     :align: center
 
+Table of contents
+=================
+- :ref:`Installation`
+- :ref:`Basic examples`
+- :ref:`How to contribute?`
+- :ref:`License`
+- :ref:`Copyright`
+- :ref:`Acknowledgements`
+
 Installation
 ============
 To install **prolint2** we recommend creating a new conda environment as follows:
@@ -60,47 +69,41 @@ Basic examples
 ==============
 
 Using the Prolint2's API:
--------------------------
 
 .. code-block:: python
 
-      from prolint2 import PL2
-      from prolint2.sampledata import GIRK
+    from prolint2 import Universe
+    from prolint2.sampledata import GIRKDataSample
+    GIRK = GIRKDataSample()
 
-      target_system = PL2(GIRK.coordinates, GIRK.trajectory) 
+    u = Universe(GIRK.coordinates, GIRK.trajectory)
 
-      target_system.contacts.compute(cutoff=7)
-      target_system.contacts.export('results.csv')
+    contacts = u.compute_contacts(cutoff=7) # cutoff in Angstroms
 
       
 Using the Prolint2's command-line interface:
---------------------------------------------
 
 .. code-block:: none
 
-      prolint2 coordinates.gro trajectory.xtc -c 7 -e results.csv
+      prolint2 coordinates.gro trajectory.xtc -c 7 
 
 You can find more details on how to use **prolint2** in the `usage page`_.
 
-Contents
-========
-
 .. toctree::
-   :maxdepth: 1
+    :hidden:
+    :maxdepth: 1
    
-   source/user_guide.rst
-   api
-   source/contributor_guide.rst
-   source/tutorials.rst
-   source/database.rst
+    source/user_guide.rst
+    api
+    source/contributor_guide.rst
+    source/tutorials.rst
+    source/database.rst
 
-.. Indices and tables
-.. ==================
+How to contribute?
+==================
+If you find a bug in the source code, you can help us by submitting an issue `here`_. Even better, you can submit a Pull Request with a fix. 
 
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
-
+We really appreciate your feedback!
 
 License 
 =======
@@ -120,3 +123,5 @@ The respository structure of **ProLint2** is based on the `Computational Molecul
 .. _`MIT License`: https://opensource.org/licenses/MIT
 .. _`github.com/Prolint/prolint2`: https://github.com/ProLint/prolint2
 .. _`usage page`: source/user_guide.html
+.. _`here`: https://github.com/ProLint/prolint2/issues
+

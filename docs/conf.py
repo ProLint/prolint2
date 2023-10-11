@@ -48,6 +48,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
+    'sphinx.ext.autosectionlabel',
+    'sphinxemoji.sphinxemoji',
 ]
 
 autosummary_generate = True
@@ -244,7 +246,7 @@ man_pages = [(master_doc, 'prolint2', 'ProLint2 Documentation', [author], 1)]
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'prolint2', 'ProLint2 Documentation', author, 'prolint2', 'Lipid-protein interaction nalysis.', 'Miscellaneous'),
+    (master_doc, 'prolint2', 'ProLint2 Documentation', author, 'prolint2', 'Lipid-protein interaction analysis.', 'Miscellaneous'),
 ]
 
 # -- Extension configuration -------------------------------------------------
