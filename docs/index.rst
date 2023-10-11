@@ -34,10 +34,12 @@ Welcome to the ProLint2's documentation!
           
 .. end-badges
 
+Overview
+========
 ProLint2 is an efficient and user-friendly framework for the automated analysis and interactive visualization of distance-based lipid-protein interactions from molecular dynamics simulations. 
 
-.. ..  figure:: _static/logo.png
-..     :align: center
+..  figure:: _static/fvg.png
+    :align: center
 
 Installation
 ============

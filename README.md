@@ -8,7 +8,20 @@ ProLint v2: an optimized tool for the analysis of lipid protein interactions.
 [![codecov](https://codecov.io/gh/ProLint/prolint2/graph/badge.svg)](https://app.codecov.io/gh/ProLint/prolint2)
 [![docs](https://readthedocs.org/projects/prolint2/badge/?version=latest)](https://prolint2.readthedocs.io/en/latest/?badge=latest)
 
+Overview
+========
 ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories of membrane protein systems.
+
+![](docs/_static/fvg.png)
+
+Table of contents
+=================
+- [Installation](#installation)
+- [Basic examples](#basic-examples)
+- [How to contribute](#how-to-contribute)
+- [License](#license)
+- [Copyright](#copyright)
+- [Acknowledgements](#acknowledgements)
 
 Installation
 ============
@@ -31,26 +44,26 @@ Basic examples:
 Using the Prolint2's API:
 
 ``` python
-   from prolint2 import PL2
-   from prolint2.sampledata import GIRK
+   from prolint2 import Universe
+   from prolint2.sampledata import GIRKDataSample
+   GIRK = GIRKDataSample()
 
-   target_system = PL2(GIRK.coordinates, GIRK.trajectory) 
+   u = Universe(GIRK.coordinates, GIRK.trajectory)
 
-   target_system.contacts.compute(cutoff=7)
-   target_system.contacts.export('results.csv')
+   contacts = u.compute_contacts(cutoff=7) # cutoff in Angstroms
 ```
       
 Using the Prolint2's command-line interface:
 
 ``` bash
-   prolint2 coordinates.gro trajectory.xtc -c 7 -e results.csv
+   prolint2 coordinates.gro trajectory.xtc -c 7 
 ```
 
 You can find more details on how to use **prolint2** in the [documentation](https://prolint2.readthedocs.io/en/latest/index.html).
 
 How to contribute?
 ==================
-If you find a bug in the source code, you can help us by submitting an issue to our [GitHub repo](https://github.com/ProLint/prolint2/tree/demo). Even better, you can submit a Pull Request with a fix. 
+If you find a bug in the source code, you can help us by submitting an issue [here](https://github.com/ProLint/prolint2/issues). Even better, you can submit a Pull Request with a fix. 
 
 We really appreciate your feedback!
 
