@@ -19,8 +19,14 @@ from prolint2.metrics.metrics import (
 )
 
 from prolint2.metrics.base import FittingFunction
-from prolint2.metrics.fitters import FittingFunctionFactory, BiExpoFittingFunction, MonoExpoFittingFunction, PolynomialFittingFunction
+from prolint2.metrics.fitters import (
+    FittingFunctionFactory,
+    BiExpoFittingFunction,
+    MonoExpoFittingFunction,
+    PolynomialFittingFunction,
+)
 from prolint2.metrics.restime import SurvivalFunction, KoffCalculator
+
 
 @pytest.fixture(scope="module")
 def contact_store():
@@ -29,6 +35,7 @@ def contact_store():
     contacts = u.compute_contacts(cutoff=7)
     return AproxContacts(u, contacts.contact_frames)
 
+
 @pytest.fixture(scope="module")
 def contact_store_exact():
     # Create a fixture for the BaseContactStore class
@@ -36,12 +43,13 @@ def contact_store_exact():
     contacts = u.compute_contacts(cutoff=7)
     return ExactContacts(u, contacts.contact_frames)
 
+
 class TestAproxContacts:
     def test_run(self, contact_store):
         # Test the run() method
 
         # Define test data
-        lipid_resnames = ['POPS']
+        lipid_resnames = ["POPS"]
 
         # Call the run() method
         contact_store.run(lipid_resnames)
@@ -53,7 +61,7 @@ class TestAproxContacts:
         # Test the pooled_results() method
 
         # Define test data
-        target_lipid_name = 'POPS'
+        target_lipid_name = "POPS"
 
         # Call the pooled_results() method
         results = contact_store.pooled_results(target_lipid_name)
@@ -66,8 +74,8 @@ class TestAproxContacts:
         # Test the compute_metric() method
 
         # Define test data
-        metric = 'mean'
-        target_lipid_name = 'POPS'
+        metric = "mean"
+        target_lipid_name = "POPS"
 
         # Call the compute_metric() method
         results = contact_store.compute_metric(metric, target_lipid_name)
@@ -80,7 +88,7 @@ class TestAproxContacts:
         # Test the apply_function() method
 
         # Define test data
-        target_lipid_name = 'POPS'
+        target_lipid_name = "POPS"
 
         # Define a sample function to apply
         def sample_function(array):
@@ -99,7 +107,7 @@ class TestExactContacts:
         # Test the run() method
 
         # Define test data
-        lipid_resnames = ['POPS']
+        lipid_resnames = ["POPS"]
 
         # Call the run() method
         contact_store_exact.run(lipid_resnames)
@@ -111,7 +119,7 @@ class TestExactContacts:
         # Test the pooled_results() method
 
         # Define test data
-        target_lipid_name = 'POPS'
+        target_lipid_name = "POPS"
 
         # Call the pooled_results() method
         results = contact_store_exact.pooled_results(target_lipid_name)
@@ -123,8 +131,8 @@ class TestExactContacts:
         # Test the compute_metric() method
 
         # Define test data
-        metric = 'mean'
-        target_lipid_name = 'POPS'
+        metric = "mean"
+        target_lipid_name = "POPS"
 
         # Call the compute_metric() method
         results = contact_store_exact.compute_metric(metric, target_lipid_name)
@@ -136,7 +144,7 @@ class TestExactContacts:
         # Test the apply_function() method
 
         # Define test data
-        target_lipid_name = 'POPS'
+        target_lipid_name = "POPS"
 
         # Define a sample function to apply
         def sample_function(array):
@@ -152,16 +160,20 @@ class TestExactContacts:
         # Test the compute_lipid_durations() method
 
         # Define test data
-        lipid_resname = 'CHOL'
-        contact_frame = contact_store_exact.contact_frames[41] # frame with cholesterol contacts
+        lipid_resname = "CHOL"
+        contact_frame = contact_store_exact.contact_frames[
+            41
+        ]  # frame with cholesterol contacts
 
         # Call the compute_lipid_durations() method
-        durations = contact_store_exact.compute_lipid_durations(contact_frame, lipid_resname)
+        durations = contact_store_exact.compute_lipid_durations(
+            contact_frame, lipid_resname
+        )
 
         # Perform assertions
         assert durations
 
-    
+
 @pytest.fixture
 def metric_registry():
     return MetricRegistry()  # You can customize this fixture based on your needs
@@ -184,40 +196,58 @@ def custom_function():
 
 
 def test_create_metric_with_single_output_format(metric_registry, contact_array):
-    metrics = ['mean']
-    output_format = 'single'
-    metric = create_metric(contact_array, metrics, output_format, metric_registry=metric_registry)
+    metrics = ["mean"]
+    output_format = "single"
+    metric = create_metric(
+        contact_array, metrics, output_format, metric_registry=metric_registry
+    )
     assert isinstance(metric, Metric)
     assert isinstance(metric.output_format, SingleOutputFormat)
 
 
-def test_create_metric_with_custom_metric(metric_registry, contact_array, custom_function):
-    metrics = ['custom']
-    output_format = 'default'
-    metric = create_metric(contact_array, metrics, output_format, custom_function, metric_registry=metric_registry)
+def test_create_metric_with_custom_metric(
+    metric_registry, contact_array, custom_function
+):
+    metrics = ["custom"]
+    output_format = "default"
+    metric = create_metric(
+        contact_array,
+        metrics,
+        output_format,
+        custom_function,
+        metric_registry=metric_registry,
+    )
     assert isinstance(metric, Metric)
     assert isinstance(metric.output_format, DefaultOutputFormat)
     assert isinstance(metric.metrics[0], UserDefinedMetric)
 
 
-def test_create_metric_without_custom_function_and_custom_metric(metric_registry, contact_array):
-    metrics = ['custom']
-    output_format = 'default'
+def test_create_metric_without_custom_function_and_custom_metric(
+    metric_registry, contact_array
+):
+    metrics = ["custom"]
+    output_format = "default"
     with pytest.raises(ValueError):
-        create_metric(contact_array, metrics, output_format, metric_registry=metric_registry)
+        create_metric(
+            contact_array, metrics, output_format, metric_registry=metric_registry
+        )
 
 
 def test_create_metric_with_invalid_output_format(metric_registry, contact_array):
-    metrics = ['mean', 'max']
-    output_format = 'invalid_format'
+    metrics = ["mean", "max"]
+    output_format = "invalid_format"
     with pytest.raises(ValueError):
-        create_metric(contact_array, metrics, output_format, metric_registry=metric_registry)
+        create_metric(
+            contact_array, metrics, output_format, metric_registry=metric_registry
+        )
 
 
 def test_create_metric_with_multiple_metrics(metric_registry, contact_array):
-    metrics = ['mean', 'sum', 'max']
-    output_format = 'default'
-    metric = create_metric(contact_array, metrics, output_format, metric_registry=metric_registry)
+    metrics = ["mean", "sum", "max"]
+    output_format = "default"
+    metric = create_metric(
+        contact_array, metrics, output_format, metric_registry=metric_registry
+    )
     assert isinstance(metric, Metric)
     assert isinstance(metric.output_format, DefaultOutputFormat)
     assert len(metric.metrics) == 3
@@ -229,7 +259,9 @@ class TestFittingFunctions:
         fitting_function = BiExpoFittingFunction()
         x = np.array([1, 2, 3])
         k1, k2, A, B = 1, 2, 3, 4
-        expected_result = A * np.exp(np.clip(-k1 * x, None, 700)) + B * np.exp(np.clip(-k2 * x, None, 700))
+        expected_result = A * np.exp(np.clip(-k1 * x, None, 700)) + B * np.exp(
+            np.clip(-k2 * x, None, 700)
+        )
         assert np.allclose(fitting_function.compute(x, k1, k2, A, B), expected_result)
 
     def test_bi_expo_get_koff(self):
@@ -265,12 +297,12 @@ class TestFittingFunctions:
             fitting_function.get_koff(popt)
 
     def test_fitting_function_factory_get_fitting_function_valid_name(self):
-        fitting_function = FittingFunctionFactory.get_fitting_function('bi_expo')
+        fitting_function = FittingFunctionFactory.get_fitting_function("bi_expo")
         assert isinstance(fitting_function, BiExpoFittingFunction)
 
     def test_fitting_function_factory_get_fitting_function_invalid_name(self):
         with pytest.raises(ValueError):
-            FittingFunctionFactory.get_fitting_function('invalid_name')
+            FittingFunctionFactory.get_fitting_function("invalid_name")
 
 
 class TestSurvivalFunction:
@@ -284,7 +316,9 @@ class TestSurvivalFunction:
     def test_calc_survival_value(self, survival_function):
         delta_t = 2
         expected_result = 0.5
-        assert survival_function._calc_survival_value(delta_t) == pytest.approx(expected_result, 0.1)
+        assert survival_function._calc_survival_value(delta_t) == pytest.approx(
+            expected_result, 0.1
+        )
 
 
 class TestKoffCalculator:
@@ -293,8 +327,10 @@ class TestKoffCalculator:
         durations = [0.39, 0.79, 0.39, 0.39]
         t_total = 4.8
         timestep = 0.4
-        fitting_func_name = 'bi_expo'
-        return KoffCalculator(durations, t_total, timestep, fitting_func_name=fitting_func_name)
+        fitting_func_name = "bi_expo"
+        return KoffCalculator(
+            durations, t_total, timestep, fitting_func_name=fitting_func_name
+        )
 
     def test_is_empty_or_zeros(self, koff_calculator):
         assert not koff_calculator._is_empty_or_zeros([1, 2, 3])
@@ -313,23 +349,26 @@ class TestKoffCalculator:
             durations = [1, 2, 3, 4, 5]
             t_total = 10
             timestep = 1
-            fitting_func_name = 'invalid_func'
-            KoffCalculator(durations, t_total, timestep, fitting_func_name=fitting_func_name)
+            fitting_func_name = "invalid_func"
+            KoffCalculator(
+                durations, t_total, timestep, fitting_func_name=fitting_func_name
+            )
 
     def test_calculate_koff_empty_durations(self):
         durations = []
         t_total = 10
         timestep = 1
-        fitting_func_name = 'bi_expo'
-        koff_calculator = KoffCalculator(durations, t_total, timestep, fitting_func_name=fitting_func_name)
+        fitting_func_name = "bi_expo"
+        koff_calculator = KoffCalculator(
+            durations, t_total, timestep, fitting_func_name=fitting_func_name
+        )
         assert koff_calculator.res_time == 0
         assert koff_calculator.koff == 0
 
 
 class TestFittingFunctionFactory:
     def test_get_fitting_function(self):
-        fitting_func_name = 'bi_expo'
+        fitting_func_name = "bi_expo"
         fitting_func = FittingFunctionFactory.get_fitting_function(fitting_func_name)
         assert isinstance(fitting_func, FittingFunction)
         assert fitting_func_name in FittingFunction.registry
-

@@ -21,34 +21,75 @@ from prolint2.core.universe import Universe
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
-config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../prolint2/config.ini"))
+config.read(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), "../prolint2/config.ini")
+)
 parameters_config = config["Parameters"]
+
 
 # fixing order of commands
 class OrderCommands(TyperGroup):
-  def list_commands(self, ctx: Context):
-    """Return list of commands in the order appear."""
-    return list(self.commands)    # get commands using self.commands
+    def list_commands(self, ctx: Context):
+        """Return list of commands in the order appear."""
+        return list(self.commands)  # get commands using self.commands
+
 
 # Creating the parser
 prolint2 = typer.Typer(
     help="[blue]Command-line version of the ProLint v.2 library.[/blue] :sparkles:",
     epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:",
-    rich_markup_mode="rich", 
+    rich_markup_mode="rich",
     add_completion=False,
     cls=OrderCommands,
-    context_settings={"help_option_names": ["-h", "--help"]}
-    )
+    context_settings={"help_option_names": ["-h", "--help"]},
+)
+
 
 # creating the run command
-@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
+@prolint2.command(
+    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:"
+)
 def run(
-        structure: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the structure/topology file (E.g.: "coordinates.gro").')], 
-        trajectory: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the trajectory file (E.g.: "trajectory.xtc").')],
-        contacts_output: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to export the results to a file (E.g.: "contacts.csv").')],
-        cutoff: Annotated[float, typer.Option('-c', '--cutoff', show_default=True, help="cutoff distance to calculate lipid-protein interactions (in angstroms).")]=parameters_config["cutoff"],
-        add_lipid: Annotated[Optional[List[str]], typer.Option('-al', '--add-lipid', show_default=True, help="additional lipid types to be included in the database group.")]=None,
-         ):
+    structure: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            show_default=False,
+            help='path to the structure/topology file (E.g.: "coordinates.gro").',
+        ),
+    ],
+    trajectory: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            show_default=False,
+            help='path to the trajectory file (E.g.: "trajectory.xtc").',
+        ),
+    ],
+    contacts_output: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            show_default=False,
+            help='path to export the results to a file (E.g.: "contacts.csv").',
+        ),
+    ],
+    cutoff: Annotated[
+        float,
+        typer.Option(
+            "-c",
+            "--cutoff",
+            show_default=True,
+            help="cutoff distance to calculate lipid-protein interactions (in angstroms).",
+        ),
+    ] = parameters_config["cutoff"],
+    add_lipid: Annotated[
+        Optional[List[str]],
+        typer.Option(
+            "-al",
+            "--add-lipid",
+            show_default=True,
+            help="additional lipid types to be included in the database group.",
+        ),
+    ] = None,
+):
     """[blue]ProLint v.2: Running calculation of lipid-protein interactions at a certain cutoff.[/blue] :sparkles:"""
     # loading the trajectory
     print("Loading trajectory...", end=" ")
@@ -58,7 +99,7 @@ def run(
     # computing contacts
     print("Computing contacts...(cutoff = {} angstroms)".format(cutoff))
     SystemContacts = System.compute_contacts(cutoff=cutoff)
-    
+
     # save contacts to Pandas dataframe
     print("Saving contacts to dataframe...", end=" ")
     df = SystemContacts.create_dataframe(System.trajectory.n_frames)
@@ -66,51 +107,101 @@ def run(
     print("Done!")
 
 
-    
-        
 # creating the dashboard command
-@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
+@prolint2.command(
+    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:"
+)
 def dashboard(
-        structure: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the structure/topology file (E.g.: "coordinates.gro").')], 
-        trajectory: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the trajectory file (E.g.: "trajectory.xtc").')],
-        contacts: Annotated[pathlib.Path, typer.Option('-ic', '--contacts', show_default=False, help='path to import the results from a file (E.g.: "contacts.csv").')]=None, 
-        host: Annotated[str, typer.Option('-r', '--route', show_default=True, help="route to host the interactive dashboard.")]='localhost',
-        port: Annotated[int, typer.Option('-p', '--port', show_default=True, help="port to host the interactive dashboard.")]=8351,
-         ):
+    structure: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            show_default=False,
+            help='path to the structure/topology file (E.g.: "coordinates.gro").',
+        ),
+    ],
+    trajectory: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            show_default=False,
+            help='path to the trajectory file (E.g.: "trajectory.xtc").',
+        ),
+    ],
+    contacts: Annotated[
+        pathlib.Path,
+        typer.Option(
+            "-ic",
+            "--contacts",
+            show_default=False,
+            help='path to import the results from a file (E.g.: "contacts.csv").',
+        ),
+    ] = None,
+    host: Annotated[
+        str,
+        typer.Option(
+            "-r",
+            "--route",
+            show_default=True,
+            help="route to host the interactive dashboard.",
+        ),
+    ] = "localhost",
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            show_default=True,
+            help="port to host the interactive dashboard.",
+        ),
+    ] = 8351,
+):
     """[blue]ProLint v.2: Launching interactive dashboard to explore the results of lipid-protein interactions.[/blue] :sparkles:"""
     # launching dashboard from contacts file if provided
     if contacts:
         # Starting the server
         app = ProLintDashboard()
-        app.start_server(payload={
-            'structure': structure, 
-            'trajectory': trajectory, 
-            'contacts': contacts, 
-            'host': host,
-            'port': port,
-            })
+        app.start_server(
+            payload={
+                "structure": structure,
+                "trajectory": trajectory,
+                "contacts": contacts,
+                "host": host,
+                "port": port,
+            }
+        )
         import sys
+
         sys.exit()
     # launching dashboard from trajectory file if contacts file is not provided
     else:
-       # Starting the server
+        # Starting the server
         app = ProLintDashboard()
-        app.start_server(payload={
-            'structure': structure, 
-            'trajectory': trajectory, 
-            'host': host,
-            'port': port,
-            })
+        app.start_server(
+            payload={
+                "structure": structure,
+                "trajectory": trajectory,
+                "host": host,
+                "port": port,
+            }
+        )
         import sys
+
         sys.exit()
 
-@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:")
+
+@prolint2.command(
+    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:"
+)
 def plot(
-        contacts: Annotated[pathlib.Path, typer.Argument(show_default=False, help='path to the structure/topology file (E.g.: "coordinates.gro").')], 
-         ):
+    contacts: Annotated[
+        pathlib.Path,
+        typer.Argument(
+            show_default=False,
+            help='path to the structure/topology file (E.g.: "coordinates.gro").',
+        ),
+    ],
+):
     """[blue]ProLint v.2: Plotting paper quality graphs to visualize lipid-protein interactions.[/blue] :sparkles:"""
 
 
 if __name__ == "__main__":
     prolint2()
-

@@ -1,3 +1,10 @@
+r""":mod:`prolint2.metrics.aprox_contacts`
+==========================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+"""
+
 from typing import List, Dict, Callable, Union
 
 from collections import defaultdict
@@ -7,8 +14,9 @@ import numpy as np
 from prolint2.metrics.base import BaseContactStore
 from prolint2.metrics.utils import fast_filter_resids_by_resname
 
+
 class AproxContacts(BaseContactStore):
-    """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts. """
+    """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts."""
 
     def run(self, lipid_resnames: Union[str, List] = None) -> Dict[str, np.ndarray]:
         """Compute the duration of lipid contacts for all lipid types.
@@ -31,12 +39,18 @@ class AproxContacts(BaseContactStore):
         for residue, contact_frame in self.contact_frames.items():
             for lipid_resname in lipid_resnames:
                 ids_to_filter = np.array(list(contact_frame.keys()))
-                lipid_ids = fast_filter_resids_by_resname(self._resids, self._resnames, ids_to_filter, lipid_resname)
+                lipid_ids = fast_filter_resids_by_resname(
+                    self._resids, self._resnames, ids_to_filter, lipid_resname
+                )
                 for lipid_id in lipid_ids:
                     # print ('-> ', contact_frame[lipid_id])
-                    self._contacts[residue][lipid_resname][lipid_id] = contact_frame[lipid_id]
+                    self._contacts[residue][lipid_resname][lipid_id] = contact_frame[
+                        lipid_id
+                    ]
 
-    def pooled_results(self, target_lipid_name: Union[str, None] = None) -> Dict[str, np.ndarray]:
+    def pooled_results(
+        self, target_lipid_name: Union[str, None] = None
+    ) -> Dict[str, np.ndarray]:
         """Get the duration of lipid contacts for all lipid types pooled together.
 
         Parameters
@@ -60,9 +74,9 @@ class AproxContacts(BaseContactStore):
                         pooled_contact_array.append(lipid_contacts_count)
                     pooled_results[residue][lipid_name].extend(pooled_contact_array)
         return pooled_results
-            
+
     def compute_metric(self, metric: str, target_lipid_name=None):
-        """Compute a pre-defined metric for all lipids or a specific lipid. 
+        """Compute a pre-defined metric for all lipids or a specific lipid.
 
         Parameters
         ----------
@@ -92,7 +106,7 @@ class AproxContacts(BaseContactStore):
         return computed_results
 
     def apply_function(self, func: Callable, target_lipid_name=None):
-        """Apply a function to all lipids or a specific lipid. 
+        """Apply a function to all lipids or a specific lipid.
 
         Parameters
         ----------

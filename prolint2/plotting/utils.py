@@ -513,7 +513,9 @@ def shift_range(values, new_min=0, new_max=1):
     return new_val
 
 
-def get_lipid_contact_durations(u, contacts, lipid_type, frequency_filter=0.0, n_frames=1):
+def get_lipid_contact_durations(
+    u, contacts, lipid_type, frequency_filter=0.0, n_frames=1
+):
     """Get the lipid contact frequencies."""
 
     # Initialize a dictionary to store lipid contact counts

@@ -6,18 +6,20 @@ User Guide
 .. toctree::
    :maxdepth: 2
    :caption: Getting started
-
+   
    user_guide/overview.rst
    user_guide/installation.rst
+   user_guide/prolint2-workflow.rst
+   user_guide/basic-usage.rst
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Using the ProLint2's API
+   :maxdepth: 1
+   :caption: ProLint2's API
 
-   user_guide/creating_PL2.rst
-   user_guide/selecting_groups.rst
-   user_guide/getting_contacts.rst
-   user_guide/exporting_results.rst
+   ../api/core
+   ../api/computers
+   ../api/metrics
+   ../api/plotting
 
 .. toctree::
    :maxdepth: 2

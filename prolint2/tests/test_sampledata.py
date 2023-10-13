@@ -6,6 +6,7 @@ GIRK = GIRKDataSample()
 COX1 = COX1DataSample()
 SMO = SMODataSample()
 
+
 @pytest.mark.parametrize("DataSample", [GIRK, COX1, SMO])
 def test_sampledata(DataSample):
     assert os.path.isdir(DataSample.path)

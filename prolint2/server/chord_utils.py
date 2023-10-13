@@ -34,6 +34,7 @@ parameters_config = config["Parameters"]
 #             results[l][r] = len(v)
 #     return results
 
+
 def per_lipid_contacts(ts, lipids, frame_cutoff=10):
     results = {k: {} for k in lipids}
     for residue_id, lipid_dict in ts.contacts.contact_frames.items():
@@ -61,6 +62,7 @@ def sort_dict(d, cutoff=None):
         return dict(item_list[:cutoff])
     return dict(item_list)
 
+
 def residue_pair_matching_contacts(res1_contacts, res2_contacts):
     """
     docstring: important improvement to the network app contacts
@@ -73,6 +75,7 @@ def residue_pair_matching_contacts(res1_contacts, res2_contacts):
                 total_contacts += contacts
 
     return total_contacts
+
 
 def get_ordered_combinations(lipid_contacts):
     """
@@ -110,7 +113,7 @@ def get_ordered_combinations(lipid_contacts):
         lipid_residues = list(sorted_lipid_vals.keys())
         for res1, res2 in list(combinations(lipid_residues, 2)):
             value = sum([sorted_lipid_vals[res1], sorted_lipid_vals[res2]])
-            key = f'{res1},{res2}'
+            key = f"{res1},{res2}"
 
             if key in ordered_combinations:
                 ordered_combinations[key] = ordered_combinations[key] + value
@@ -119,17 +122,22 @@ def get_ordered_combinations(lipid_contacts):
 
     return ordered_combinations
 
+
 def shared_contacts(contacts, top_lipids, lipid_contact_frames, *args, **kwargs):
     """
     Aim: improve the shortcomings outlined in `get_ordered_combinations`.
     """
     lipid_shared_contacts = {}
     for lipid in top_lipids:
-        contact_intervals = calculate_contact_intervals(contacts, lipid_contact_frames, lipid, *args, **kwargs)
+        contact_intervals = calculate_contact_intervals(
+            contacts, lipid_contact_frames, lipid, *args, **kwargs
+        )
         residue_contacts = {}
         for res1, res2 in combinations(contact_intervals.keys(), 2):
-            pair_contacts = residue_pair_matching_contacts(contact_intervals[res1], contact_intervals[res2])
-            residue_contacts[f'{res1},{res2}'] = pair_contacts
+            pair_contacts = residue_pair_matching_contacts(
+                contact_intervals[res1], contact_intervals[res2]
+            )
+            residue_contacts[f"{res1},{res2}"] = pair_contacts
         lipid_shared_contacts[lipid] = residue_contacts
 
     shared_contacts_all = {}
@@ -153,9 +161,10 @@ def get_linked_nodes(ordered_combinations, cutoff=100):
     """
     linked_nodes = []
     for residue_key in sort_dict(ordered_combinations, cutoff=cutoff).keys():
-        res1, res2 = [int(res) for res in residue_key.split(',')]
+        res1, res2 = [int(res) for res in residue_key.split(",")]
         linked_nodes.extend([res1, res2])
     return np.unique(linked_nodes).tolist()
+
 
 def get_node_list(n_residues, linked_nodes):
     """
@@ -178,6 +187,7 @@ def get_node_list(n_residues, linked_nodes):
     hidden_node_indices = [ix for (ix, x) in enumerate(nodes) if x not in linked_nodes]
     return nodes, hidden_node_indices
 
+
 def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
     """
     Prepares the input data so it can be read and understood by the amCharts.
@@ -190,32 +200,31 @@ def get_chord_elements(ts, nodes, ordered_combinations, cutoff=500):
 
     resnums = ts.query.residues.resnums
     resnames = ts.query.residues.resnames
-    node_names = {x[0]: f'{x[0]} {x[1]}' for x in list(zip(resnums, resnames))}
+    node_names = {x[0]: f"{x[0]} {x[1]}" for x in list(zip(resnums, resnames))}
 
     chord_elements = []
     for res1, res2 in position_node_links:
-        chord_elements.append({
-            "from": 0,
-            "to": node_names[res2],
-            "value": 0
-        })
+        chord_elements.append({"from": 0, "to": node_names[res2], "value": 0})
 
     contact_max = max(ordered_combinations.values())
     for k, v in sort_dict(ordered_combinations, cutoff=cutoff).items():
-        res1, res2 = k.split(',')
+        res1, res2 = k.split(",")
         # This will break the nodes. We need to add the nodes we are skipping here
         # to the position_residue_indices
         # if abs(int(res1) - int(res2)) < 4:
         #     continue
 
-        chord_elements.append({
-            "from": node_names[int(res1)],
-            "to": node_names[int(res2)],
-            "value": v,
-            "valueWidth": float(v) / contact_max
-        })
+        chord_elements.append(
+            {
+                "from": node_names[int(res1)],
+                "to": node_names[int(res2)],
+                "value": v,
+                "valueWidth": float(v) / contact_max,
+            }
+        )
 
     return chord_elements
+
 
 def contact_chord(ts, contacts, top_lipid_ids, lipid_contact_frames, cutoff=100):
     """
@@ -232,8 +241,8 @@ def contact_chord(ts, contacts, top_lipid_ids, lipid_contact_frames, cutoff=100)
         top_lipid_ids,
         lipid_contact_frames,
         residues_to_show=int(parameters_config["residues_to_show"]),
-        intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"])
-        )
+        intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"]),
+    )
     # ordered_combinations = get_ordered_combinations(lipid_contacts)
     linked_nodes = get_linked_nodes(ordered_combinations, cutoff=cutoff)
     nodes, hidden_node_indices = get_node_list(ts.query.n_residues, linked_nodes)

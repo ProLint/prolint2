@@ -1,7 +1,8 @@
-.wy-side-nav-search, .wy-nav-top {
-    background: #2c2c2c;
+.wy-side-nav-search,
+.wy-nav-top {
+  background: #2c2c2c;
 }
 
 .navbar-end__search-button-container {
-    display: none;
-  }
+  display: none;
+}

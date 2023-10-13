@@ -6,14 +6,19 @@ import logging
 
 from prolint2.metrics.base import BaseMetric
 
+
 class MetricRegistry:
     def __init__(self):
         self._metrics = {}
-        self.module_name = 'prolint2.metrics.metrics'
-        
+        self.module_name = "prolint2.metrics.metrics"
+
         module = importlib.import_module(self.module_name)
         for _, obj in inspect.getmembers(module):
-            if inspect.isclass(obj) and issubclass(obj, BaseMetric) and obj != BaseMetric:
+            if (
+                inspect.isclass(obj)
+                and issubclass(obj, BaseMetric)
+                and obj != BaseMetric
+            ):
                 metric_name = obj.name
                 self.register(metric_name, obj)
 
@@ -22,7 +27,9 @@ class MetricRegistry:
 
     def register(self, name: str, metric_class: Type[BaseMetric]):
         if name in self._metrics:
-            logging.warning(lambda: "Metric with name '%s' already exists in registry.", name)
+            logging.warning(
+                lambda: "Metric with name '%s' already exists in registry.", name
+            )
         self._metrics[name] = metric_class
 
     def get_metric(self, name: str) -> Type[BaseMetric]:
@@ -32,4 +39,3 @@ class MetricRegistry:
 
     def get_registered_names(self) -> List[str]:
         return list(self._metrics.keys())
-    

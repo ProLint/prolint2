@@ -12,13 +12,17 @@ GIRK = GIRKDataSample()
 COX1 = COX1DataSample()
 SMO = SMODataSample()
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
+
 
 @pytest.fixture(scope="module")
 def universes():
-    return [Universe(GIRK.coordinates, GIRK.trajectory), 
-            Universe(COX1.coordinates, COX1.trajectory), 
-            Universe(SMO.coordinates, SMO.trajectory)]
+    return [
+        Universe(GIRK.coordinates, GIRK.trajectory),
+        Universe(COX1.coordinates, COX1.trajectory),
+        Universe(SMO.coordinates, SMO.trajectory),
+    ]
+
 
 class TestSerialContacts:
     def test_init(self, universes):

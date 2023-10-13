@@ -1,9 +1,10 @@
 import numpy as np
 
+
 def fast_unique_comparison(residue_ids, lipid_ids, lipid_names):
     """
-    Get the unique combinations of residue and lipid ids. Vectorized implementation. 
-    
+    Get the unique combinations of residue and lipid ids. Vectorized implementation.
+
     Parameters
     ----------
     residue_ids : np.ndarray

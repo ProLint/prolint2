@@ -1,3 +1,10 @@
+r""":mod:`prolint2.plotting.multiples`
+==========================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+"""
+
 import os
 import math
 import pandas as pd
@@ -33,6 +40,31 @@ __all__ = [
 
 
 class MultiplePointDistribution(Plotter):
+    """
+    Initialize the MultiplePointDistribution instance.
+
+    Parameters
+    ----------
+    universe : Universe
+        The universe containing the data for the plot.
+    metric : dict
+        A dictionary containing the metric data.
+    xlabel : str, optional
+        The label for the x-axis. Default is None.
+    ylabel : str, optional
+        The label for the y-axis. Default is None.
+    fn : str, optional
+        The filename to save the plot. Default is None.
+    title : str, optional
+        The title for the plot. Default is None.
+    fig_size : tuple, optional
+        The figure size as a tuple (width, height). Default is (8, 8).
+
+    Returns
+    -------
+    None
+    """
+
     def __init__(
         self,
         universe,
@@ -50,6 +82,27 @@ class MultiplePointDistribution(Plotter):
         self.metric = metric
 
     def _plot_single(self, lipid_type, metric_name, axis, res_ids=None, **kwargs):
+        """
+        Plot a scatter plot for a specific lipid type and metric.
+
+        Parameters
+        ----------
+        lipid_type : str
+            The lipid type to plot.
+        metric_name : str
+            The name of the metric to plot.
+        axis : matplotlib axis
+            The axis for the scatter plot.
+        res_ids : list, optional
+            List of residue IDs to include. Default is None.
+        **kwargs
+            Additional keyword arguments for the scatterplot.
+
+        Returns
+        -------
+        axis : matplotlib axis
+            The updated axis containing the scatter plot.
+        """
         # Get the list of metric values for specified lipid_type and metric_name
         res_list, metric_list = get_metric_list_by_residues(
             self.universe, self.metric, lipid_type, metric_name, res_list=res_ids
@@ -70,6 +123,24 @@ class MultiplePointDistribution(Plotter):
         return axis
 
     def create_plot(self, rows="metrics", res_ids=None, decimals=1, **kwargs):
+        """
+        Create the multiple point distribution plot.
+
+        Parameters
+        ----------
+        rows : str
+            Specify whether to arrange plots by 'metrics' or 'lipids'.
+        res_ids : list, optional
+            List of residue IDs to include in the plot. Default is None.
+        decimals : int, optional
+            Number of decimal places to format y-axis labels. Default is 1.
+        **kwargs
+            Additional keyword arguments for the plot.
+
+        Returns
+        -------
+        None
+        """
         if rows not in ["metrics", "lipids"]:
             raise ValueError("rows must be either 'metrics' or 'lipids'.")
 
@@ -196,6 +267,29 @@ class MultiplePointDistribution(Plotter):
 
 
 class MultipleRadar(Plotter):
+    """
+    Initialize a MultipleRadar instance.
+
+    Parameters
+    ----------
+    universe : Universe
+        The molecular dynamics universe.
+    metric : dict
+        A dictionary containing metrics for lipids.
+    xlabel : str, optional
+        The label for the x-axis.
+    ylabel : str, optional
+        The label for the y-axis.
+    fn : str, optional
+        The filename to save the plot.
+    title : str, optional
+        The title of the radar chart.
+    fig_size : tuple, optional
+        The figure size in inches (width, height).
+
+    Inherits from Plotter and sets plot labels, title, and figure size.
+    """
+
     def __init__(
         self,
         universe,
@@ -215,6 +309,29 @@ class MultipleRadar(Plotter):
     def _plot_single(
         self, lipid_type, metric_name, axis, theta, res_ids=None, **kwargs
     ):
+        """
+        Plot a radar chart for a single lipid type and metric.
+
+        Parameters
+        ----------
+        lipid_type : str
+            The lipid type.
+        metric_name : str
+            The metric name.
+        axis : matplotlib.axes._subplots.PolarAxesSubplot
+            The polar axes for plotting.
+        theta : numpy.ndarray
+            The angles for the radar chart.
+        res_ids : list, optional
+            A list of residue IDs to include in the plot.
+        kwargs : dict
+            Additional keyword arguments for plotting.
+
+        Returns
+        -------
+        matplotlib.axes._subplots.PolarAxesSubplot
+            The polar axes with the radar chart.
+        """
         # Get a list of metrics for the given lipid and metric_name
         res_list, metric_list = get_metric_list_by_residues(
             self.universe, self.metric, lipid_type, metric_name, res_list=res_ids
@@ -249,6 +366,28 @@ class MultipleRadar(Plotter):
     def create_plot(
         self, rows="metrics", res_ids=None, decimals=1, magic_number=None, **kwargs
     ):
+        """
+        Create a radar chart plot.
+
+        Parameters
+        ----------
+        rows : str, optional
+            Determines the layout of the plot. Must be 'metrics' or 'lipids'.
+        res_ids : list, optional
+            A list of residue IDs to include in the plot.
+        decimals : int, optional
+            The number of decimal places for labels.
+        magic_number : int, optional
+            A factor to determine the number of variables to display.
+        kwargs : dict
+            Additional keyword arguments for plotting.
+
+        Raises
+        ------
+        ValueError
+            If rows is neither 'metrics' nor 'lipids'.
+
+        """
         if rows not in ["metrics", "lipids"]:
             raise ValueError("rows must be either 'metrics' or 'lipids'.")
 
@@ -425,6 +564,29 @@ class MultipleRadar(Plotter):
 
 
 class MultipleMosaics(Plotter):
+    """
+    Initialize the MultipleMosaics object with specified plot attributes.
+
+    Parameters
+    ----------
+    list_of_grids : list of str
+        List of filenames containing grid data.
+    xlabel : str, optional
+        Label for the x-axis of the plot.
+    ylabel : str, optional
+        Label for the y-axis of the plot.
+    fn : str, optional
+        Filename to save the plot. If None, the plot won't be saved.
+    title : str, optional
+        Title for the plot.
+    fig_size : tuple, optional
+        Figure size in inches (width, height).
+
+    Returns
+    -------
+    None
+    """
+
     def __init__(
         self,
         list_of_grids,
@@ -440,17 +602,49 @@ class MultipleMosaics(Plotter):
         # load grid data from file
         self.grid_data_list = [np.loadtxt(file) for file in list_of_grids]
 
-    def _plot_single(self, grid_data, axis, frame=None, title=None, v_min=None, v_max=None, **kwargs):
+    def _plot_single(
+        self, grid_data, axis, frame=None, title=None, v_min=None, v_max=None, **kwargs
+    ):
+        """
+        Create a single heatmap plot.
+
+        Parameters
+        ----------
+        grid_data : numpy.ndarray
+            Grid data to be plotted.
+        axis : matplotlib.axes.Axes
+            The axis on which the heatmap will be plotted.
+        frame : int, optional
+            Frame parameter for the grid data.
+        title : str, optional
+            Title for the plot.
+        v_min : float, optional
+            Minimum value for color scaling.
+        v_max : float, optional
+            Maximum value for color scaling.
+        **kwargs : dict
+            Additional keyword arguments for the imshow function.
+
+        Returns
+        -------
+        None
+        """
         # Create heatmap using the grid data
         if frame is None:
             if v_min is not None:
-                im = axis.imshow(grid_data, origin="lower", vmin=v_min, vmax=v_max, **kwargs)
+                im = axis.imshow(
+                    grid_data, origin="lower", vmin=v_min, vmax=v_max, **kwargs
+                )
             else:
                 im = axis.imshow(grid_data, origin="lower", **kwargs)
         else:
             if v_min is not None:
                 im = axis.imshow(
-                    grid_data[frame:-frame, frame:-frame], origin="lower", vmin=v_min, vmax=v_max, **kwargs
+                    grid_data[frame:-frame, frame:-frame],
+                    origin="lower",
+                    vmin=v_min,
+                    vmax=v_max,
+                    **kwargs
                 )
             else:
                 im = axis.imshow(
@@ -483,8 +677,37 @@ class MultipleMosaics(Plotter):
             )
 
     def create_plot(
-        self, shape: tuple, frame=None, nan_to_zero=False, titles=None, share_limits=False, **kwargs
+        self,
+        shape: tuple,
+        frame=None,
+        nan_to_zero=False,
+        titles=None,
+        share_limits=False,
+        **kwargs
     ):
+        """
+        Create a mosaic of heatmap plots.
+
+        Parameters
+        ----------
+        shape : tuple
+            Shape of the mosaic as (rows, columns).
+        frame : int, optional
+            Frame parameter for the grid data.
+        nan_to_zero : bool, optional
+            Convert NaN values to zero.
+        titles : list of str, optional
+            Titles for individual subplots. If None, no titles are used.
+        share_limits : bool, optional
+            Share color scale limits across subplots.
+        **kwargs : dict
+            Additional keyword arguments for the _plot_single function.
+
+        Returns
+        -------
+        None
+        """
+
         if len(shape) != 2:
             raise ValueError("shape must be a tuple of length 2.")
         elif shape[0] * shape[1] != len(self.grid_data_list):
@@ -523,7 +746,14 @@ class MultipleMosaics(Plotter):
             for i, grid_data in enumerate(self.grid_data_list):
                 if titles is None:
                     if share_limits:
-                        self._plot_single(grid_data, axes[i], frame=frame, v_min=v_min, v_max=v_max, **kwargs)
+                        self._plot_single(
+                            grid_data,
+                            axes[i],
+                            frame=frame,
+                            v_min=v_min,
+                            v_max=v_max,
+                            **kwargs
+                        )
                     else:
                         self._plot_single(grid_data, axes[i], frame=frame, **kwargs)
                 else:
@@ -555,7 +785,10 @@ class MultipleMosaics(Plotter):
                         )
                     else:
                         self._plot_single(
-                            grid_data, axes[i // n_cols, i % n_cols], frame=frame, **kwargs
+                            grid_data,
+                            axes[i // n_cols, i % n_cols],
+                            frame=frame,
+                            **kwargs
                         )
                 else:
                     if share_limits:

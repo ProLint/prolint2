@@ -1,3 +1,10 @@
+r""":mod:`prolint2.plotting.plotting`
+==========================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+"""
+
 import os
 import math
 import pandas as pd
@@ -39,6 +46,24 @@ __all__ = [
 
 
 class Plotter:
+    """
+    Initialize the Plotter instance with provided parameters.
+
+    Parameters
+    ----------
+    xlabel : str, optional
+        X-axis label for the plot.
+    ylabel : str, optional
+        Y-axis label for the plot.
+    fn : str, optional
+        File name to save the plot as an image.
+    title : str, optional
+        Title of the plot.
+    fig_size : tuple, optional
+        Figure size (width, height) for the plot.
+
+    """
+
     def __init__(
         self,
         xlabel: str = None,
@@ -47,7 +72,6 @@ class Plotter:
         title: str = None,
         fig_size: tuple = (8, 8),
     ):
-        # Constructor initializes the Plotter instance with provided parameters
         self.xlabel = xlabel  # X-axis label for the plot
         self.ylabel = ylabel  # Y-axis label for the plot
         self.fn = fn  # File name to save the plot as an image
@@ -55,13 +79,31 @@ class Plotter:
         self.fig_size = fig_size  # Figure size (width, height) for the plot
 
     def save_plot(self, **kwargs):
+        """
+        Generates the plot using create_plot method and saves it to the specified file.
+
+        Parameters
+        ----------
+        **kwargs
+            Additional keyword arguments to pass to create_plot.
+
+        """
         # Generates the plot using create_plot method and saves it to the specified file
         self.create_plot(**kwargs)
         plt.savefig(self.fn, dpi=300, bbox_inches="tight")
 
     def generate_script(self, class_code, script_filename):
-        # Generates a Python script that generates the plot using provided class code
-        # Tail portion varies based on the class name and specific use case
+        """
+        Generates a Python script that generates the plot using provided class code.
+
+        Parameters
+        ----------
+        class_code : object
+            The class code to generate the script for.
+        script_filename : str
+            The name of the script file to be generated.
+
+        """
 
         # Extract the source code of the class_code passed as an argument
         plotting_function_source = inspect.getsource(class_code)
@@ -126,6 +168,37 @@ class Plotter:
 
 
 class PointDistribution(Plotter):
+    """
+    Initialize the PointDistribution instance.
+
+    Parameters
+    ----------
+    universe : Universe
+        The simulation universe containing the data.
+    metric : dict
+        A dictionary containing metric data for residues and lipids.
+    xlabel : str, optional
+        The label for the x-axis of the plot.
+    ylabel : str, optional
+        The label for the y-axis of the plot.
+    fn : str, optional
+        The filename to save the plot. If None, a default filename is generated.
+    title : str, optional
+        The title of the plot.
+    fig_size : tuple, optional
+        A tuple specifying the figure size (width, height).
+
+    Returns
+    -------
+    PointDistribution
+        An instance of the PointDistribution class.
+
+    Examples
+    --------
+    >>> pd = PointDistribution(universe, metric)
+    >>> pd = PointDistribution(universe, metric, xlabel="X Label", ylabel="Y Label")
+    """
+
     def __init__(
         self,
         universe,
@@ -143,8 +216,30 @@ class PointDistribution(Plotter):
         self.metric = metric
 
     def create_plot(self, res_ids=None, lipid_type=None, metric_name=None, **kwargs):
-        """Plot the distribution of a metric for each residue."""
+        """
+        Plot the distribution of a metric for each residue.
 
+        Parameters
+        ----------
+        res_ids : list of int, optional
+            The list of residue IDs to include in the plot. If None, include all residues.
+        lipid_type : str
+            The lipid type to focus on in the plot.
+        metric_name : str
+            The name of the metric to plot.
+        **kwargs
+            Additional keyword arguments to customize the plot.
+
+        Raises
+        ------
+        ValueError
+            If lipid_type is None or metric_name is not found in the metric data.
+
+        Examples
+        --------
+        >>> pd.create_plot(lipid_type="DOPC", metric_name="metric1")
+        >>> pd.create_plot(lipid_type="POPC", metric_name="metric2", color="blue")
+        """
         metric_names = []
         # Collect all unique metric names from the metric dictionary
         for res in self.metric:
@@ -215,6 +310,36 @@ class PointDistribution(Plotter):
 
 
 class MetricsComparison(Plotter):
+    """
+    Initialize the MetricsComparison object with specified plot attributes.
+
+    Parameters
+    ----------
+    metric : dict
+        A dictionary containing metric data.
+    xlabel : str, optional
+        The label for the x-axis.
+    ylabel : str, optional
+        The label for the y-axis.
+    fn : str, optional
+        The filename for saving the plot.
+    title : str, optional
+        The title of the plot.
+    fig_size : tuple, optional
+        The size of the figure (width, height).
+
+    Attributes
+    ----------
+    metric : dict
+        A dictionary containing metric data.
+
+    Example
+    -------
+    >>> metric_data = {...}
+    >>> plot = MetricsComparison(metric_data, xlabel="X Label", ylabel="Y Label")
+    >>> plot.create_plot()
+    """
+
     def __init__(
         self,
         metric,
@@ -230,6 +355,28 @@ class MetricsComparison(Plotter):
         self.metric = metric  # Store the input metric data
 
     def create_plot(self, resIDs=None, lipid_type=None, metric_names=None, **kwargs):
+        """
+        Create a radar plot comparing metrics for different residues.
+
+        Parameters
+        ----------
+        resIDs : list, optional
+            List of residue IDs to include in the plot.
+        lipid_type : str, optional
+            The type of lipid to focus on.
+        metric_names : list, optional
+            List of metric names to display on the plot.
+
+        Raises
+        ------
+        ValueError
+            If required input parameters are not provided or metric_names is invalid.
+
+        Example
+        -------
+        >>> plot = MetricsComparison(metric_data)
+        >>> plot.create_plot(resIDs=[1, 2, 3], lipid_type="DOPC", metric_names=["metric1", "metric2"])
+        """
         metric_names_aux = []
         # Extract all unique metric names from the metric data
         for res in self.metric:
@@ -315,6 +462,25 @@ class MetricsComparison(Plotter):
 
 
 class DensityMap(Plotter):
+    """
+    Initialize the DensityMap object with specified plot attributes.
+
+    Parameters
+    ----------
+    universe : object
+        The universe object containing the data for the density map.
+    xlabel : str, optional
+        The label for the x-axis. Defaults to None.
+    ylabel : str, optional
+        The label for the y-axis. Defaults to None.
+    fn : str, optional
+        The filename for the saved plot. Defaults to None.
+    title : str, optional
+        The title of the plot. Defaults to None.
+    fig_size : tuple, optional
+        The size of the figure (width, height) in inches. Defaults to (8, 8).
+    """
+
     def __init__(
         self,
         universe,
@@ -329,8 +495,34 @@ class DensityMap(Plotter):
         super().__init__(xlabel, ylabel, fn, title, fig_size)
         self.universe = universe
 
-    def create_plot(self, lipid_type=None, bins=150, size_in_mb=50000, frame=None, **kwargs):
-        """Plot the preferential localization of lipids using 2D density maps."""
+    def create_plot(
+        self, lipid_type=None, bins=150, size_in_mb=50000, frame=None, **kwargs
+    ):
+        """
+        Plot the preferential localization of lipids using 2D density maps.
+
+        Parameters
+        ----------
+        lipid_type : str
+            The type of lipid to create the density map for.
+        bins : int, optional
+            The number of bins for the histogram. Defaults to 150.
+        size_in_mb : int, optional
+            The size of the data (in megabytes) used for computing density. Defaults to 50000.
+        frame : int, optional
+            The number of pixels to exclude from the edges of the density map. Defaults to None.
+        **kwargs
+            Additional keyword arguments for customizing the plot.
+
+        Raises
+        ------
+        ValueError
+            If `lipid_type` is not specified.
+
+        Returns
+        -------
+        None
+        """
         if lipid_type is None:
             raise ValueError("Please specify a lipid_type.")
         else:
@@ -352,7 +544,7 @@ class DensityMap(Plotter):
                 )
             else:
                 im = ax.imshow(
-                    H[frame : -frame, frame : -frame],
+                    H[frame:-frame, frame:-frame],
                     origin="lower",
                     extent=[xe[0], xe[-1], ye[0], ye[-1]],
                     **kwargs,
@@ -397,6 +589,27 @@ class DensityMap(Plotter):
 
 
 class DurationGantt(Plotter):
+    """
+    Initialize the DurationGantt object with specified plot attributes.
+
+    Parameters
+    ----------
+    universe : Universe
+        The molecular dynamics simulation universe.
+    contacts : Contacts
+        The contacts data.
+    xlabel : str, optional
+        The label for the x-axis. Default is None.
+    ylabel : str, optional
+        The label for the y-axis. Default is None.
+    fn : str, optional
+        The filename for saving the plot. Default is None.
+    title : str, optional
+        The title of the plot. Default is None.
+    fig_size : tuple, optional
+        The figure size (width, height). Default is (8, 8).
+    """
+
     def __init__(
         self,
         universe,
@@ -414,7 +627,21 @@ class DurationGantt(Plotter):
         self.contacts = contacts
 
     def get_contact_durations(self, lipid_type, **kwargs):
-        # Call the external function to get lipid contact durations
+        """
+        Call the external function to get lipid contact durations.
+
+        Parameters
+        ----------
+        lipid_type : str
+            The type of lipid to get contact durations for.
+        **kwargs
+            Additional keyword arguments to pass to the external function.
+
+        Returns
+        -------
+        dict
+            A dictionary of contact durations for the specified lipid type.
+        """
         return get_lipid_contact_durations(
             self.universe, self.contacts, lipid_type, **kwargs
         )
@@ -422,6 +649,28 @@ class DurationGantt(Plotter):
     def create_plot(
         self, lipid_id=None, top_filter=10, continuity_filter=10, tolerance=6, **kwargs
     ):
+        """
+        Create a Gantt chart to visualize lipid contact durations.
+
+        Parameters
+        ----------
+        lipid_id : str, optional
+            The ID of the lipid to create the chart for.
+        top_filter : int, optional
+            The number of top residues to display. Default is 10.
+        continuity_filter : int, optional
+            The continuity filter for contact intervals. Default is 10.
+        tolerance : int, optional
+            The tolerance for contact intervals. Default is 6.
+        **kwargs
+            Additional keyword arguments to customize the appearance of the Gantt chart.
+
+        Raises
+        ------
+        ValueError
+            If lipid_id is not specified.
+
+        """
         if lipid_id is None:
             raise ValueError("Please specify a lipid_id.")
         else:
@@ -503,6 +752,27 @@ class DurationGantt(Plotter):
 
 
 class LogoResidues(Plotter):
+    """
+    Initialize the LogoResidues object with specified plot attributes.
+
+    Parameters
+    ----------
+    universe : Universe
+        The molecular dynamics universe or system to analyze.
+    metric : dict
+        A dictionary containing metric data for the universe.
+    xlabel : str, optional
+        The label for the x-axis of the plot. Default is None.
+    ylabel : str, optional
+        The label for the y-axis of the plot. Default is None.
+    fn : str, optional
+        The filename for saving the plot. Default is None.
+    title : str, optional
+        The title for the plot. Default is None.
+    fig_size : tuple, optional
+        The size of the plot figure (width, height). Default is (8, 8).
+    """
+
     def __init__(
         self,
         universe,
@@ -528,6 +798,33 @@ class LogoResidues(Plotter):
         res_ids=None,
         **kwargs
     ):
+        """
+        Create a Logo plot for a specific lipid and metric.
+
+        Parameters
+        ----------
+        lipid_type : str, optional
+            The type of lipid to analyze.
+        metric_name : str, optional
+            The name of the metric to visualize.
+        color_logo : str, optional
+            The color scheme for the Logo plot. Default is 'silver'.
+        palette : str, optional
+            The color palette for the plot. Default is 'Blues'.
+        res_ids : list, optional
+            A list of residue IDs to include in the plot. Default is None.
+        **kwargs
+            Additional keyword arguments for customizing the Logo plot.
+
+        Raises
+        ------
+        ValueError
+            If lipid_type is not specified or if an invalid metric_name is provided.
+
+        Returns
+        -------
+        None
+        """
         # Extract unique metric names
         metric_names = []
         for res in self.metric:
@@ -608,7 +905,7 @@ class LogoResidues(Plotter):
                             color_scheme=color_logo,
                             vpad=0.4,
                             font_name="Arial Rounded MT Bold",
-                            **kwargs
+                            **kwargs,
                         )
                         ww_logo.ax.set_xticks(
                             range(i * magic_number, len(df["Resname"]), 5),
@@ -623,7 +920,7 @@ class LogoResidues(Plotter):
                             color_scheme=color_logo,
                             vpad=0.4,
                             font_name="Arial Rounded MT Bold",
-                            **kwargs
+                            **kwargs,
                         )
                         ww_logo.ax.set_xticks(
                             range(i * magic_number, (i + 1) * magic_number, 5),
@@ -692,6 +989,31 @@ class LogoResidues(Plotter):
 
 
 class InteractionHeatMap(Plotter):
+    """
+    Initialize the InteractionHeatMap object with specified plot attributes.
+
+    Parameters
+    ----------
+    universe : Universe
+        The universe containing molecular dynamics data.
+    contacts : Contacts
+        The contacts information for the interactions.
+    xlabel : str, optional
+        The label for the x-axis.
+    ylabel : str, optional
+        The label for the y-axis.
+    fn : str, optional
+        The filename to save the plot to.
+    title : str, optional
+        The title of the plot.
+    fig_size : tuple, optional
+        The figure size (width, height).
+
+    Returns
+    -------
+    None
+    """
+
     def __init__(
         self,
         universe,
@@ -710,6 +1032,24 @@ class InteractionHeatMap(Plotter):
         self.contacts = contacts
 
     def create_plot(self, residue_id=None, lipid_id=None, palette="Reds", **kwargs):
+        """
+        Create an interaction heatmap for a specific residue and lipid pair.
+
+        Parameters
+        ----------
+        residue_id : int
+            The ID of the residue.
+        lipid_id : int
+            The ID of the lipid.
+        palette : str, optional
+            The color palette for the heatmap.
+        **kwargs
+            Additional keyword arguments for matplotlib.
+
+        Returns
+        -------
+        None
+        """
         # Check if both residue_id and lipid_id are specified
         if residue_id is None:
             raise ValueError("Please specify a residue_id.")
@@ -814,6 +1154,30 @@ class InteractionHeatMap(Plotter):
 
 
 class TwoPointDistanceEvolution(Plotter):
+    """
+    Initialize the TwoPointDistanceEvolution object.
+
+    Parameters
+    ----------
+    universe : Universe
+        The universe object containing simulation data.
+    xlabel : str, optional
+        The label for the x-axis of the plot.
+    ylabel : str, optional
+        The label for the y-axis of the plot.
+    fn : str, optional
+        The filename for saving the plot.
+    title : str, optional
+        The title for the plot.
+    fig_size : tuple, optional
+        The size of the figure (width, height).
+
+    Notes
+    -----
+    This class inherits from Plotter and sets various plot attributes for creating distance evolution plots.
+
+    """
+
     def __init__(
         self,
         universe,
@@ -841,6 +1205,40 @@ class TwoPointDistanceEvolution(Plotter):
         useOffset=True,
         **kwargs
     ):
+        """
+        Create a distance evolution plot.
+
+        Parameters
+        ----------
+        lipid_id : int
+            The ID of the lipid of interest.
+        residue_id : int
+            The ID of the residue of interest.
+        lipid_atomname : str, optional
+            The name of the lipid atom to consider.
+        residue_atomname : str, optional
+            The name of the residue atom to consider.
+        unit : str, optional
+            The unit of the x-axis, either 'frame' or 'time'.
+        smooth_line : bool, optional
+            Whether to smooth the line in the plot.
+        n_points : int, optional
+            The number of points in the smoothed line.
+        useOffset : bool, optional
+            Whether to use offset notation for axis values.
+        **kwargs
+            Additional keyword arguments for the line plot.
+
+        Raises
+        ------
+        ValueError
+            If both residue_id and lipid_id are not specified.
+
+        Notes
+        -----
+        This method calculates distances using the TwoPointDistances class and creates a distance evolution plot.
+
+        """
         # check if both residue_id and lipid_id are specified
         if residue_id is None:
             raise ValueError("Please specify a residue_id.")
@@ -919,6 +1317,27 @@ class TwoPointDistanceEvolution(Plotter):
 
 
 class Radar(Plotter):
+    """
+    Initialize the Radar object with specified plot attributes.
+
+    Parameters
+    ----------
+    universe : Universe
+        The universe containing the data to be plotted.
+    metric : str
+        The metric to be displayed on the radar chart.
+    xlabel : str, optional
+        The label for the x-axis. Default is None.
+    ylabel : str, optional
+        The label for the y-axis. Default is None.
+    fn : str, optional
+        The filename for saving the radar chart. Default is None.
+    title : str, optional
+        The title for the radar chart. Default is None.
+    fig_size : tuple, optional
+        The size of the radar chart figure in inches. Default is (10, 10).
+    """
+
     def __init__(
         self,
         universe,
@@ -938,6 +1357,31 @@ class Radar(Plotter):
     def create_plot(
         self, res_ids=None, lipid=None, metric_name=None, palette="Reds", **kwargs
     ):
+        """
+        Create a radar chart plot.
+
+        Parameters
+        ----------
+        res_ids : list of int, optional
+            The list of residue IDs to include in the radar chart. Default is None.
+        lipid : str
+            The name of the lipid for which the metric is calculated.
+        metric_name : str
+            The name of the metric to be displayed on the radar chart.
+        palette : str, optional
+            The color palette to be used for the radar chart. Default is "Reds".
+        **kwargs : dict, optional
+            Additional keyword arguments.
+
+        Raises
+        ------
+        ValueError
+            If `lipid` or `metric_name` is not specified.
+
+        Returns
+        -------
+        None
+        """
         # Check for required arguments
         if lipid is None:
             raise ValueError("Please specify a lipid.")
@@ -1061,6 +1505,27 @@ class Radar(Plotter):
 
 
 class SharedContacts(Plotter):
+    """
+    Initialize the SharedContacts object with specified plot attributes.
+
+    Parameters
+    ----------
+    universe : str
+        The universe object representing the simulation data.
+    contacts : list
+        A list of contact data.
+    xlabel : str, optional
+        The label for the x-axis of the plot. Default is None.
+    ylabel : str, optional
+        The label for the y-axis of the plot. Default is None.
+    fn : str, optional
+        The filename for saving the plot. Default is None.
+    title : str, optional
+        The title of the plot. Default is None.
+    fig_size : tuple, optional
+        The size of the figure (width, height) in inches. Default is (8, 8).
+    """
+
     def __init__(
         self,
         universe,
@@ -1078,6 +1543,29 @@ class SharedContacts(Plotter):
         self.contacts = contacts
 
     def create_plot(self, lipid_type=None, label_size=6, palette="Reds", **kwargs):
+        """
+        Create a chord diagram plot for shared contacts.
+
+        Parameters
+        ----------
+        lipid_type : str, optional
+            The type of lipid for which the shared contacts will be visualized.
+        label_size : int, optional
+            The font size for node labels. Default is 6.
+        palette : str, optional
+            The color palette to use for node coloring. Default is "Reds".
+        **kwargs
+            Additional keyword arguments for customization.
+
+        Raises
+        ------
+        ValueError
+            If `lipid_type` is not specified.
+
+        Returns
+        -------
+        None
+        """
         # Ensure a lipid_type is provided
         if lipid_type is None:
             raise ValueError("Please specify a lipid_type.")
@@ -1273,6 +1761,35 @@ class SharedContacts(Plotter):
 
 
 class MosaicsGridData(Plotter):
+    """
+    Initialize the MosaicsGridData object with specified plot attributes.
+
+    Parameters
+    ----------
+    grid_data : str
+        The path to the grid data file.
+    xlabel : str, optional
+        The label for the x-axis. Default is None.
+    ylabel : str, optional
+        The label for the y-axis. Default is None.
+    fn : str, optional
+        The filename for the plot. Default is None.
+    title : str, optional
+        The title of the plot. Default is None.
+    fig_size : tuple, optional
+        The size of the figure (width, height). Default is (10, 10).
+
+    Returns
+    -------
+    None
+
+    Examples
+    --------
+    >>> mosaics_grid = MosaicsGridData("grid_data.txt", "X Label", "Y Label")
+    >>> mosaics_grid.create_plot()
+    >>> mosaics_grid.create_plot(frame=2, prop_label="Property", nan_to_zero=True)
+    """
+
     def __init__(
         self,
         grid_data,
@@ -1289,6 +1806,29 @@ class MosaicsGridData(Plotter):
         self.grid_data = np.loadtxt(grid_data)
 
     def create_plot(self, frame=None, prop_label=None, nan_to_zero=False, **kwargs):
+        """
+        Create a heatmap plot using the grid data.
+
+        Parameters
+        ----------
+        frame : int, optional
+            The frame to display in the plot. Default is None.
+        prop_label : str, optional
+            The label for the colorbar. Default is "Property".
+        nan_to_zero : bool, optional
+            Convert NaN values to zero if True. Default is False.
+        **kwargs
+            Additional keyword arguments to pass to imshow.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        >>> mosaics_grid.create_plot(frame=1, prop_label="Density", nan_to_zero=True)
+        >>> mosaics_grid.create_plot(prop_label="Temperature", cmap="hot")
+        """
         if prop_label is None:
             prop_label = "Property"
         if nan_to_zero:

@@ -39,7 +39,6 @@ Overview
 ProLint2 is an efficient and user-friendly framework for the automated analysis and interactive visualization of distance-based lipid-protein interactions from molecular dynamics simulations. 
 
 ..  figure:: _static/fvg.png
-    :align: center
 
 Table of contents
 =================
@@ -54,14 +53,14 @@ Installation
 ============
 To install **prolint2** we recommend creating a new conda environment as follows:
 
-.. code-block:: none
+.. code-block:: python
 
    conda create -n prolint2 python=3.8
    conda activate prolint2
 
 Then you can install **prolint2** via pip:
 
-.. code-block:: none
+.. code-block:: python
 
    pip install prolint2
 
@@ -94,10 +93,9 @@ You can find more details on how to use **prolint2** in the `usage page`_.
     :maxdepth: 1
    
     source/user_guide.rst
-    api
     source/contributor_guide.rst
     source/tutorials.rst
-    source/database.rst
+    source/help.rst
 
 How to contribute?
 ==================
