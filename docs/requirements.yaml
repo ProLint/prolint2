@@ -11,4 +11,6 @@ dependencies:
   - pydata-sphinx-theme
 
     # Pip-only installs
-  #- pip:
+  - pip:
+    - sphinxemoji
+
