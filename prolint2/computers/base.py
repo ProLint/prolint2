@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from MDAnalysis.analysis.base import AnalysisBase
 
+
 class ContactComputerBase(AnalysisBase, ABC):
     # @abstractmethod
     # def _compute_pairs(self):

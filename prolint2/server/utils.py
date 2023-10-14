@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 
-def get_frame_contact_intervals(frames, tolerance=6):
+import os
+import configparser
+
+# Getting the config file
+config = configparser.ConfigParser(allow_no_value=True)
+config.read(os.path.join(os.path.abspath(os.path.dirname(__file__)), "../config.ini"))
+parameters_config = config["Parameters"]
+
+
+def get_frame_contact_intervals(frames, tolerance=int(parameters_config["tolerance"])):
     """
     Get frame ranges.
 
@@ -14,15 +23,22 @@ def get_frame_contact_intervals(frames, tolerance=6):
             range_start = el
             continue
 
-        prev_el = frames[ix-1]
-        if not el-tolerance <= prev_el:
+        prev_el = frames[ix - 1]
+        if not el - tolerance <= prev_el:
             ranges_collect.append((range_start, prev_el))
             range_start = el
         if ix == len(frames) - 1:
             ranges_collect.append((range_start, el))
     return ranges_collect
 
-def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+
+def calculate_contact_intervals(
+    contacts,
+    g,
+    lipid_id,
+    residues_to_show=int(parameters_config["residues_to_show"]),
+    intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"]),
+):
     """
     TODO:
     write doc
@@ -42,7 +58,14 @@ def calculate_contact_intervals(contacts, g, lipid_id, residues_to_show=15, inte
 
     return contact_intervals
 
-def amCharts_contact_intervals(contacts, g, lipid_id, residues_to_show=15, intervals_to_filter_out=10):
+
+def amCharts_contact_intervals(
+    contacts,
+    g,
+    lipid_id,
+    residues_to_show=int(parameters_config["residues_to_show"]),
+    intervals_to_filter_out=int(parameters_config["intervals_to_filter_out"]),
+):
     """
     TODO:
     write doc
@@ -56,10 +79,10 @@ def amCharts_contact_intervals(contacts, g, lipid_id, residues_to_show=15, inter
                 continue
 
             d = {
-            "category": res,
-            "startFrame": start,
-            "endFrame": end,
-            "lipid_id": lipid_id
+                "category": res,
+                "startFrame": start,
+                "endFrame": end,
+                "lipid_id": lipid_id,
             }
             contact_intervals.append(d)
 

@@ -1,3 +1,10 @@
+r""":mod:`prolint2.metrics.exact_contacts`
+==========================================================
+:Authors: Daniel P. Ramirez & Besian I. Sejdiu
+:Year: 2022
+:Copyright: MIT License
+"""
+
 from typing import List, Dict, Callable, Union
 
 from collections import defaultdict
@@ -6,13 +13,13 @@ import numpy as np
 
 from prolint2.metrics.base import BaseContactStore
 from prolint2.metrics.utils import (
-    fast_filter_resids_by_resname, 
-    fast_contiguous_segment_lengths
+    fast_filter_resids_by_resname,
+    fast_contiguous_segment_lengths,
 )
 
 
 class ExactContacts(BaseContactStore):
-    """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts. """
+    """Compute the duration of lipid contacts. This class is used to compute the duration of lipid contacts."""
 
     def run(self, lipid_resnames: Union[str, List] = None) -> Dict[str, np.ndarray]:
         """Compute the duration of lipid contacts for all lipid types.
@@ -25,7 +32,7 @@ class ExactContacts(BaseContactStore):
         Returns
         -------
         Dict[str, np.ndarray]
-            A dictionary of lipid contact durations for all lipid types. 
+            A dictionary of lipid contact durations for all lipid types.
             The output is stored in the `self._contacts` attribute.
         """
         if lipid_resnames is None:
@@ -40,7 +47,7 @@ class ExactContacts(BaseContactStore):
                     self._contacts[residue][lipid_resname] = result
 
     def pooled_results(self, target_lipid_name=None):
-        """Pool results for all lipids. 
+        """Pool results for all lipids.
 
         Parameters
         ----------
@@ -63,7 +70,7 @@ class ExactContacts(BaseContactStore):
         return pooled_results
 
     def compute_metric(self, metric: str, target_lipid_name=None):
-        """Compute a pre-defined metric for all lipids or a specific lipid. 
+        """Compute a pre-defined metric for all lipids or a specific lipid.
 
         Parameters
         ----------
@@ -83,12 +90,15 @@ class ExactContacts(BaseContactStore):
             # computed_results[residue] = {}
             for lipid_name, lipid_contacts in lipid_data.items():
                 if target_lipid_name is None or lipid_name == target_lipid_name:
-                    computed_contacts_per_id = {lipid_id: getattr(np, metric)(contact_array) for lipid_id, contact_array in lipid_contacts.items()}
+                    computed_contacts_per_id = {
+                        lipid_id: getattr(np, metric)(contact_array)
+                        for lipid_id, contact_array in lipid_contacts.items()
+                    }
                     computed_results[residue][lipid_name] = computed_contacts_per_id
         return computed_results
 
     def apply_function(self, func: Callable, target_lipid_name=None):
-        """Apply a function to all lipids or a specific lipid. 
+        """Apply a function to all lipids or a specific lipid.
 
         Parameters
         ----------
@@ -115,20 +125,25 @@ class ExactContacts(BaseContactStore):
             computed_results[residue] = {}
             for lipid_name, lipid_contacts in lipid_data.items():
                 if target_lipid_name is None or lipid_name == target_lipid_name:
-                    computed_contacts_per_id = {lipid_id: func(contact_array) for lipid_id, contact_array in lipid_contacts.items()}
+                    computed_contacts_per_id = {
+                        lipid_id: func(contact_array)
+                        for lipid_id, contact_array in lipid_contacts.items()
+                    }
                     computed_results[residue][lipid_name] = computed_contacts_per_id
         return computed_results
 
-    def compute_lipid_durations(self, contact_frame: Dict[int, List[int]], lipid_resname: str) -> np.ndarray:
+    def compute_lipid_durations(
+        self, contact_frame: Dict[int, List[int]], lipid_resname: str
+    ) -> np.ndarray:
         """Compute the duration of lipid contacts.
-        
+
         Parameters
         ----------
         contact_frame : Dict[int, List[int]]
             A dictionary of contact frames.
         lipid_resname : str
             The residue name of the lipid to compute durations for.
-            
+
         Returns
         -------
         np.ndarray
@@ -136,11 +151,13 @@ class ExactContacts(BaseContactStore):
         """
 
         ids_to_filter = np.array(list(contact_frame.keys()))
-        lipid_ids = fast_filter_resids_by_resname(self._resids, self._resnames, ids_to_filter, lipid_resname)
-        
+        lipid_ids = fast_filter_resids_by_resname(
+            self._resids, self._resnames, ids_to_filter, lipid_resname
+        )
+
         durations = {}
         for k, arr in contact_frame.items():
             if k in lipid_ids:
                 durations[k] = fast_contiguous_segment_lengths(arr, self.norm_factor)
-        
+
         return durations

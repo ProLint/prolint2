@@ -1,11 +1,10 @@
 name: test
 channels:
-
   - conda-forge
 
   - defaults
 dependencies:
-    # Base depends
+  # Base depends
   - python
   - pip
 
@@ -15,11 +14,13 @@ dependencies:
   - codecov
 
     # Package dependencies
-  - mdanalysis  
-  - plotly
+  - mdanalysis
+  - bottle
+  - requests
 
     # Pip-only installs
   - pip:
+      - logomaker
+      - networkx
     #  - pmda
   #  - codecov
-

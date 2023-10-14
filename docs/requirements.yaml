@@ -3,15 +3,12 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-    # Base depends
+  # Base depends
   - python
   - pip
   - mdanalysis
   - plotly
   - pydata-sphinx-theme
 
-
-
     # Pip-only installs
   #- pip:
-

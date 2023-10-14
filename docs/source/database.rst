@@ -1,3 +1,0 @@
-ProLint's Database
-==================
-

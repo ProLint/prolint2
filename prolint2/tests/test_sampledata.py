@@ -1,14 +1,15 @@
 import os
-from prolint2.sampledata import GIRKDataSample
+import pytest
+from prolint2.sampledata import GIRKDataSample, COX1DataSample, SMODataSample
 
-def test_GIRKDataSample_path():
-    girk = GIRKDataSample()
-    assert os.path.isdir(girk.path)
+GIRK = GIRKDataSample()
+COX1 = COX1DataSample()
+SMO = SMODataSample()
 
-def test_GIRKDataSample_coordinates():
-    girk = GIRKDataSample()
-    assert os.path.isfile(girk.coordinates)
 
-def test_GIRKDataSample_trajectory():
-    girk = GIRKDataSample()
-    assert os.path.isfile(girk.trajectory)
+@pytest.mark.parametrize("DataSample", [GIRK, COX1, SMO])
+def test_sampledata(DataSample):
+    assert os.path.isdir(DataSample.path)
+    assert os.path.isfile(DataSample.coordinates)
+    assert os.path.isfile(DataSample.trajectory)
+    assert os.path.isfile(DataSample.contacts)
