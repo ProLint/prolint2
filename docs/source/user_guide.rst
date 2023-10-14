@@ -25,8 +25,7 @@ User Guide
    :maxdepth: 2
    :caption: Using the command-line
 
-   user_guide/calling_prolint.rst
-   user_guide/selection_interface.rst
+   user_guide/command-line.rst
 
 .. _`Prolint's resources page`: https://www.prolint.ca/resources/data
 .. _`GitHub`: https://www.prolint.ca/resources/data
