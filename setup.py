@@ -55,7 +55,7 @@ setup(
         "pandas",
         "mdanalysis",
         "bottle",
-        "typer",
+        "typer[all]",
         "requests",
     ],  # Required packages, pulls from pip if needed; do not use for Conda deployment
     platforms=[

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-from inspect import ArgSpec
 import numpy as np
 from itertools import combinations
 from prolint2.server.utils import calculate_contact_intervals

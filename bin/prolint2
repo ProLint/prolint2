@@ -37,7 +37,7 @@ class OrderCommands(TyperGroup):
 # Creating the parser
 prolint2 = typer.Typer(
     help="[blue]Command-line version of the ProLint v.2 library.[/blue] :sparkles:",
-    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:",
+    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] ",
     rich_markup_mode="rich",
     add_completion=False,
     cls=OrderCommands,
@@ -46,9 +46,7 @@ prolint2 = typer.Typer(
 
 
 # creating the run command
-@prolint2.command(
-    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:"
-)
+@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] ")
 def run(
     structure: Annotated[
         pathlib.Path,
@@ -108,9 +106,7 @@ def run(
 
 
 # creating the dashboard command
-@prolint2.command(
-    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:"
-)
+@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] ")
 def dashboard(
     structure: Annotated[
         pathlib.Path,
@@ -186,21 +182,6 @@ def dashboard(
         import sys
 
         sys.exit()
-
-
-@prolint2.command(
-    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] :stuck_out_tongue_winking_eye:"
-)
-def plot(
-    contacts: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            show_default=False,
-            help='path to the structure/topology file (E.g.: "coordinates.gro").',
-        ),
-    ],
-):
-    """[blue]ProLint v.2: Plotting paper quality graphs to visualize lipid-protein interactions.[/blue] :sparkles:"""
 
 
 if __name__ == "__main__":
