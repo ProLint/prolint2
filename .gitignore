@@ -135,3 +135,6 @@ docs/notebooks/delta_z.dat
 prolint2/data/long_test_case/*
 docs/notebooks/pope_both_rho_norm.dat
 docs/notebooks/popg_both_rho_norm.dat
+prolint2/data/COX1/contacts.csv
+prolint2/data/GIRK/contacts.csv
+prolint2/data/SMO/contacts.csv
