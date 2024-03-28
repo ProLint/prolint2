@@ -57,6 +57,9 @@ setup(
         "bottle",
         "typer[all]",
         "requests",
+        "networkx",
+        "logomaker",
+        "seaborn",
         "typing_extensions",
     ],  # Required packages, pulls from pip if needed; do not use for Conda deployment
     platforms=[
