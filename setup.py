@@ -57,6 +57,7 @@ setup(
         "bottle",
         "typer[all]",
         "requests",
+        "typing_extensions",
     ],  # Required packages, pulls from pip if needed; do not use for Conda deployment
     platforms=[
         "Linux",
