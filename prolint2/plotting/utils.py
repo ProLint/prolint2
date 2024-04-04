@@ -577,7 +577,7 @@ def create_logo_df(universe, metric, **kwargs):
 
     # Convert amino acid codes to full names for each residue
     resnames = [
-        mda.lib.util.convert_aa_code(x)
+        "C" if x == "CYX" else "H" if x == "HIP" else mda.lib.util.convert_aa_code(x)
         for x in [
             universe.query.residues.resnames[j]
             for j in [universe.query.residues.resids.tolist().index(i) for i in resids]

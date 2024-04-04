@@ -6,6 +6,7 @@ r""":mod:`prolint2.computers.contacts`
 """
 
 from collections import defaultdict
+import numpy as np
 
 from MDAnalysis.lib.nsgrid import FastNS
 
@@ -113,6 +114,12 @@ class SerialContacts(ContactComputerBase):
         :rtype: numpy.ndarray
         """
 
+        if self.database.dimensions is None:
+            dim_x = np.max(self.database.universe.atoms.positions[:, 0]) - np.min(self.database.universe.atoms.positions[:, 0])
+            dim_y = np.max(self.database.universe.atoms.positions[:, 1]) - np.min(self.database.universe.atoms.positions[:, 1])
+            dim_z = np.max(self.database.universe.atoms.positions[:, 2]) - np.min(self.database.universe.atoms.positions[:, 2])
+            self.database.dimensions = np.array([dim_x, dim_y, dim_z, 90, 90, 90])
+        
         gridsearch = FastNS(
             self.cutoff, self.database.positions, box=self.database.dimensions, pbc=True
         )
