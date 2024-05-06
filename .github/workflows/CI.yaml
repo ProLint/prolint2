@@ -6,11 +6,9 @@ on:
   # Both are tracked here to keep legacy and new codes working
   push:
     branches:
-      - "master"
       - "main"
   pull_request:
     branches:
-      - "master"
       - "main"
   schedule:
     # Nightly tests run on master by default:
@@ -25,7 +23,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]  # macOS-latest, , windows-latest
-        python-version: ['3.10'] #, 3.9
+        python-version: ['3.7', '3.10', '3.12'] #, 3.9
 
     steps:
     - uses: actions/checkout@v1
