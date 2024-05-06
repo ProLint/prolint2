@@ -106,7 +106,10 @@ ENV/
 *profraw
 
 # data for tests
-prolint2/data/*
+prolint2/data/
 
 # notebooks in docs
-docs/notebooks/*
+docs/notebooks/
+
+# TEMP folder for tests
+TEMP/

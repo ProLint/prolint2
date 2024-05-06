@@ -7,182 +7,45 @@ r"""Argument parser to use prolint2 from the command-line
 """
 import os
 import pathlib
-import typer
-from typing import List, Optional
-from typing_extensions import Annotated
-from typer.core import TyperGroup
-from click import Context
-import configparser
+from jsonargparse import CLI
 
-import prolint2._version as vers
 from prolint2.server.server import ProLintDashboard
-from prolint2.core.universe import Universe
 
-
-# Getting the config file
-config = configparser.ConfigParser(allow_no_value=True)
-config.read(
-    os.path.join(os.path.abspath(os.path.dirname(__file__)), "../prolint2/config.ini")
-)
-parameters_config = config["Parameters"]
-
-
-# fixing order of commands
-class OrderCommands(TyperGroup):
-    def list_commands(self, ctx: Context):
-        """Return list of commands in the order appear."""
-        return list(self.commands)  # get commands using self.commands
-
-
-# Creating the parser
-prolint2 = typer.Typer(
-    help="[blue]Command-line version of the ProLint v.2 library.[/blue] :sparkles:",
-    epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] ",
-    rich_markup_mode="rich",
-    add_completion=False,
-    cls=OrderCommands,
-    context_settings={"help_option_names": ["-h", "--help"]},
-)
-
-
-# creating the run command
-@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] ")
-def run(
-    structure: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            show_default=False,
-            help='path to the structure/topology file (E.g.: "coordinates.gro").',
-        ),
-    ],
-    trajectory: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            show_default=False,
-            help='path to the trajectory file (E.g.: "trajectory.xtc").',
-        ),
-    ],
-    contacts_output: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            show_default=False,
-            help='path to export the results to a file (E.g.: "contacts.csv").',
-        ),
-    ],
-    cutoff: Annotated[
-        float,
-        typer.Option(
-            "-c",
-            "--cutoff",
-            show_default=True,
-            help="cutoff distance to calculate lipid-protein interactions (in angstroms).",
-        ),
-    ] = parameters_config["cutoff"],
-    add_lipid: Annotated[
-        Optional[List[str]],
-        typer.Option(
-            "-al",
-            "--add-lipid",
-            show_default=True,
-            help="additional lipid types to be included in the database group.",
-        ),
-    ] = None,
-):
-    """[blue]ProLint v.2: Running calculation of lipid-protein interactions at a certain cutoff.[/blue] :sparkles:"""
-    # loading the trajectory
-    print("Loading trajectory...", end=" ")
-    System = Universe(structure, trajectory, add_lipid_types=add_lipid)
-    print("Done!")
-
-    # computing contacts
-    print("Computing contacts...(cutoff = {} angstroms)".format(cutoff))
-    SystemContacts = System.compute_contacts(cutoff=cutoff)
-
-    # save contacts to Pandas dataframe
-    print("Saving contacts to dataframe...", end=" ")
-    df = SystemContacts.create_dataframe(System.trajectory.n_frames)
-    df.to_csv(contacts_output)
-    print("Done!")
-
-
-# creating the dashboard command
-@prolint2.command(epilog="[blue]Have fun analyzing lipid-protein interactions![/blue] ")
 def dashboard(
-    structure: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            show_default=False,
-            help='path to the structure/topology file (E.g.: "coordinates.gro").',
-        ),
-    ],
-    trajectory: Annotated[
-        pathlib.Path,
-        typer.Argument(
-            show_default=False,
-            help='path to the trajectory file (E.g.: "trajectory.xtc").',
-        ),
-    ],
-    contacts: Annotated[
-        pathlib.Path,
-        typer.Option(
-            "-ic",
-            "--contacts",
-            show_default=False,
-            help='path to import the results from a file (E.g.: "contacts.csv").',
-        ),
-    ] = None,
-    host: Annotated[
-        str,
-        typer.Option(
-            "-r",
-            "--route",
-            show_default=True,
-            help="route to host the interactive dashboard.",
-        ),
-    ] = "localhost",
-    port: Annotated[
-        int,
-        typer.Option(
-            "-p",
-            "--port",
-            show_default=True,
-            help="port to host the interactive dashboard.",
-        ),
-    ] = 8351,
+    structure: pathlib.Path,
+    trajectory: pathlib.Path,
+    host: str = "localhost",
+    port: int = 8351,
 ):
-    """[blue]ProLint v.2: Launching interactive dashboard to explore the results of lipid-protein interactions.[/blue] :sparkles:"""
-    # launching dashboard from contacts file if provided
-    if contacts:
-        # Starting the server
-        app = ProLintDashboard()
-        app.start_server(
-            payload={
-                "structure": structure,
-                "trajectory": trajectory,
-                "contacts": contacts,
-                "host": host,
-                "port": port,
-            }
-        )
-        import sys
+    """
+    Launch interactive dashboard to explore lipid-protein interactions.
+    """
+    # Starting the server
+    app = ProLintDashboard()
+    app.start_server(
+        payload={
+            "structure": structure,
+            "trajectory": trajectory,
+            "host": host,
+            "port": port,
+        }
+    )
+    import sys
 
-        sys.exit()
-    # launching dashboard from trajectory file if contacts file is not provided
-    else:
-        # Starting the server
-        app = ProLintDashboard()
-        app.start_server(
-            payload={
-                "structure": structure,
-                "trajectory": trajectory,
-                "host": host,
-                "port": port,
-            }
-        )
-        import sys
+    sys.exit()  
 
-        sys.exit()
+def analyzer(
+    kk: str = 'kk',
+):
+    """Analyze lipid-protein interactions at different levels of detail."""
+    print("Option to be added yet.")
+
+def plotter(
+    kk: str = 'kk',
+):
+    """Plot analyses of lipid-protein interactions."""
+    print("Option to be added yet.")
 
 
 if __name__ == "__main__":
-    prolint2()
+    CLI([dashboard, analyzer, plotter])
