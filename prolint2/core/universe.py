@@ -255,6 +255,68 @@ class Universe(mda.Universe):
         """
         self.query = new_query
 
+    def write_lipid_occupancies_to_bfactor(self, occupancies_dict=None, lipid_type=None):
+        """
+        Write lipid occupancies to `bfactor` topology attribute.
+
+        Args:
+        occupancies_dict: dict, optional. A dictionary of occupancies for each lipid type.
+        lipid_name: str, optional. The name of the lipid to search for occupancies.
+
+        Returns:
+        None
+        """
+        if occupancies_dict is None:
+            # Raise an error if no metrics have been provided
+            raise ValueError("No dictionary of occupancies have been provided.")
+        elif lipid_type is None:
+            # Raise an error if no lipid type has been provided
+            raise ValueError("No lipid type has been provided.")
+        else:
+            occupancy_values = []
+            for res in self.residues:
+                if res.resid in occupancies_dict.keys():
+                    occupancy_values.extend([occupancies_dict[res.resid][lipid_type]] * res.atoms.n_atoms)
+                else:
+                    occupancy_values.extend([0] * res.atoms.n_atoms)
+        assert len(occupancy_values) == self.atoms.n_atoms
+        self.add_TopologyAttr("bfactor", occupancy_values)
+
+    def write_metrics_to_bfactor(self, metrics_dict=None, lipid_type=None, metric_name=None):
+        """
+        Write metrics to `bfactor` topology attribute.
+
+        Args:
+        metrics_dict: dict, optional. A dictionary of metrics for each lipid type.
+        lipid_name: str, optional. The name of the lipid to search for metrics.
+        metric_name: str, optional. The name of the metric to write.
+
+        Returns:
+        None
+        """
+        if metrics_dict is None:
+            # Raise an error if no metrics have been provided
+            raise ValueError("No dictionary of metrics have been provided.")
+        elif lipid_type is None:
+            # Raise an error if no lipid type has been provided
+            raise ValueError("No lipid type has been provided.")
+        elif metric_name is None:
+            # Raise an error if no metric name has been provided
+            raise ValueError("No metric name has been provided.")
+        else:
+            metric_values = []
+            for res in self.residues:
+                if res.resid in metrics_dict.keys() and metric_name in metrics_dict[res.resid][lipid_type].keys():
+                    metric_values.extend([metrics_dict[res.resid][lipid_type][metric_name]] * res.atoms.n_atoms)
+                else:
+                    metric_values.extend([0] * res.atoms.n_atoms)
+        assert len(metric_values) == self.atoms.n_atoms
+        # normalize values to be between 0 and 1
+        metric_values = (np.array(metric_values) - np.min(metric_values)) * 100 / (np.max(metric_values) - np.min(metric_values))
+        self.add_TopologyAttr("bfactor", metric_values)
+
+
+
     @property
     def database(self):
         """

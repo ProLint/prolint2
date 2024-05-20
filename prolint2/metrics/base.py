@@ -170,7 +170,7 @@ class BaseContactStore:
                 for lipid_id in lipids_of_given_type:
                     values = self.contact_frames[res_id][lipid_id]
                     occupancy_frames.extend([fr for fr in values if fr not in occupancy_frames])
-                occupancies_dict[res_id][lipid_type] = len(occupancy_frames) / self._nframes
+                occupancies_dict[res_id][lipid_type] = len(occupancy_frames) * 100 / self._nframes
         return occupancies_dict
 
 
