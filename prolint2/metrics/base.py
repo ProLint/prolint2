@@ -93,6 +93,7 @@ class BaseContactStore:
         self._resnames = ts.database.residues.resnames
         self._database_unique_resnames = ts.database.unique_resnames
         self._contacts = defaultdict(lambda: defaultdict(dict))
+        self._nframes = ts.trajectory.n_frames
 
     def run(self, lipid_resnames: Union[str, List] = None):
         """Run the contact calculation for the given lipid resnames. If no resnames are given, all resnames are used."""
@@ -154,6 +155,23 @@ class BaseContactStore:
         if self._contacts is None:
             raise ValueError("No contacts have been computed yet. Call run() first.")
         return self.pooled_results()
+    
+    @property
+    def occupancies(self):
+        """Get the computed occupancies all pooled together."""
+        if self.contact_frames is None:
+            raise ValueError("No contacts have been computed yet. Call run() first.")
+        occupancies_dict = {}
+        for res_id in self.contact_frames.keys():
+            occupancies_dict[res_id] = {}
+            for lipid_type in self._database_unique_resnames:
+                occupancy_frames = []
+                lipids_of_given_type = self._resids[self._resnames == lipid_type]
+                for lipid_id in lipids_of_given_type:
+                    values = self.contact_frames[res_id][lipid_id]
+                    occupancy_frames.extend([fr for fr in values if fr not in occupancy_frames])
+                occupancies_dict[res_id][lipid_type] = len(occupancy_frames) * 100 / self._nframes
+        return occupancies_dict
 
 
 class FittingFunctionMeta(type):
