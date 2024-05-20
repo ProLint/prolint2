@@ -90,6 +90,11 @@ class ComputedContacts:
     def contact_frames(self) -> NestedIterIntDict:
         """The computed contacts."""
         return self._contact_strategy.contact_frames
+    
+    @property
+    def occupancies(self) -> NestedIterIntDict:
+        """The computed contacts."""
+        return self._contact_strategy.occupancies
 
     def create_dataframe(self, n_frames: int) -> pd.DataFrame:
         """Create a pandas DataFrame from the computed contacts.
