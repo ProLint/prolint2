@@ -438,9 +438,9 @@ def get_metrics_for_radar(metrics, metric_names, resIDs=[], lipid=None):
     return metrics_radar, metric_names
 
 
-def compute_density(universe, lipid, size_in_mb):
+def compute_density(universe, lipid, size_in_mb, start, stop, step):
     # Get the total number of frames in the trajectory
-    frames = universe.trajectory.n_frames
+    frames = len(universe.trajectory[start: stop: step])
 
     # Create a selection string for the specified lipid
     selection_string = "resname {}".format(lipid)
@@ -449,8 +449,8 @@ def compute_density(universe, lipid, size_in_mb):
     lipids_ag = universe.select_atoms(selection_string)
 
     # Loop through the trajectory frames
-    for ts in universe.trajectory:
-        if ts.frame == 0:
+    for ts in universe.trajectory[start: stop: step]:
+        if ts.frame == start:
             # Store the positions of the lipid atoms for the first frame
             lipids_xyz = lipids_ag.positions
         else:

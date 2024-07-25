@@ -215,7 +215,7 @@ class PointDistribution(Plotter):
         self.universe = universe
         self.metric = metric
 
-    def create_plot(self, res_ids=None, lipid_type=None, metric_name=None, **kwargs):
+    def create_plot(self, res_ids=None, lipid_type=None, metric_name=None, y_lim=None, **kwargs):
         """
         Plot the distribution of a metric for each residue.
 
@@ -282,6 +282,9 @@ class PointDistribution(Plotter):
 
             ax.tick_params(axis="both", which="major", labelsize=12)
 
+            if y_lim is not None:
+                ax.set_ylim(y_lim)
+
             # Set default labels, filename, and title if not provided
             if self.xlabel is None:
                 self.xlabel = "Residue ID"
@@ -306,6 +309,7 @@ class PointDistribution(Plotter):
                 weight="bold",
                 fontfamily="Arial Rounded MT Bold",
             )
+
             plt.tight_layout()
 
 
@@ -496,7 +500,7 @@ class DensityMap(Plotter):
         self.universe = universe
 
     def create_plot(
-        self, lipid_type=None, bins=150, size_in_mb=50000, frame=None, **kwargs
+        self, lipid_type=None, bins=150, size_in_mb=50000, start=0, stop=-1, step=1, **kwargs
     ):
         """
         Plot the preferential localization of lipids using 2D density maps.
@@ -527,7 +531,7 @@ class DensityMap(Plotter):
             raise ValueError("Please specify a lipid_type.")
         else:
             # Compute the lipid coordinates
-            computed_coords = compute_density(self.universe, lipid_type, size_in_mb)
+            computed_coords = compute_density(self.universe, lipid_type, size_in_mb, start, stop, step)
 
             # Compute the lipid density using a 2D histogram
             H, xe, ye = np.histogram2d(
@@ -538,16 +542,8 @@ class DensityMap(Plotter):
             fig, ax = plt.subplots(figsize=self.fig_size)
 
             # Plot the density map using imshow
-            if frame is None:
-                im = ax.imshow(
+            im = ax.imshow(
                     H, origin="lower", extent=[xe[0], xe[-1], ye[0], ye[-1]], **kwargs
-                )
-            else:
-                im = ax.imshow(
-                    H[frame:-frame, frame:-frame],
-                    origin="lower",
-                    extent=[xe[0], xe[-1], ye[0], ye[-1]],
-                    **kwargs,
                 )
             ax.grid(False)
 
@@ -796,6 +792,7 @@ class LogoResidues(Plotter):
         color_logo="silver",
         palette="Blues",
         res_ids=None,
+        limits=None,
         **kwargs
     ):
         """
@@ -865,9 +862,12 @@ class LogoResidues(Plotter):
 
             # Create colormap based on Metric and normalize values
             cmap = mpl.cm.get_cmap(palette)
-            norm = mpl.colors.Normalize(
-                vmin=df["Metric"].min(), vmax=df["Metric"].max()
-            )
+            if limits is not None:
+                norm = mpl.colors.Normalize(vmin=limits[0], vmax=limits[1])
+            else:
+                norm = mpl.colors.Normalize(
+                    vmin=df["Metric"].min(), vmax=df["Metric"].max()
+                )
             colors = [cmap(norm(value)) for value in df["Metric"]]
 
             # Process the subplot grid based on the number of rows
@@ -963,15 +963,19 @@ class LogoResidues(Plotter):
 
             # Add color bar to the bottom
             cax = plt.axes([0.1, -0.3 / (n_rows - n_rows / 2), 0.8, 0.12 / n_rows])
+            if limits is not None:
+                cb_ticks=[limits[0], limits[0] + (limits[1] - limits[0]) / 2, limits[1]]
+            else:
+                cb_ticks=[
+                    df["Metric"].min(),
+                    df["Metric"].min() + (df["Metric"].max() - df["Metric"].min()) / 2,
+                    df["Metric"].max(),
+                ]
             cbar = plt.colorbar(
                 mpl.cm.ScalarMappable(norm=norm, cmap=cmap),
                 cax=cax,
                 orientation="horizontal",
-                ticks=[
-                    df["Metric"].min(),
-                    df["Metric"].min() + (df["Metric"].max() - df["Metric"].min()) / 2,
-                    df["Metric"].max(),
-                ],
+                ticks=cb_ticks,
             )
             cbar.set_label(
                 label=metric_name, size=12, fontfamily="Arial Rounded MT Bold"
