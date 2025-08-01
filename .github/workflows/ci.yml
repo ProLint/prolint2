@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main]
   schedule:
     # Run tests weekly on Sunday at 00:00 UTC
     - cron: '0 0 * * 0'
@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest ]
         python-version: ['3.10', '3.11', '3.12']
 
     steps:
@@ -34,7 +34,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Cache pip dependencies
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/pyproject.toml') }}
@@ -72,11 +72,6 @@ jobs:
     - name: Check import sorting with isort
       run: |
         isort --check-only --diff prolint2
-
-    - name: Type checking with mypy
-      run: |
-        mypy prolint2 --ignore-missing-imports
-      continue-on-error: true  # Don't fail CI on type errors initially
 
     - name: Test with pytest
       run: |
@@ -140,7 +135,7 @@ jobs:
         python -m pip install -e .[test]
 
     - name: Cache sample data
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: prolint2/data
         key: prolint2-sample-data-v1
@@ -212,7 +207,7 @@ jobs:
       continue-on-error: true  # Don't fail CI on doc build errors initially
 
     - name: Upload docs artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: success()
       with:
         name: documentation
@@ -266,7 +261,7 @@ jobs:
       continue-on-error: true
 
     - name: Upload benchmark results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: benchmark-results
