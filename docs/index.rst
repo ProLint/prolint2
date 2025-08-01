@@ -110,7 +110,7 @@ Source code included in this project is available under the `MIT License`_.
 
 Copyright
 =========
-Copyright (c) 2022, Daniel P. Ramirez & Besian I. Sejdiu
+Copyright (c) 2025, Daniel P. Ramirez & Besian I. Sejdiu
 
 
 Acknowledgements

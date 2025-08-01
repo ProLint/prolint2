@@ -1,7 +1,7 @@
 r""":mod:`prolint2.core.contact_provider`
 ==========================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
-:Year: 2022
+:Year: 2025
 :Copyright: MIT License
 """
 

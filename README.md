@@ -28,7 +28,7 @@ ProLint2 calculates distance-based lipid-protein interactions from molecular dyn
 To install **prolint2** we recommend creating a new conda environment as follows:
 
 ```bash
-   conda create -n prolint2 python=3.8
+   conda create -n prolint2 python=3.10
    conda activate prolint2
 ```
 
@@ -72,7 +72,7 @@ Source code included in this project is available under the [MIT License](https:
 
 # Copyright
 
-Copyright (c) 2022, Daniel P. Ramirez & Besian I. Sejdiu
+Copyright (c) 2025, Daniel P. Ramirez & Besian I. Sejdiu
 
 Acknowledgements
 ================

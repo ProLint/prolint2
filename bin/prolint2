@@ -2,7 +2,7 @@
 r"""Argument parser to use prolint2 from the command-line
 ======================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
-:Year: 2022
+:Year: 2025
 :Copyright: MIT License
 """
 import os

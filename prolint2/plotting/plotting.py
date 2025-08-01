@@ -1,7 +1,7 @@
 r""":mod:`prolint2.plotting.plotting`
 ==========================================================
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
-:Year: 2022
+:Year: 2025
 :Copyright: MIT License
 """
 

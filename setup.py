@@ -3,7 +3,7 @@ ProLint2: Lipid-Protein Interaction Analysis
 ============================================
 
 :Authors: Daniel P. Ramirez & Besian I. Sejdiu
-:Year: 2022
+:Year: 2025
 :Copyright: MIT License
 
 ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories.

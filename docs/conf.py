@@ -23,7 +23,7 @@ import prolint2
 # -- Project information -----------------------------------------------------
 
 project = "ProLint2"
-copyright = "2022, Daniel P. Ramirez & Besian I. Sejdiu"
+copyright = "2025, Daniel P. Ramirez & Besian I. Sejdiu"
 author = "Daniel P. Ramirez & Besian I. Sejdiu"
 
 # The short X.Y version
