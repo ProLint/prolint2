@@ -181,7 +181,7 @@ class TestUniverseConfiguration(unittest.TestCase):
         """Test Universe logging functionality."""
         # Import the universe module and check logger setup
         from prolint2.core import universe
-        
+
         # Check that the module has a logger
         self.assertTrue(hasattr(universe, 'logger'))
         

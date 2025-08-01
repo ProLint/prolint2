@@ -399,7 +399,7 @@ class ConfigManager:
     def get_with_env(self, section: str, key: str, env_var: str = None, default: Any = None) -> str:
         """Get configuration value with environment variable fallback."""
         import os
-        
+
         # Try environment variable first
         if env_var and env_var in os.environ:
             return os.environ[env_var]
@@ -415,7 +415,7 @@ class ConfigManager:
     def merge(self, other_config_file: Union[str, pathlib.Path]) -> None:
         """Merge another configuration file into current config."""
         import configparser
-        
+
         # Create a new parser for the other config file
         other_parser = configparser.ConfigParser()
         other_path = pathlib.Path(other_config_file)
