@@ -30,7 +30,7 @@ class BaseMetric(ABC):
         pass
 
     @classmethod
-    def _register(cls, registry: MetricRegistry):
+    def _register(cls, registry: "MetricRegistry"):
         registry.register(cls.name, cls)
 
 
