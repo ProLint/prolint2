@@ -6,33 +6,88 @@ r"""UFCC sample data
 """
 
 import os
+import time
 
 import requests
 import tqdm
 
 
-def file_download(url: str, filename: str, desc: str):
-    with open(filename, "wb") as f:
-        with requests.get(url, stream=True) as r:
-            r.raise_for_status()
-            total = int(r.headers.get("content-length", 0))
+def file_download(url: str, filename: str, desc: str, max_retries: int = 3):
+    """Download a file from URL with progress bar and error handling.
+    
+    Args:
+        url: URL to download from
+        filename: Local filename to save to
+        desc: Description for progress bar
+        max_retries: Maximum number of retry attempts
+    """
+    # Create directory if it doesn't exist
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    
+    for attempt in range(max_retries):
+        try:
+            with open(filename, "wb") as f:
+                with requests.get(url, stream=True, timeout=30) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get("content-length", 0))
 
-            tqdm_params = {
-                "desc": url,
-                "total": total,
-                "miniters": 1,
-                "unit": "B",
-                "unit_scale": True,
-                "unit_divisor": 1024,
-                "desc": desc,
-            }
-            with tqdm.tqdm(**tqdm_params) as pb:
-                for chunk in r.iter_content(chunk_size=8192):
-                    pb.update(len(chunk))
-                    f.write(chunk)
+                    tqdm_params = {
+                        "total": total,
+                        "miniters": 1,
+                        "unit": "B",
+                        "unit_scale": True,
+                        "unit_divisor": 1024,
+                        "desc": desc,
+                    }
+                    with tqdm.tqdm(**tqdm_params) as pb:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            pb.update(len(chunk))
+                            f.write(chunk)
+            return  # Success - exit function
+        except (requests.RequestException, IOError) as e:
+            if attempt == max_retries - 1:
+                raise RuntimeError(f"Failed to download {url} after {max_retries} attempts: {e}")
+            time.sleep(2 ** attempt)  # Exponential backoff
 
 
-class GIRKDataSample:
+class _DataSampleBase:
+    """Base class for sample data."""
+    
+    def __init__(self, dataset_name: str, coordinates_url: str, trajectory_url: str):
+        self.dataset_name = dataset_name
+        self.path = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), f"data/{dataset_name}/"
+        )
+        self._ensure_files_exist(coordinates_url, trajectory_url)
+        self._set_file_paths()
+    
+    def _ensure_files_exist(self, coordinates_url: str, trajectory_url: str):
+        """Download files if they don't exist."""
+        coord_file = os.path.join(self.path, "coordinates.gro")
+        traj_file = os.path.join(self.path, "trajectory.xtc")
+        
+        if not os.path.isfile(coord_file) or not os.path.isfile(traj_file):
+            if not os.path.isfile(coord_file):
+                file_download(
+                    coordinates_url,
+                    coord_file,
+                    f"Downloading {self.dataset_name} coordinates...",
+                )
+            if not os.path.isfile(traj_file):
+                file_download(
+                    trajectory_url,
+                    traj_file,
+                    f"Downloading {self.dataset_name} trajectory...",
+                )
+    
+    def _set_file_paths(self):
+        """Set file path attributes."""
+        self.coordinates = os.path.join(self.path, "coordinates.gro")
+        self.trajectory = os.path.join(self.path, "trajectory.xtc")
+        self.contacts = os.path.join(self.path, "contacts.csv")
+
+
+class GIRKDataSample(_DataSampleBase):
     """
     Class to add sample data in order to test the installation of the package
 
@@ -50,32 +105,14 @@ class GIRKDataSample:
     """
 
     def __init__(self):
-        self.path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "data/GIRK/"
+        super().__init__(
+            dataset_name="GIRK",
+            coordinates_url="https://prolint.github.io/ProLintData/GIRK/mid/coordinates.gro",
+            trajectory_url="https://prolint.github.io/ProLintData/GIRK/mid/trajectory.xtc"
         )
-        if (
-            os.path.isfile(os.path.join(self.path, "coordinates.gro")) is False
-            or os.path.isfile(os.path.join(self.path, "trajectory.xtc")) is False
-        ):
-            file_download(
-                "https://prolint.github.io/ProLintData/GIRK/mid/coordinates.gro",
-                os.path.join(self.path, "coordinates.gro"),
-                "Downloading GIRK coordinates...",
-            )
-            file_download(
-                "https://prolint.github.io/ProLintData/GIRK/mid/trajectory.xtc",
-                os.path.join(self.path, "trajectory.xtc"),
-                "Downloading GIRK trajectory...",
-            )
-            self.coordinates = os.path.join(self.path, "coordinates.gro")
-            self.trajectory = os.path.join(self.path, "trajectory.xtc")
-        else:
-            self.coordinates = os.path.join(self.path, "coordinates.gro")
-            self.trajectory = os.path.join(self.path, "trajectory.xtc")
-        self.contacts = os.path.join(self.path, "contacts.csv")
 
 
-class COX1DataSample:
+class COX1DataSample(_DataSampleBase):
     """
     Class to add sample data in order to test the installation of the package
 
@@ -93,32 +130,14 @@ class COX1DataSample:
     """
 
     def __init__(self):
-        self.path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "data/COX1/"
+        super().__init__(
+            dataset_name="COX1",
+            coordinates_url="https://prolint.github.io/ProLintData/COX1/mid/coordinates.gro",
+            trajectory_url="https://prolint.github.io/ProLintData/COX1/mid/trajectory.xtc"
         )
-        if (
-            os.path.isfile(os.path.join(self.path, "coordinates.gro")) is False
-            or os.path.isfile(os.path.join(self.path, "trajectory.xtc")) is False
-        ):
-            file_download(
-                "https://prolint.github.io/ProLintData/COX1/mid/coordinates.gro",
-                os.path.join(self.path, "coordinates.gro"),
-                "Downloading COX1 coordinates...",
-            )
-            file_download(
-                "https://prolint.github.io/ProLintData/COX1/mid/trajectory.xtc",
-                os.path.join(self.path, "trajectory.xtc"),
-                "Downloading COX1 trajectory...",
-            )
-            self.coordinates = os.path.join(self.path, "coordinates.gro")
-            self.trajectory = os.path.join(self.path, "trajectory.xtc")
-        else:
-            self.coordinates = os.path.join(self.path, "coordinates.gro")
-            self.trajectory = os.path.join(self.path, "trajectory.xtc")
-        self.contacts = os.path.join(self.path, "contacts.csv")
 
 
-class SMODataSample:
+class SMODataSample(_DataSampleBase):
     """
     Class to add sample data in order to test the installation of the package
 
@@ -136,26 +155,8 @@ class SMODataSample:
     """
 
     def __init__(self):
-        self.path = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), "data/SMO/"
+        super().__init__(
+            dataset_name="SMO",
+            coordinates_url="https://prolint.github.io/ProLintData/Smoothened/mid/coordinates.gro",
+            trajectory_url="https://prolint.github.io/ProLintData/Smoothened/mid/trajectory.xtc"
         )
-        if (
-            os.path.isfile(os.path.join(self.path, "coordinates.gro")) is False
-            or os.path.isfile(os.path.join(self.path, "trajectory.xtc")) is False
-        ):
-            file_download(
-                "https://prolint.github.io/ProLintData/Smoothened/mid/coordinates.gro",
-                os.path.join(self.path, "coordinates.gro"),
-                "Downloading SMO coordinates...",
-            )
-            file_download(
-                "https://prolint.github.io/ProLintData/Smoothened/mid/trajectory.xtc",
-                os.path.join(self.path, "trajectory.xtc"),
-                "Downloading SMO trajectory...",
-            )
-            self.coordinates = os.path.join(self.path, "coordinates.gro")
-            self.trajectory = os.path.join(self.path, "trajectory.xtc")
-        else:
-            self.coordinates = os.path.join(self.path, "coordinates.gro")
-            self.trajectory = os.path.join(self.path, "trajectory.xtc")
-        self.contacts = os.path.join(self.path, "contacts.csv")
