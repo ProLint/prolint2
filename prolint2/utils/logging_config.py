@@ -3,6 +3,7 @@ Logging configuration for ProLint2
 """
 
 import logging
+import logging.handlers
 import sys
 from typing import Optional
 
@@ -11,7 +12,9 @@ def setup_logger(
     name: str = "prolint2",
     level: int = logging.INFO,
     log_file: Optional[str] = None,
-    format_str: Optional[str] = None
+    format_str: Optional[str] = None,
+    max_bytes: int = 10 * 1024 * 1024,  # 10MB
+    backup_count: int = 5
 ) -> logging.Logger:
     """
     Set up a logger with consistent formatting across ProLint2.
@@ -26,6 +29,10 @@ def setup_logger(
         Path to log file. If None, logs to console only.
     format_str : str, optional
         Custom format string
+    max_bytes : int
+        Maximum size of log file before rotation (default: 10MB)
+    backup_count : int
+        Number of backup files to keep (default: 5)
         
     Returns
     -------
@@ -44,23 +51,41 @@ def setup_logger(
     
     formatter = logging.Formatter(format_str)
     
-    # Store the formatter in the logger for access by tests
-    logger._prolint_formatter = formatter
-    
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     
-    # File handler if specified
+    # File handler with rotation if specified
     if log_file:
-        file_handler = logging.FileHandler(log_file)
+        file_handler = logging.handlers.RotatingFileHandler(
+            log_file, 
+            maxBytes=max_bytes, 
+            backupCount=backup_count
+        )
         file_handler.setLevel(level)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
     
     return logger
+
+
+def get_logger(name: str = "prolint2") -> logging.Logger:
+    """
+    Get or create a logger instance.
+    
+    Parameters
+    ----------
+    name : str
+        Logger name
+        
+    Returns
+    -------
+    logging.Logger
+        Logger instance
+    """
+    return logging.getLogger(name)
 
 # Create default logger
 logger = setup_logger()

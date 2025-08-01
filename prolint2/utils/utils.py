@@ -1,24 +1,64 @@
+"""
+General utility functions for ProLint2
+======================================
+
+This module contains general-purpose utility functions used throughout
+the ProLint2 package.
+"""
+
 import numpy as np
+from typing import Tuple
 
 
-def fast_unique_comparison(residue_ids, lipid_ids, lipid_names):
+def fast_unique_comparison(
+    residue_ids: np.ndarray, 
+    lipid_ids: np.ndarray, 
+    lipid_names: np.ndarray
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
-    Get the unique combinations of residue and lipid ids. Vectorized implementation.
+    Get the unique combinations of residue and lipid ids using vectorized operations.
+
+    This function efficiently finds unique combinations of residue-lipid pairs
+    using lexicographic sorting, which is faster than naive approaches for
+    large datasets.
 
     Parameters
     ----------
     residue_ids : np.ndarray
-        Array of residue ids.
+        Array of residue ids
     lipid_ids : np.ndarray
-        Array of lipid ids.
+        Array of lipid ids  
     lipid_names : np.ndarray
-        Array of lipid names.
+        Array of lipid names corresponding to lipid_ids
 
     Returns
     -------
-    np.ndarray: Array of unique combinations of residue and lipid ids.
+    Tuple[np.ndarray, np.ndarray, np.ndarray]
+        Tuple containing:
+        - unique_residue_ids: Array of unique residue ids
+        - unique_lipid_ids: Array of unique lipid ids
+        - unique_lipid_names: Array of corresponding unique lipid names
+
+    Examples
+    --------
+    >>> residue_ids = np.array([1, 1, 2, 2, 1])
+    >>> lipid_ids = np.array([10, 10, 20, 30, 10]) 
+    >>> lipid_names = np.array(['POPC', 'POPC', 'POPE', 'CHOL', 'POPC'])
+    >>> ur, ul, un = fast_unique_comparison(residue_ids, lipid_ids, lipid_names)
+    >>> print(ur)  # [1 2 2]
+    >>> print(ul)  # [10 20 30] 
+    >>> print(un)  # ['POPC' 'POPE' 'CHOL']
     """
-    # Combine the arrays into a single 2D array
+    # Input validation
+    if len(residue_ids) != len(lipid_ids) != len(lipid_names):
+        raise ValueError("All input arrays must have the same length")
+    
+    if len(residue_ids) == 0:
+        return np.array([], dtype=residue_ids.dtype), \
+               np.array([], dtype=lipid_ids.dtype), \
+               np.array([], dtype=lipid_names.dtype)
+    
+    # Combine the arrays into a single 2D array for efficient sorting
     combined_array = np.stack((residue_ids, lipid_ids), axis=-1)
 
     # Get lexicographically sorted indices
