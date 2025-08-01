@@ -8,13 +8,13 @@ r""":mod:`prolint2.metrics.base`
 from abc import ABC, abstractmethod
 from collections import defaultdict
 
-from typing import Type, List, Union, Callable
+from typing import Type, List, Union, Callable, TYPE_CHECKING
 
 from scipy.optimize import curve_fit
 from prolint2.metrics.formatters import OutputFormat, DefaultOutputFormat
 
-
-MetricRegistry = Type["registries.MetricRegistry"]
+if TYPE_CHECKING:
+    from prolint2.metrics.registries import MetricRegistry
 
 
 class BaseMetric(ABC):
