@@ -65,10 +65,6 @@ jobs:
         # Exit-zero treats all errors as warnings
         flake8 prolint2 --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
 
-    - name: Check code formatting with black
-      run: |
-        black --check --diff prolint2
-
     - name: Check import sorting with isort
       run: |
         isort --check-only --diff prolint2

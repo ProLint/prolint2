@@ -1,5 +1,4 @@
-from typing import Dict, Iterable, DefaultDict, TypeVar, NewType
-from typing_extensions import TypeAlias
+from typing import Dict, Iterable, DefaultDict, TypeVar, NewType, TypeAlias
 
 T = TypeVar("T")
 ResidueID = NewType("ResidueID", int)
