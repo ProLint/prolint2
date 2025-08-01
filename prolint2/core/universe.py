@@ -7,6 +7,7 @@ r""":mod:`prolint2.core.universe`
 
 import warnings
 from typing import Literal, get_args
+import logging
 
 import os
 import numpy as np
@@ -27,6 +28,9 @@ config.read(config_file)
 parameters_config = config["Parameters"]
 
 warnings.filterwarnings("ignore")
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 TimeUnitLiteral = Literal["fs", "ps", "ns", "us", "ms", "s"]
 
@@ -159,7 +163,9 @@ class Universe(mda.Universe):
                         database_selection_string + " or " + type
                     )
             else:
-                print("There are not lipid residues in your system")
+                logger.warning("No lipid residues found in the system. "
+                             "Please check your system composition or add lipid types manually.")
+                raise ValueError("No lipid residues found in the system")
             database = self.select_atoms(database_selection_string)
         return ExtendedAtomGroup(database)
 

@@ -113,3 +113,4 @@ docs/notebooks/
 
 # TEMP folder for tests
 TEMP/
+examples/*

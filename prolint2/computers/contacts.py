@@ -7,14 +7,19 @@ r""":mod:`prolint2.computers.contacts`
 
 from collections import defaultdict
 import numpy as np
+import logging
 
 from MDAnalysis.lib.nsgrid import FastNS
 
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
+from prolint2.utils.validation import validate_cutoff, validate_atomgroup
 
 import os
 import configparser
+
+# Set up logger
+logger = logging.getLogger(__name__)
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)
@@ -64,9 +69,14 @@ class SerialContacts(ContactComputerBase):
         """
         super().__init__(universe.universe.trajectory, **kwargs)
 
-        self.query = query
-        self.database = database
-        self.cutoff = cutoff
+        # Validate inputs with proper error handling
+        try:
+            self.query = validate_atomgroup(query, "Query")
+            self.database = validate_atomgroup(database, "Database")
+            self.cutoff = validate_cutoff(cutoff)
+        except Exception as e:
+            logger.error(f"Failed to initialize SerialContacts: {e}")
+            raise
 
         self.q_resids = self.query.resids
         self.db_resids = self.database.resids
@@ -74,6 +84,9 @@ class SerialContacts(ContactComputerBase):
 
         self.contacts = None
         self.contact_frames = defaultdict(lambda: defaultdict(list))
+
+        logger.info(f"Initialized SerialContacts with cutoff={self.cutoff:.2f} Å, "
+                   f"query atoms={len(self.query)}, database atoms={len(self.database)}")
 
         self._validate_inputs()
 
