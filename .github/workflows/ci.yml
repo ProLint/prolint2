@@ -106,8 +106,8 @@ jobs:
 
     - name: Test with minimal dependencies
       run: |
-        pytest prolint2/tests/test_validation.py -v
-        pytest prolint2/tests/test_logging.py -v
+        pytest prolint2/tests/test_validation.py -v --override-ini="addopts="
+        pytest prolint2/tests/test_logging.py -v --override-ini="addopts="
 
   integration-test:
     # Integration tests with sample data

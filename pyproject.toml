@@ -107,6 +107,7 @@ markers = [
     "integration: marks tests as integration tests",
     "unit: marks tests as unit tests",
     "requires_data: marks tests that require sample data",
+    "benchmark: marks tests as benchmark tests",
 ]
 filterwarnings = [
     "ignore::UserWarning",

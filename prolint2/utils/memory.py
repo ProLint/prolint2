@@ -236,3 +236,32 @@ def optimize_array_dtype(array: np.ndarray, preserve_precision: bool = True) -> 
             return array.astype(np.int16)
     
     return array
+
+
+def get_memory_usage() -> Dict[str, float]:
+    """
+    Get current memory usage statistics (standalone function).
+    
+    Returns
+    -------
+    Dict[str, float]
+        Dictionary containing memory usage information:
+        - rss_mb: Resident set size in MB
+        - vms_mb: Virtual memory size in MB  
+        - percent: Memory percentage used by current process
+        - available_mb: Available system memory in MB
+        - total_mb: Total system memory in MB
+        - system_percent: System memory usage percentage
+    """
+    process = psutil.Process()
+    memory_info = process.memory_info()
+    virtual_memory = psutil.virtual_memory()
+    
+    return {
+        'rss_mb': memory_info.rss / 1024 / 1024,  # Resident set size
+        'vms_mb': memory_info.vms / 1024 / 1024,  # Virtual memory size
+        'percent': process.memory_percent(),
+        'available_mb': virtual_memory.available / 1024 / 1024,
+        'total_mb': virtual_memory.total / 1024 / 1024,
+        'system_percent': virtual_memory.percent / 100.0
+    }

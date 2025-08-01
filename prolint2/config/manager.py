@@ -13,6 +13,11 @@ from typing import Any, Dict, List, Optional, Union
 logger = logging.getLogger(__name__)
 
 
+class ConfigError(Exception):
+    """Exception raised for configuration-related errors."""
+    pass
+
+
 @dataclass
 class ProLintConfig:
     """Configuration class for ProLint2 with validation and defaults."""
