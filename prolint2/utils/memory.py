@@ -31,6 +31,8 @@ class MemoryMonitor:
         self.warning_threshold = warning_threshold
         self.error_threshold = error_threshold
         self.initial_memory = self.get_memory_usage()
+        self.started = False
+        self.monitoring_data = []
     
     def get_memory_usage(self) -> Dict[str, float]:
         """Get current memory usage statistics."""
@@ -45,6 +47,35 @@ class MemoryMonitor:
             'available_mb': virtual_memory.available / 1024 / 1024,
             'total_mb': virtual_memory.total / 1024 / 1024,
             'system_percent': virtual_memory.percent / 100.0
+        }
+    
+    def start(self):
+        """Start memory monitoring."""
+        self.started = True
+        self.monitoring_data = []
+        self.initial_memory = self.get_memory_usage()
+        logger.debug("Memory monitoring started")
+    
+    def update(self):
+        """Update memory monitoring data."""
+        if self.started:
+            current_memory = self.get_memory_usage()
+            self.monitoring_data.append(current_memory)
+            logger.debug(f"Memory usage updated: {current_memory['rss_mb']:.1f} MB")
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """Get memory monitoring statistics."""
+        if not self.monitoring_data:
+            return self.get_memory_usage()
+        
+        rss_values = [data['rss_mb'] for data in self.monitoring_data]
+        return {
+            'current': self.monitoring_data[-1] if self.monitoring_data else self.get_memory_usage(),
+            'initial': self.initial_memory,
+            'max_rss_mb': max(rss_values),
+            'min_rss_mb': min(rss_values),
+            'avg_rss_mb': sum(rss_values) / len(rss_values),
+            'samples_count': len(self.monitoring_data)
         }
     
     def check_memory(self, operation_name: str = "operation") -> None:

@@ -94,7 +94,10 @@ class Universe(mda.Universe):
                     "universe argument should be an instance of mda.Universe"
                 )
         else:
-            super().__init__(*args, **kwargs)
+            try:
+                super().__init__(*args, **kwargs)
+            except (StopIteration, IndexError, ValueError) as e:
+                raise ValueError(f"Invalid file format or content: {e}")
 
         self._query = self._handle_query(query)
         # adding additional lipid types to the database

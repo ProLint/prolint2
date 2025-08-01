@@ -63,6 +63,11 @@ class TestLoggingConfiguration(unittest.TestCase):
         handler = logging.StreamHandler(log_capture)
         
         logger = setup_logger("test_format")
+        # Get the formatter from the logger
+        formatter = getattr(logger, '_prolint_formatter', None)
+        if formatter:
+            handler.setFormatter(formatter)
+        
         logger.handlers.clear()  # Remove default handlers
         logger.addHandler(handler)
         

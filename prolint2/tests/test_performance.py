@@ -45,8 +45,10 @@ class TestMemoryPerformance:
     def test_memory_usage_performance(self, benchmark):
         """Benchmark memory usage retrieval."""
         result = benchmark(get_memory_usage)
-        assert isinstance(result, float)
-        assert result > 0
+        assert isinstance(result, dict)
+        assert 'rss_mb' in result
+        assert 'available_mb' in result
+        assert result['rss_mb'] > 0
     
     @pytest.mark.benchmark
     def test_memory_monitor_performance(self, benchmark):

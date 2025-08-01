@@ -140,14 +140,36 @@ class ConfigManager:
         ----------
         config_file : str or pathlib.Path, optional
             Path to configuration file
+            
+        Raises
+        ------
+        ConfigError
+            If the specified config file doesn't exist or is malformed
         """
         self.config_file = config_file
         self._config = None
+        self._config_parser = None
+        self._sections = {}  # Track manually set sections/keys for saving
         self._default_config_paths = [
             pathlib.Path(__file__).parent.parent / "config.ini",
             pathlib.Path.home() / ".prolint2" / "config.ini",
             pathlib.Path.cwd() / "prolint2_config.ini"
         ]
+        
+        # Validate config file if explicitly provided
+        if config_file is not None:
+            config_path = pathlib.Path(config_file)
+            if not config_path.exists():
+                raise ConfigError(f"Configuration file not found: {config_file}")
+            
+            # Try to parse the config file to check for malformed content
+            try:
+                import configparser
+                parser = configparser.ConfigParser()
+                parser.read(config_path)
+                self._config_parser = parser
+            except configparser.Error as e:
+                raise ConfigError(f"Malformed configuration file {config_file}: {e}")
     
     def load_config(self) -> ProLintConfig:
         """
@@ -264,6 +286,235 @@ class ConfigManager:
         
         return env_config
     
+    @property
+    def config(self) -> ProLintConfig:
+        """Get current configuration."""
+        if self._config is None:
+            self._config = self._load_config()
+        return self._config
+    
+    def get(self, section: str, key: str, default: Any = None) -> str:
+        """Get configuration value as string."""
+        # First check manually set values in _sections
+        if section in self._sections and key in self._sections[section]:
+            return str(self._sections[section][key])
+        
+        # Try to get from config parser
+        if self._config_parser and self._config_parser.has_option(section, key):
+            return self._config_parser.get(section, key)
+        
+        # Fallback to config object
+        try:
+            config_dict = self.config.__dict__
+            section_data = config_dict.get(section.lower(), {})
+            if isinstance(section_data, dict):
+                value = section_data.get(key, default)
+            else:
+                value = getattr(section_data, key, default)
+            return str(value) if value is not None else str(default) if default is not None else None
+        except (KeyError, AttributeError):
+            if default is not None:
+                return str(default)
+            raise ConfigError(f"Configuration key '{section}.{key}' not found")
+    
+    def getfloat(self, section: str, key: str, default: float = None) -> float:
+        """Get configuration value as float."""
+        value = self.get(section, key, default)
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            if default is not None:
+                return default
+            raise ConfigError(f"Cannot convert '{section}.{key}' to float: {value}")
+    
+    def getint(self, section: str, key: str, default: int = None) -> int:
+        """Get configuration value as integer."""
+        value = self.get(section, key, default)
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            if default is not None:
+                return default
+            raise ConfigError(f"Cannot convert '{section}.{key}' to int: {value}")
+    
+    def getbool(self, section: str, key: str, default: bool = None) -> bool:
+        """Get configuration value as boolean."""
+        value = self.get(section, key, default)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in ('true', 'yes', '1', 'on')
+        if default is not None:
+            return default
+        raise ConfigError(f"Cannot convert '{section}.{key}' to bool: {value}")
+    
+    def getboolean(self, section: str, key: str, default: bool = None) -> bool:
+        """Get configuration value as boolean (alias for getbool)."""
+        return self.getbool(section, key, default)
+    
+    def getlist(self, section: str, key: str, delimiter: str = ',', default: list = None) -> list:
+        """Get configuration value as list."""
+        value = self.get(section, key, default)
+        if value is None and default is not None:
+            return default
+        if isinstance(value, list):
+            return value
+        if isinstance(value, str):
+            return [item.strip() for item in value.split(delimiter)]
+        if default is not None:
+            return default
+        raise ConfigError(f"Cannot convert '{section}.{key}' to list: {value}")
+    
+    def set(self, section: str, key: str, value: Any) -> None:
+        """Set configuration value."""
+        # Track in _sections for saving
+        if section not in self._sections:
+            self._sections[section] = {}
+        self._sections[section][key] = value
+        
+        # Also update the config object if possible
+        config_dict = self.config.__dict__
+        if section.lower() not in config_dict:
+            config_dict[section.lower()] = {}
+        
+        section_data = config_dict[section.lower()]
+        if isinstance(section_data, dict):
+            section_data[key] = value
+        else:
+            setattr(section_data, key, value)
+    
+    def has_option(self, section: str, key: str) -> bool:
+        """Check if configuration has the specified option."""
+        # Check config parser first
+        if self._config_parser:
+            return self._config_parser.has_option(section, key)
+        
+        # Fallback to config object
+        try:
+            self.get(section, key)
+            return True
+        except ConfigError:
+            return False
+    
+    def get_with_env(self, section: str, key: str, env_var: str = None, default: Any = None) -> str:
+        """Get configuration value with environment variable fallback."""
+        import os
+        
+        # Try environment variable first
+        if env_var and env_var in os.environ:
+            return os.environ[env_var]
+        
+        # Fall back to config file
+        try:
+            return self.get(section, key, default)
+        except ConfigError:
+            if default is not None:
+                return str(default)
+            raise
+    
+    def merge(self, other_config_file: Union[str, pathlib.Path]) -> None:
+        """Merge another configuration file into current config."""
+        import configparser
+        
+        # Create a new parser for the other config file
+        other_parser = configparser.ConfigParser()
+        other_path = pathlib.Path(other_config_file)
+        
+        if not other_path.exists():
+            raise ConfigError(f"Config file to merge not found: {other_config_file}")
+        
+        try:
+            other_parser.read(other_path)
+        except configparser.Error as e:
+            raise ConfigError(f"Failed to parse config file {other_config_file}: {e}")
+        
+        # If we don't have a config parser yet, create one
+        if self._config_parser is None:
+            self._config_parser = configparser.ConfigParser()
+            if self.config_file:
+                self._config_parser.read(self.config_file)
+        
+        # Merge sections and values
+        for section_name in other_parser.sections():
+            if not self._config_parser.has_section(section_name):
+                self._config_parser.add_section(section_name)
+            
+            for key, value in other_parser.items(section_name):
+                self._config_parser.set(section_name, key, value)
+    
+    def validate(self) -> List[str]:
+        """Validate configuration and return list of errors."""
+        errors = []
+        
+        # First validate the config file parsing if available
+        if self._config_parser and self.config_file:
+            try:
+                # Check for invalid float values
+                for section_name in self._config_parser.sections():
+                    for key, value in self._config_parser.items(section_name):
+                        # Try to parse common types to catch invalid values
+                        if key in ['cutoff', 'tolerance', 'frame_skip']:
+                            try:
+                                float_val = float(value)
+                                if key == 'frame_skip' and float_val < 0:
+                                    errors.append(f"Invalid {key} value: {float_val}. Must be >= 0.")
+                            except ValueError:
+                                errors.append(f"Invalid {key} value: '{value}'. Must be a valid number.")
+                        
+                        if key in ['frame_start', 'frame_end', 'residues_to_show']:
+                            try:
+                                int_val = int(value)
+                                if key == 'frame_start' and int_val < 0:
+                                    errors.append(f"Invalid {key} value: {int_val}. Must be >= 0.")
+                                elif key == 'residues_to_show' and int_val <= 0:
+                                    errors.append(f"Invalid {key} value: {int_val}. Must be > 0.")
+                            except ValueError:
+                                errors.append(f"Invalid {key} value: '{value}'. Must be a valid integer.")
+            except Exception as e:
+                errors.append(f"Configuration parsing error: {e}")
+        
+        # Validate the config object if available
+        try:
+            config = self.config
+            
+            # Validate cutoff
+            if hasattr(config, 'cutoff') and (config.cutoff <= 0 or config.cutoff > 50):
+                errors.append(f"Invalid cutoff value: {config.cutoff}. Must be between 0 and 50.")
+            
+            # Validate frame range
+            if hasattr(config, 'frame_start') and hasattr(config, 'frame_end'):
+                if config.frame_start < 0:
+                    errors.append(f"Invalid frame_start: {config.frame_start}. Must be >= 0.")
+                if config.frame_end != -1 and config.frame_end <= config.frame_start:
+                    errors.append(f"Invalid frame_end: {config.frame_end}. Must be > frame_start or -1.")
+        except Exception as e:
+            errors.append(f"Configuration object validation error: {e}")
+        
+        return errors
+    
+    def save(self, config_file: Union[str, pathlib.Path] = None) -> None:
+        """Save current configuration to file."""
+        if config_file is None:
+            config_file = self.config_file
+        if config_file is None:
+            raise ConfigError("No config file specified for saving")
+        
+        config_path = pathlib.Path(config_file)
+        config_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save as INI format using configparser
+        config = configparser.ConfigParser()
+        
+        # Add sections and options from internal storage
+        for section_name, section_data in self._sections.items():
+            if not config.has_section(section_name):
+                config.add_section(section_name)
+            for key, value in section_data.items():
+                config.set(section_name, key, str(value))
+        
+        with open(config_path, 'w') as f:
+            config.write(f)
+
     @property
     def config(self) -> ProLintConfig:
         """Get current configuration."""

@@ -22,7 +22,11 @@ class TestConfigManager(unittest.TestCase):
         """Clean up test files."""
         if self.test_config_file.exists():
             self.test_config_file.unlink()
-        self.temp_dir.rmdir()
+        
+        # Clean up any remaining files in temp directory
+        import shutil
+        if self.temp_dir.exists():
+            shutil.rmtree(self.temp_dir)
     
     def test_config_manager_creation(self):
         """Test ConfigManager instantiation."""

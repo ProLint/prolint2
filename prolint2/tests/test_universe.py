@@ -2,6 +2,7 @@
 Test suite for ProLint2 Universe core functionality
 """
 
+import logging
 import pathlib
 import tempfile
 import unittest
@@ -176,15 +177,17 @@ class TestUniverseConfiguration(unittest.TestCase):
         # Test that Universe validates input parameters correctly
         pass
     
-    @patch('prolint2.core.universe.logging')
-    def test_universe_logging(self, mock_logging):
+    def test_universe_logging(self):
         """Test Universe logging functionality."""
-        mock_logger = Mock()
-        mock_logging.getLogger.return_value = mock_logger
+        # Import the universe module and check logger setup
+        from prolint2.core import universe
         
-        # This would test that Universe logs appropriately
-        # during initialization and operations
-        mock_logging.getLogger.assert_called()
+        # Check that the module has a logger
+        self.assertTrue(hasattr(universe, 'logger'))
+        
+        # Check that the logger is properly configured
+        self.assertIsInstance(universe.logger, logging.Logger)
+        self.assertEqual(universe.logger.name, 'prolint2.core.universe')
 
 
 class TestUniverseIntegration(unittest.TestCase):

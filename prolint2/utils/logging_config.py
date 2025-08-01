@@ -44,6 +44,9 @@ def setup_logger(
     
     formatter = logging.Formatter(format_str)
     
+    # Store the formatter in the logger for access by tests
+    logger._prolint_formatter = formatter
+    
     # Console handler
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
