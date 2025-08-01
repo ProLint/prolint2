@@ -1,4 +1,5 @@
 import numpy as np
+
 try:
     from scipy.optimize import curve_fit
     SCIPY_AVAILABLE = True

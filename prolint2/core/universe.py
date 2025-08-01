@@ -5,21 +5,19 @@ r""":mod:`prolint2.core.universe`
 :Copyright: MIT License
 """
 
+import configparser
+import logging
+import os
 import warnings
 from typing import Literal, get_args
-import logging
 
-import os
-import numpy as np
 import MDAnalysis as mda
-
-from prolint2.core.groups import ExtendedAtomGroup
-from prolint2.metrics.registries import MetricRegistry
-from prolint2.core.contact_provider import ContactsProvider
+import numpy as np
 
 from prolint2.config.units import UnitConversionFactor
-
-import configparser
+from prolint2.core.contact_provider import ContactsProvider
+from prolint2.core.groups import ExtendedAtomGroup
+from prolint2.metrics.registries import MetricRegistry
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)

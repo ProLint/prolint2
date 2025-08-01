@@ -2,12 +2,12 @@
 Test suite for ProLint2 logging utilities
 """
 
-import unittest
-import tempfile
-import pathlib
 import logging
-from io import StringIO
+import pathlib
 import sys
+import tempfile
+import unittest
+from io import StringIO
 
 from prolint2.utils.logging_config import setup_logger
 

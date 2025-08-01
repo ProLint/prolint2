@@ -1,8 +1,9 @@
+from collections import Counter
+
+import matplotlib as mpl
+import MDAnalysis as mda
 import numpy as np
 import pandas as pd
-import MDAnalysis as mda
-import matplotlib as mpl
-from collections import Counter
 
 
 # define a function to generate a script template

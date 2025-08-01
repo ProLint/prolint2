@@ -6,11 +6,11 @@ r""":mod:`prolint2.core.groups`
 """
 
 from abc import ABC, abstractmethod
-from typing import Iterable, Union, Dict
 from collections import Counter
+from typing import Dict, Iterable, Union
 
-import numpy as np
 import MDAnalysis as mda
+import numpy as np
 
 
 class PLAtomGroupBase(ABC):

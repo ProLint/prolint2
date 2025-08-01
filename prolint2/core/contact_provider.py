@@ -12,18 +12,16 @@ import numpy as np
 import pandas as pd
 
 from prolint2.computers.contacts import ContactComputerBase, SerialContacts
+from prolint2.config.units import DEFAULT_SIM_PARAMS
 from prolint2.core.typing import (
+    LipidId,
     NestedFloatDict,
     NestedIterFloatDict,
     NestedIterIntDict,
-    LipidId,
 )
-
+from prolint2.metrics.aprox_contacts import AproxContacts
 from prolint2.metrics.base import BaseContactStore
 from prolint2.metrics.exact_contacts import ExactContacts
-from prolint2.metrics.aprox_contacts import AproxContacts
-
-from prolint2.config.units import DEFAULT_SIM_PARAMS
 
 
 class ComputedContacts:

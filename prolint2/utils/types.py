@@ -2,7 +2,8 @@
 Type definitions for ProLint2
 """
 
-from typing import Dict, List, Union, Tuple, Optional, Any, TypeVar, Generic
+from typing import Any, Dict, Generic, List, Optional, Tuple, TypeVar, Union
+
 import numpy as np
 from numpy.typing import NDArray
 

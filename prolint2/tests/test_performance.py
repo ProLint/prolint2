@@ -2,14 +2,15 @@
 Performance benchmarks for ProLint2
 """
 
-import pytest
-import numpy as np
 import time
 from unittest.mock import Mock
 
-from prolint2.utils.validation import validate_cutoff, validate_frame_range
-from prolint2.utils.memory import MemoryMonitor, get_memory_usage
+import numpy as np
+import pytest
+
 from prolint2.utils.logging_config import setup_logger
+from prolint2.utils.memory import MemoryMonitor, get_memory_usage
+from prolint2.utils.validation import validate_cutoff, validate_frame_range
 
 
 class TestValidationPerformance:

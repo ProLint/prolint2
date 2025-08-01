@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
-import numpy as np
-from itertools import combinations
-from prolint2.server.utils import calculate_contact_intervals
-
-import os
 import configparser
+import os
+from itertools import combinations
+
+import numpy as np
+
+from prolint2.server.utils import calculate_contact_intervals
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)

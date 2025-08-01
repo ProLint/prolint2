@@ -2,11 +2,12 @@
 Input validation utilities for ProLint2
 """
 
-import numpy as np
-import MDAnalysis as mda
-from typing import Union, List, Optional, Any
 import os
 import pathlib
+from typing import Any, List, Optional, Union
+
+import MDAnalysis as mda
+import numpy as np
 
 
 class ValidationError(Exception):

@@ -5,9 +5,8 @@ r""":mod:`prolint2.metrics.aprox_contacts`
 :Copyright: MIT License
 """
 
-from typing import List, Dict, Callable, Union
-
 from collections import defaultdict
+from typing import Callable, Dict, List, Union
 
 import numpy as np
 

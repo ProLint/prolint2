@@ -5,16 +5,15 @@ r""":mod:`prolint2.metrics.exact_contacts`
 :Copyright: MIT License
 """
 
-from typing import List, Dict, Callable, Union
-
 from collections import defaultdict
+from typing import Callable, Dict, List, Union
 
 import numpy as np
 
 from prolint2.metrics.base import BaseContactStore
 from prolint2.metrics.utils import (
-    fast_filter_resids_by_resname,
     fast_contiguous_segment_lengths,
+    fast_filter_resids_by_resname,
 )
 
 

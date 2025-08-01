@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import curve_fit
+
 from prolint2.metrics.base import FittingFunction
 
 

@@ -5,18 +5,17 @@ r""":mod:`prolint2.computers.contacts`
 :Copyright: MIT License
 """
 
-from collections import defaultdict
-import numpy as np
+import configparser
 import logging
+import os
+from collections import defaultdict
 
+import numpy as np
 from MDAnalysis.lib.nsgrid import FastNS
 
 from prolint2.computers.base import ContactComputerBase
 from prolint2.utils.utils import fast_unique_comparison
-from prolint2.utils.validation import validate_cutoff, validate_atomgroup
-
-import os
-import configparser
+from prolint2.utils.validation import validate_atomgroup, validate_cutoff
 
 # Set up logger
 logger = logging.getLogger(__name__)

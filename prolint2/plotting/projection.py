@@ -6,10 +6,12 @@ r""":mod:`prolint2.plotting.projection`
 """
 
 import os
+
 import matplotlib as mpl
-from matplotlib.pyplot import cm
-from .utils import *
 import nglview as nv
+from matplotlib.pyplot import cm
+
+from .utils import *
 
 
 def show_contact_projection(

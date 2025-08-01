@@ -6,16 +6,17 @@ r""":mod:`prolint2.metrics.metrics`
 """
 
 from typing import Callable, Iterable
+
 import numpy as np
 
 from prolint2.metrics.base import BaseMetric, Metric
-from prolint2.metrics.registries import MetricRegistry
 from prolint2.metrics.formatters import (
-    DefaultOutputFormat,
-    SingleOutputFormat,
-    ProLintDashboardOutputFormat,
     CustomOutputFormat,
+    DefaultOutputFormat,
+    ProLintDashboardOutputFormat,
+    SingleOutputFormat,
 )
+from prolint2.metrics.registries import MetricRegistry
 
 
 class UserDefinedMetric(BaseMetric):

@@ -2,15 +2,16 @@
 Performance benchmarking and profiling tools for ProLint2
 """
 
-import time
-import functools
 import cProfile
-import pstats
+import functools
 import io
-from typing import Dict, Any, Optional, Callable, List, Tuple
 import logging
-import numpy as np
+import pstats
+import time
 from contextlib import contextmanager
+from typing import Any, Callable, Dict, List, Optional, Tuple
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

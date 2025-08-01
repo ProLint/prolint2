@@ -2,12 +2,13 @@
 Test configuration for ProLint2
 """
 
-import pytest
-import numpy as np
-import tempfile
 import pathlib
+import tempfile
 from unittest.mock import Mock, patch
+
 import MDAnalysis as mda
+import numpy as np
+import pytest
 
 from prolint2 import Universe
 from prolint2.sampledata import GIRKDataSample

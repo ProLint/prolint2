@@ -2,15 +2,20 @@
 Test suite for ProLint2 core functionality
 """
 
-import unittest
-import numpy as np
-from unittest.mock import Mock, patch
-import tempfile
 import pathlib
+import tempfile
+import unittest
+from unittest.mock import Mock, patch
+
+import numpy as np
 
 from prolint2.utils.validation import (
-    validate_cutoff, validate_atomgroup, validate_residue_id,
-    validate_lipid_type, validate_frame_range, ValidationError
+    ValidationError,
+    validate_atomgroup,
+    validate_cutoff,
+    validate_frame_range,
+    validate_lipid_type,
+    validate_residue_id,
 )
 
 
@@ -60,8 +65,8 @@ class TestContactsComputation(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         try:
-            from prolint2.sampledata import GIRKDataSample
             from prolint2 import Universe
+            from prolint2.sampledata import GIRKDataSample
             girk = GIRKDataSample()
             self.universe = Universe(girk.coordinates, girk.trajectory)
         except Exception:
@@ -92,8 +97,8 @@ class TestMetricsComputation(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         try:
-            from prolint2.sampledata import GIRKDataSample
             from prolint2 import Universe
+            from prolint2.sampledata import GIRKDataSample
             girk = GIRKDataSample()
             self.universe = Universe(girk.coordinates, girk.trajectory)
             self.contacts = self.universe.compute_contacts(cutoff=7.0)

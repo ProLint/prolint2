@@ -5,28 +5,30 @@ r""":mod:`prolint2.plotting.multiples`
 :Copyright: MIT License
 """
 
-import os
+import inspect
 import math
-import pandas as pd
-import numpy as np
-import networkx as nx
+import os
+
 import logomaker as lm
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from matplotlib.patches import FancyBboxPatch
-from matplotlib.ticker import FormatStrFormatter
-from prolint2.computers.distances import SerialDistances
-from prolint2.computers.distances import TwoPointDistances
-from matplotlib.cm import ScalarMappable
-import inspect
-from scipy import interpolate
-from prolint2.server.chord_utils import contact_chord
-from .utils import *
-from .plotting import Plotter
+import networkx as nx
+import numpy as np
+import pandas as pd
 
 ## seaborn config for paper quality plots
 import seaborn as sns
+from matplotlib.cm import ScalarMappable
+from matplotlib.patches import FancyBboxPatch
+from matplotlib.ticker import FormatStrFormatter
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy import interpolate
+
+from prolint2.computers.distances import SerialDistances, TwoPointDistances
+from prolint2.server.chord_utils import contact_chord
+
+from .plotting import Plotter
+from .utils import *
 
 sns.set_context("paper")
 sns.set_style("whitegrid")

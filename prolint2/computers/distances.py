@@ -6,7 +6,6 @@ r""":mod:`prolint2.computers.distances`
 """
 
 import numpy as np
-
 from MDAnalysis.analysis import distances
 from MDAnalysis.analysis.base import AnalysisBase
 

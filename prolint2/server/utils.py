@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-import os
 import configparser
+import os
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)

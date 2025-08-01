@@ -2,11 +2,12 @@
 Test suite for ProLint2 Universe core functionality
 """
 
-import unittest
-from unittest.mock import Mock, patch, MagicMock
-import numpy as np
-import tempfile
 import pathlib
+import tempfile
+import unittest
+from unittest.mock import MagicMock, Mock, patch
+
+import numpy as np
 
 from prolint2.core.universe import Universe
 from prolint2.sampledata import GIRKDataSample

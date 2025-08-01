@@ -3,12 +3,12 @@ Robust configuration management for ProLint2
 """
 
 import configparser
+import json
+import logging
 import os
 import pathlib
-from typing import Dict, Any, Optional, Union, List
-import logging
 from dataclasses import dataclass, field
-import json
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 

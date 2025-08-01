@@ -2,12 +2,12 @@
 Test suite for ProLint2 configuration management
 """
 
-import unittest
-import tempfile
 import pathlib
-from unittest.mock import patch, mock_open
+import tempfile
+import unittest
+from unittest.mock import mock_open, patch
 
-from prolint2.config.manager import ConfigManager, ConfigError
+from prolint2.config.manager import ConfigError, ConfigManager
 
 
 class TestConfigManager(unittest.TestCase):

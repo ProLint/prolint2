@@ -1,20 +1,20 @@
-import os
 import ast
-from io import StringIO
+import os
 from collections import Counter
+from io import StringIO
 
 import MDAnalysis as mda
 from bottle import Bottle, redirect, static_file
 
+from prolint2.computers.distances import SerialDistances
+from prolint2.computers.payload import ServerPayload
 from prolint2.core.universe import Universe
 from prolint2.server.chord_utils import contact_chord
-from prolint2.computers.payload import ServerPayload
-from prolint2.computers.distances import SerialDistances
 
 SERVER_PATH = os.path.abspath(os.path.dirname(__file__))
 
-import os
 import configparser
+import os
 
 # Getting the config file
 config = configparser.ConfigParser(allow_no_value=True)

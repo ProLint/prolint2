@@ -2,17 +2,22 @@
 Test suite for ProLint2 validation utilities
 """
 
-import pytest
-import numpy as np
-import tempfile
 import pathlib
-from unittest.mock import Mock, MagicMock
+import tempfile
+from unittest.mock import MagicMock, Mock
+
 import MDAnalysis as mda
+import numpy as np
+import pytest
 
 from prolint2.utils.validation import (
-    validate_file_exists, validate_cutoff, validate_atomgroup, 
-    validate_residue_id, validate_lipid_type, validate_frame_range,
-    ValidationError
+    ValidationError,
+    validate_atomgroup,
+    validate_cutoff,
+    validate_file_exists,
+    validate_frame_range,
+    validate_lipid_type,
+    validate_residue_id,
 )
 
 

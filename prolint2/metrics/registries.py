@@ -1,8 +1,7 @@
-from typing import List, Type
 import importlib
 import inspect
-
 import logging
+from typing import List, Type
 
 from prolint2.metrics.base import BaseMetric
 

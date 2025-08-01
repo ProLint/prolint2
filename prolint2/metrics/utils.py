@@ -1,5 +1,5 @@
-from typing import Iterable, List, Dict
 from itertools import chain
+from typing import Dict, Iterable, List
 
 import numpy as np
 

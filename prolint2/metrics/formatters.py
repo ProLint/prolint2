@@ -1,5 +1,5 @@
-from collections import defaultdict
 from abc import ABC, abstractmethod
+from collections import defaultdict
 
 
 class OutputFormat(ABC):

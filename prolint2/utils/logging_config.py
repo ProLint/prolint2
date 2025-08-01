@@ -6,6 +6,7 @@ import logging
 import sys
 from typing import Optional
 
+
 def setup_logger(
     name: str = "prolint2",
     level: int = logging.INFO,

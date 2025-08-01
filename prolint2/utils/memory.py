@@ -2,13 +2,14 @@
 Memory management utilities for ProLint2
 """
 
-import psutil
 import gc
-import numpy as np
-from typing import Optional, Dict, Any
 import logging
-from functools import wraps
 import warnings
+from functools import wraps
+from typing import Any, Dict, Optional
+
+import numpy as np
+import psutil
 
 logger = logging.getLogger(__name__)
 
