@@ -514,7 +514,7 @@ def shift_range(values, new_min=0, new_max=1):
 
 
 def get_lipid_contact_durations(
-    u, contacts, lipid_type, frequency_filter=0.0, n_frames=1
+    u, contacts, lipid_type, frequency_filter=0.0, n_frames=1, residue_id=None
 ):
     """Get the lipid contact frequencies."""
 
@@ -524,9 +524,14 @@ def get_lipid_contact_durations(
     # Convert residue IDs to a list for easier indexing
     reslist = u.residues.resids.tolist()
 
+    if residue_id is not None:
+        contact_frames = {residue_id: contacts.contact_frames[residue_id]}
+    else:
+        contact_frames = contacts.contact_frames
+
     # Loop through each residue in the contact frames
-    for resid in contacts.contact_frames:
-        for lipid in contacts.contact_frames[resid]:
+    for resid in contact_frames:
+        for lipid in contact_frames[resid]:
             # Check if the lipid's resname matches the desired lipid_type
             if u.residues.resnames[reslist.index(lipid)] == lipid_type:
                 # If lipid not encountered before, add it to the dictionary
@@ -534,7 +539,7 @@ def get_lipid_contact_durations(
                     lipid_contacts[lipid] = 0
 
                 # Increment the contact count for the lipid
-                lipid_contacts[lipid] += len(contacts.contact_frames[resid][lipid])
+                lipid_contacts[lipid] += len(contact_frames[resid][lipid])
 
     # Filter lipid_contacts based on the specified frequency_filter
     lipid_contacts = {
