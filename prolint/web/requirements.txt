@@ -1,0 +1,15 @@
+# ProLint Web Dashboard Backend Requirements
+
+# FastAPI and server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6  # For file uploads
+
+# WebSocket support
+websockets>=12.0
+
+# CORS middleware (included in FastAPI)
+# For production, consider:
+# - Redis for session storage and caching
+# - Celery for background tasks
+# - Postgres/MongoDB for persistent storage

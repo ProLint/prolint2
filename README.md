@@ -1,15 +1,5 @@
 # ProLint v2: an optimized tool for the analysis of lipid protein interactions.
 
-[//]: # "Badges"
-
-[![PyPI](https://img.shields.io/pypi/v/prolint2?color=blue)](https://pypi.org/project/prolint2/)
-[![LICENSE](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/)
-[![GitHub Actions Build Status](https://github.com/ProLint/prolint2/workflows/CI/badge.svg)](https://github.com/ProLint/prolint2/actions?query=workflow%3ACI)
-[![codecov](https://codecov.io/gh/ProLint/prolint2/graph/badge.svg)](https://app.codecov.io/gh/ProLint/prolint2)
-[![docs](https://readthedocs.org/projects/prolint2/badge/?version=latest)](https://prolint2.readthedocs.io/en/latest/?badge=latest)
-
-# Overview
-
 ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories of membrane protein systems.
 
 ![](docs/_static/fvg.png)
@@ -17,7 +7,6 @@ ProLint2 calculates distance-based lipid-protein interactions from molecular dyn
 # Table of contents
 
 - [Installation](#installation)
-- [Basic examples](#basic-examples)
 - [How to contribute?](#how-to-contribute)
 - [License](#license)
 - [Copyright](#copyright)
@@ -28,37 +17,17 @@ ProLint2 calculates distance-based lipid-protein interactions from molecular dyn
 To install **prolint2** we recommend creating a new conda environment as follows:
 
 ```bash
-   conda create -n prolint2 python=3.8
-   conda activate prolint2
+   conda create -n prolint python=3.10
+   conda activate prolint
 ```
 
-Then you can install **prolint2** via pip:
+Then you can install **prolint** via pip:
 
 ```bash
-   pip install prolint2
+   pip install prolint
 ```
 
-# Basic examples:
-
-Using the Prolint2's API:
-
-```python
-   from prolint2 import Universe
-   from prolint2.sampledata import GIRKDataSample
-   GIRK = GIRKDataSample()
-
-   u = Universe(GIRK.coordinates, GIRK.trajectory)
-
-   contacts = u.compute_contacts(cutoff=7) # cutoff in Angstroms
-```
-
-Using the Prolint2's command-line interface:
-
-```bash
-   prolint2 coordinates.gro trajectory.xtc -c 7
-```
-
-You can find more details on how to use **prolint2** in the [documentation](https://prolint2.readthedocs.io/en/latest/index.html).
+You can find details on how to use **prolint2** in the [documentation](https://prolint2.readthedocs.io/en/latest/index.html).
 
 # How to contribute?
 
@@ -72,7 +41,7 @@ Source code included in this project is available under the [MIT License](https:
 
 # Copyright
 
-Copyright (c) 2022, Daniel P. Ramirez & Besian I. Sejdiu
+Copyright (c) 2026, Daniel P. Ramirez-Echemendia & Besian I. Sejdiu
 
 Acknowledgements
 ================

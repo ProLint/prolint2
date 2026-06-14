@@ -1,0 +1,98 @@
+[build-system]
+requires = ["setuptools>=64", "setuptools-scm>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prolint"
+version = "2.0.0"
+description = "Biomolecular Interaction Analysis from Molecular Dynamics Simulations"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Daniel P. Ramirez-Echemendia"},
+    {name = "Besian I. Sejdiu"}
+]
+keywords = [
+    "molecular-dynamics",
+    "biomolecular-interactions",
+    "contact-analysis",
+    "biophysics",
+    "MDAnalysis"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "MDAnalysis>=2.4.0",
+    "numpy>=1.21.0",
+    "matplotlib>=3.5.0",
+    "networkx>=2.8.0",
+    "scipy>=1.9.0",
+]
+
+[project.optional-dependencies]
+web = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "python-multipart>=0.0.6",
+    "websockets>=12.0",
+]
+docs = [
+    "sphinx>=7.0.0",
+    "furo>=2024.1.0",
+    "myst-parser>=3.0.0",
+    "sphinx-copybutton>=0.5.0",
+    "sphinx-design>=0.5.0",
+    "sphinx-autoapi>=3.0.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.12.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+all = [
+    "prolint[web,docs,dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/ProLint/prolint"
+Documentation = "https://prolint.github.io/prolint"
+Repository = "https://github.com/ProLint/prolint"
+Issues = "https://github.com/ProLint/prolint/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["prolint*"]
+
+[tool.black]
+line-length = 88
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+source = ["prolint"]
+omit = ["prolint/web/*"]

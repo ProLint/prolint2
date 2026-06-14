@@ -1,8 +1,106 @@
-.wy-side-nav-search,
-.wy-nav-top {
-  background: #2c2c2c;
+/* ProLint Documentation - Custom Styles for Furo Theme */
+
+/* ============================================
+   Brand & Layout Refinements
+   ============================================ */
+
+/* Smaller sidebar title font */
+.sidebar-brand-text {
+    font-size: 1.25rem;
 }
 
-.navbar-end__search-button-container {
-  display: none;
+/* Heading sizes */
+h1 {
+    font-size: 1.5rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+}
+
+h3 {
+    font-size: 1.1rem;
+}
+
+h4 {
+    font-size: 0.95rem;
+}
+
+h5 {
+    font-size: 0.8rem;
+}
+
+/* Slightly wider content area */
+.content {
+    max-width: 52rem;
+}
+
+/* ============================================
+   Card Styling (sphinx-design)
+   ============================================ */
+
+.sd-card {
+    border-radius: 8px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sd-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="dark"] .sd-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.sd-card-title {
+    font-weight: 600;
+}
+
+/* ============================================
+   Code Block Refinements
+   ============================================ */
+
+div.highlight {
+    border-radius: 6px;
+}
+
+div.highlight pre {
+    border-radius: 6px;
+}
+
+/* ============================================
+   Table Styling
+   ============================================ */
+
+table.docutils {
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* ============================================
+   Admonition Refinements
+   ============================================ */
+
+.admonition {
+    border-radius: 6px;
+}
+
+/* ============================================
+   Copy Button
+   ============================================ */
+
+button.copybtn {
+    border-radius: 4px;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+    .sidebar-drawer,
+    .toc-drawer {
+        display: none;
+    }
 }
