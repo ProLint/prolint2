@@ -1,6 +1,6 @@
-# ProLint v2: an optimized tool for the analysis of lipid protein interactions.
+# ProLint 2.0: a scalable framework for the analysis of biomolecular interactions in MD simulations.
 
-ProLint2 calculates distance-based lipid-protein interactions from molecular dynamics trajectories of membrane protein systems.
+ProLint is a Python library for analyzing biomolecular interactions from molecular dynamics simulations. Built on MDAnalysis, it offers great efficiency in contact calculations and trajectory manipulation, proposing a simple four-step workflow: load your simulation, compute contacts between user-defined atom groups, analyze the results, and generate publication-ready plots. In addition, it provides a React-based web dashboard for interactive exploration of interaction results. You can details on how to use **prolint2** in the [documentation](https://prolint2.readthedocs.io/en/latest/index.html).
 
 ![](docs/_static/fvg.png)
 
@@ -26,8 +26,6 @@ Then you can install **prolint** via pip:
 ```bash
    pip install prolint
 ```
-
-You can find details on how to use **prolint2** in the [documentation](https://prolint2.readthedocs.io/en/latest/index.html).
 
 # How to contribute?
 
