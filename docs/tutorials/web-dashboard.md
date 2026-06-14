@@ -1,6 +1,6 @@
 ## Web Dashboard
 
-ProLint provides a web-based dashboard for interactive analysis. Access it at [http://136.159.191.44:3000](http://136.159.191.44:3000).
+ProLint provides a web-based dashboard for interactive analysis. Access it at [https://prolint.ca](https://prolint.ca).
 
 The dashboard has two main pages:
 
