@@ -1,8 +1,0 @@
-include LICENSE
-include MANIFEST.in
-include CODE_OF_CONDUCT.md
-include versioneer.py
-include README.md
-
-graft prolint2
-global-exclude *.py[cod] __pycache__ *.so

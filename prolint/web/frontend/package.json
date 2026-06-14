@@ -1,0 +1,43 @@
+{
+  "name": "prolint-dashboard",
+  "version": "2.0.0",
+  "description": "ProLint Interactive Web Dashboard",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.18.0",
+    "@mui/material": "^5.18.0",
+    "@types/cytoscape": "^3.21.9",
+    "axios": "^1.6.5",
+    "cytoscape": "^3.33.1",
+    "echarts": "^6.0.0",
+    "echarts-for-react": "^3.0.5",
+    "molstar": "^5.5.0",
+    "react": "^18.2.0",
+    "react-cytoscapejs": "^2.0.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.0",
+    "recharts": "^2.10.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.47",
+    "@types/react-dom": "^18.2.18",
+    "@typescript-eslint/eslint-plugin": "^6.18.0",
+    "@typescript-eslint/parser": "^6.18.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.56.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "sass": "^1.97.1",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.11"
+  }
+}
